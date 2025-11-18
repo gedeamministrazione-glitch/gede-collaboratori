@@ -1,101 +1,184 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <title>Comparatore Gas Domestico</title>
-    <style>
-        body { font-family: Arial; margin: 20px; }
-        h1 { text-align: center; }
-        .input-box { margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        th { background: #f4f4f4; }
-        button { padding: 10px 20px; cursor: pointer; }
-        .back-btn { display: inline-block; margin-bottom: 20px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparatore Offerte Gas Domestico</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; line-height: 1.6; }
+    h1 { text-align: center; color: #444; margin-bottom: 30px; }
+    .input-section, .results-section { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .input-group { margin-bottom: 18px; }
+    .input-group label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
+    .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+    button { display: block; width: 100%; background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; font-size: 1.1rem; margin-top: 20px; }
+    button:hover { background-color: #0056b3; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #f2f2f2; font-weight: bold; color: #333; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    tr:hover { background-color: #e9e9e9; }
+    .print-button { display: block; width: auto; margin: 20px auto; padding: 10px 15px; background-color: #6c757d; border: none; color: white; border-radius: 5px; cursor: pointer; font-size: 1rem; text-align: center; }
+    .print-button:hover { background-color: #5a6268; }
+    #footer { text-align: center; padding-top: 20px; margin-top: 30px; border-top: 1px solid #ccc; color: #777; font-size: 0.9rem; }
+  </style>
 </head>
 <body>
+  <div id="header">
+    <h1>GEDE SERVIZI - Offerte Gas Domestico</h1>
+  </div>
 
-<a href="/dashboard.html" class="back-btn">⬅ Torna alla Dashboard</a>
+  <div class="input-section">
+    <h2>Inserisci i tuoi dati di consumo</h2>
+    <div class="input-group">
+      <label for="consumo">Consumo mensile (Smc):</label>
+      <input type="number" id="consumo" value="100" step="0.01">
+    </div>
+    <div class="input-group">
+      <label for="psv">PSV (€/Smc):</label>
+      <input type="number" id="psv" value="0.40" step="0.001">
+    </div>
+    <button onclick="calcolaTutteLeOfferteGas()">Calcola Offerte</button>
+  </div>
 
-<h1>Comparatore Gas Domestico</h1>
-
-<div class="input-box">
-    <label>Consumo Mensile (Smc):</label>
-    <input type="number" id="consumo" value="70">
-</div>
-
-<div class="input-box">
-    <label>PSV:</label>
-    <input type="number" id="psv" step="0.01" value="0.40">
-</div>
-
-<button onclick="calcola()">Calcola</button>
-
-<h2>Risultati</h2>
-
-<table>
-    <thead>
+  <div class="results-section">
+    <h2>Risultati Comparazione Mensile Stimata</h2>
+    <table id="risultati-tabella-gas">
+      <thead>
         <tr>
-            <th>Offerta</th>
-            <th>Materia (€)</th>
-            <th>Fisso (€)</th>
-            <th>Variabile (€)</th>
-            <th>Totale (€)</th>
+          <th>Offerta</th>
+          <th>Costo Materia Prima (€)</th>
+          <th>Quota Fissa (€)</th>
+          <th>Costi di Commercializzazione (€)</th>
+          <th>Sconti/Bonus (€)</th>
+          <th>Totale stimato (€)</th>
         </tr>
-    </thead>
-    <tbody id="tabella"></tbody>
-</table>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <button onclick="window.print()" class="print-button">Stampa Risultati</button>
+  </div>
 
-<script>
-function fmt(n) { return n.toFixed(2).replace(".", ","); }
+  <div id="footer">
+    <p>&copy; 2025 GEDE SERVIZI. Tutti i diritti riservati.</p>
+  </div>
 
-function calcola() {
-    const consumo = parseFloat(document.getElementById("consumo").value) || 0;
-    const psv = parseFloat(document.getElementById("psv").value) || 0;
+  <script>
+    // ESTRA FISSA GAS
+    function calcolaEstraFissa(consumo) {
+      const prezzoFisso = 0.459; // €/Smc da CTE
+      const costoMateriaPrimaNum = consumo * prezzoFisso;
+      const quotaFissaNum = 132 / 12; // 132 €/anno = 11 €/mese
+      const scontoNum = -2; // -2 €/mese con domiciliazione
+      const totaleNum = costoMateriaPrimaNum + quotaFissaNum + scontoNum;
 
-    // === TARIFFE DOMESTICO GAS ===
-    const offerte = [
-        {
-            nome: "CEI Domestico Flex",
-            spread: 0.08,
-            fisso: 8,
-            variabile: 3.50,
-            materia: consumo * (psv + 0.08)
-        },
-        {
-            nome: "CEI Domestico Pro",
-            spread: 0.05,
-            fisso: 10,
-            variabile: 3.15,
-            materia: consumo * (psv + 0.05)
-        },
-        {
-            nome: "Estra Gas Casa",
-            spread: 0.06,
-            fisso: 8,
-            variabile: 2.80,
-            materia: consumo * (psv + 0.06)
-        }
-    ];
+      return {
+        nome: "Estra Fissa Gas",
+        costoMateriaPrima: costoMateriaPrimaNum.toFixed(2),
+        quotaFissa: quotaFissaNum.toFixed(2),
+        costiCommercializzazione: "0.00",
+        sconto: scontoNum.toFixed(2),
+        totale: totaleNum.toFixed(2)
+      };
+    }
 
-    const tbody = document.getElementById("tabella");
-    tbody.innerHTML = "";
+    // ESTRA NATURA GAS
+    function calcolaEstraNatura(consumo, psv) {
+      const spread = 0.10; // €/Smc da CTE
+      const costoMateriaPrimaNum = consumo * (psv + spread);
+      const quotaFissaNum = 132 / 12; // 11 €/mese
+      const scontoNum = -2; // -2 €/mese con domiciliazione
+      const totaleNum = costoMateriaPrimaNum + quotaFissaNum + scontoNum;
 
-    offerte.forEach(o => {
-        const totale = o.materia + o.fisso + o.variabile;
-        tbody.innerHTML += `
-            <tr>
-                <td>${o.nome}</td>
-                <td>€ ${fmt(o.materia)}</td>
-                <td>€ ${fmt(o.fisso)}</td>
-                <td>€ ${fmt(o.variabile)}</td>
-                <td><b>€ ${fmt(totale)}</b></td>
-            </tr>
-        `;
-    });
-}
-</script>
+      return {
+        nome: "Estra Natura Gas",
+        costoMateriaPrima: costoMateriaPrimaNum.toFixed(2),
+        quotaFissa: quotaFissaNum.toFixed(2),
+        costiCommercializzazione: "0.00",
+        sconto: scontoNum.toFixed(2),
+        totale: totaleNum.toFixed(2)
+      };
+    }
 
+    // CEI TURBO
+    function calcolaCeiTurbo(consumo, psv) {
+      const costoMateriaPrimaNum = consumo * psv;
+      const quotaFissaNum = 20; // €/mese da CTE
+      const variabiliNum = (0.0219 + 0.0145) * consumo; // CcP + CrA
+      const totaleNum = costoMateriaPrimaNum + quotaFissaNum + variabiliNum;
+
+      return {
+        nome: "CEI Turbo",
+        costoMateriaPrima: costoMateriaPrimaNum.toFixed(2),
+        quotaFissa: quotaFissaNum.toFixed(2),
+        costiCommercializzazione: variabiliNum.toFixed(2),
+        sconto: "0.00",
+        totale: totaleNum.toFixed(2)
+      };
+    }
+
+    // CEI BOOST
+    function calcolaCeiBoost(consumo, psv) {
+      const costoMateriaPrimaNum = consumo * psv;
+      const quotaFissaNum = 15; // €/mese da CTE
+      const variabiliNum = (0.0219 + 0.0145) * consumo; // CcP + CrA
+      const totaleNum = costoMateriaPrimaNum + quotaFissaNum + variabiliNum;
+
+      return {
+        nome: "CEI Boost",
+        costoMateriaPrima: costoMateriaPrimaNum.toFixed(2),
+        quotaFissa: quotaFissaNum.toFixed(2),
+        costiCommercializzazione: variabiliNum.toFixed(2),
+        sconto: "0.00",
+        totale: totaleNum.toFixed(2)
+      };
+    }
+
+    // CEI GO
+    function calcolaCeiGo(consumo, psv) {
+      const costoMateriaPrimaNum = consumo * psv;
+      const quotaFissaNum = 12; // €/mese da CTE
+      const variabiliNum = (0.0219 + 0.0145) * consumo; // CcP + CrA
+      const totaleNum = costoMateriaPrimaNum + quotaFissaNum + variabiliNum;
+
+      return {
+        nome: "CEI Go",
+        costoMateriaPrima: costoMateriaPrimaNum.toFixed(2),
+        quotaFissa: quotaFissaNum.toFixed(2),
+        costiCommercializzazione: variabiliNum.toFixed(2),
+        sconto: "0.00",
+        totale: totaleNum.toFixed(2)
+      };
+    }
+
+    // CALCOLO TUTTE LE OFFERTE
+    function calcolaTutteLeOfferteGas() {
+      const consumo = parseFloat(document.getElementById('consumo').value) || 0;
+      const psv = parseFloat(document.getElementById('psv').value) || 0;
+
+      const offerte = [
+        calcolaEstraFissa(consumo),
+        calcolaEstraNatura(consumo, psv),
+        calcolaCeiTurbo(consumo, psv),
+        calcolaCeiBoost(consumo, psv),
+        calcolaCeiGo(consumo, psv)
+      ];
+
+      const tabellaBody = document.querySelector('#risultati-tabella-gas tbody');
+      tabellaBody.innerHTML = '';
+
+      offerte.forEach(offerta => {
+        const row = tabellaBody.insertRow();
+        row.insertCell(0).textContent = offerta.nome;
+        row.insertCell(1).textContent = '€' + offerta.costoMateriaPrima;
+        row.insertCell(2).textContent = '€' + offerta.quotaFissa;
+        row.insertCell(3).textContent = '€' + offerta.costiCommercializzazione;
+        row.insertCell(4).textContent = '€' + offerta.sconto;
+        row.insertCell(5).textContent = '€' + offerta.totale;
+      });
+    }
+
+    window.onload = calcolaTutteLeOfferteGas;
+  </script>
 </body>
 </html>
