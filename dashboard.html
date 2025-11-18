@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Collaboratori</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<script src="/protected.js"></script>
+
+<div class="dashboard-layout">
+
+    <aside class="sidebar">
+        <h2>GEDE Servizi</h2>
+        <ul>
+            <li><a href="/comparators/business-gas.html">Business Gas</a></li>
+            <li><a href="/comparators/business-luce.html">Business Luce</a></li>
+            <li><a href="/comparators/domestico-gas.html">Domestico Gas</a></li>
+            <li><a href="/comparators/domestico-luce.html">Domestico Luce</a></li>
+        </ul>
+
+        <button class="logout" onclick="logout()">Logout</button>
+    </aside>
+
+    <main>
+        <h1>Benvenuto nella Dashboard Collaboratori</h1>
+        <p>Seleziona un comparatore dal menu laterale.</p>
+    </main>
+
+</div>
+
+<script src="/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luce Business - GEDE</title>
+
+<style>
+body { font-family:Arial; background:#f5f5f5; padding:20px; }
+.box { background:white; padding:20px; border-radius:10px; max-width:900px; margin:20px auto; box-shadow:0 2px 8px #ccc; }
+.back { margin:auto; display:block; width:fit-content; background:#374151; color:white; padding:8px 14px; text-decoration:none; border-radius:8px; }
+table { width:100%; border-collapse:collapse; margin-top:20px; }
+th,td { border:1px solid #ddd; padding:10px; }
+th{background:#e8f0fe;}
+button { padding:10px 15px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer; }
+button:hover { background:#0056b3; }
+</style>
+</head>
+
+<body>
+
+<script src="../protected.js"></script>
+
+<a class="back" href="../dashboard.html">⬅ Torna alla Dashboard</a>
+
+<h1 style="text-align:center;">Comparatore Luce Business</h1>
+
+<div class="box">
+    <label>kWh Mensili:</label>
+    <input id="kwh" type="number" value="833" style="width:100%;padding:10px;">
+
+    <label>PUN (€/kWh):</label>
+    <input id="pun" type="number" value="0.12" step="0.0001" style="width:100%;padding:10px;margin-top:10px;">
+
+    <button onclick="calcola()">Calcola</button>
+</div>
+
+<div class="box">
+    <h2>Risultati</h2>
+
+    <table id="ris">
+        <thead>
+            <tr>
+                <th>Offerta</th>
+                <th>Materia (€)</th>
+                <th>Fisso (€)</th>
+                <th>Perdite (€)</th>
+                <th>Totale (€)</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+function f(n){return Number(n).toFixed(2);}
+
+function calcola(){
+    const k = parseFloat(document.getElementById("kwh").value);
+    const p = parseFloat(document.getElementById("pun").value);
+
+    const offerte = [
+        { nome:"CEI Business Variabile", spread:0.025, qf:12, perdite:0.1027 },
+        { nome:"CEI Business Pro", spread:0.020, qf:12, perdite:0.1027 },
+        { nome:"Estra Impresa Luce", spread:0.030, qf:15, perdite:0.10 }
+    ];
+
+    let html="";
+
+    offerte.forEach(o=>{
+        const materia = k*(p+o.spread);
+        const perdite = k*o.perdite;
+        const tot = materia+o.qf+perdite;
+
+        html+=`
+        <tr>
+            <td>${o.nome}</td>
+            <td>€ ${f(materia)}</td>
+            <td>€ ${f(o.qf)}</td>
+            <td>€ ${f(perdite)}</td>
+            <td><b>€ ${f(tot)}</b></td>
+        </tr>`;
+    });
+
+    document.querySelector("#ris tbody").innerHTML = html;
+}
+
+window.onload = calcola;
+</script>
+
+</body>
+</html>
