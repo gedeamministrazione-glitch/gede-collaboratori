@@ -2,47 +2,40 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comparatore Luce Business</title>
-    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        h1 { text-align: center; }
+        .input-box { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #f4f4f4; }
+        button { padding: 10px 20px; cursor: pointer; }
+        .back-btn { display: inline-block; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
 
-<button class="back-button" onclick="window.location.href='../dashboard.html'">⬅ Torna alla Dashboard</button>
+<a href="/dashboard.html" class="back-btn">⬅ Torna alla Dashboard</a>
 
-<h2 class="page-title">Comparatore Luce Business</h2>
+<h1>Comparatore Luce Business</h1>
 
-<div class="form-container">
+<div class="input-box">
     <label>kWh Mensili:</label>
-    <input type="number" id="kwh">
-
-    <label>PUN (€/kWh):</label>
-    <input type="number" id="pun" step="0.01">
-
-    <button onclick="calcola()">Calcola</button>
+    <input type="number" id="consumo" value="500">
 </div>
 
-<div id="risultati" class="results-container"></div>
+<div class="input-box">
+    <label>PUN (€/kWh):</label>
+    <input type="number" id="pun" step="0.01" value="0.12">
+</div>
 
-<script>
-function calcola() {
-    let kwh = parseFloat(document.getElementById("kwh").value);
-    let pun = parseFloat(document.getElementById("pun").value);
+<button onclick="calcola()">Calcola</button>
 
-    if (isNaN(kwh) || isNaN(pun)) {
-        alert("Inserisci valori validi!");
-        return;
-    }
+<h2>Risultati</h2>
 
-    const offerte = [
-        { nome: "CEI Business Variabile", materia: (pun + 0.045) * kwh, fisso: 12, perdite: kwh * 0.1027 },
-        { nome: "CEI Business Pro", materia: (pun + 0.04) * kwh, fisso: 12, perdite: kwh * 0.1027 },
-        { nome: "Estra Impresa Luce", materia: (pun + 0.05) * kwh, fisso: 15, perdite: kwh * 0.10 }
-    ];
-
-    let html = `
-    <h3>Risultati</h3>
-    <table>
+<table>
+    <thead>
         <tr>
             <th>Offerta</th>
             <th>Materia (€)</th>
@@ -50,23 +43,57 @@ function calcola() {
             <th>Perdite (€)</th>
             <th>Totale (€)</th>
         </tr>
-    `;
+    </thead>
+    <tbody id="tabella"></tbody>
+</table>
+
+<script>
+function fmt(n) { return n.toFixed(2).replace(".", ","); }
+
+function calcola() {
+    const consumo = parseFloat(document.getElementById("consumo").value) || 0;
+    const pun = parseFloat(document.getElementById("pun").value) || 0;
+
+    // === TARIFFE BUSINESS LUCE ===
+    const offerte = [
+        {
+            nome: "CEI Business Variabile",
+            spread: 0.08,
+            fisso: 12,
+            perdite: consumo * 0.103,
+            materia: consumo * (pun + 0.08)
+        },
+        {
+            nome: "CEI Business Pro",
+            spread: 0.06,
+            fisso: 12,
+            perdite: consumo * 0.103,
+            materia: consumo * (pun + 0.06)
+        },
+        {
+            nome: "Estra Impresa Luce",
+            spread: 0.09,
+            fisso: 15,
+            perdite: consumo * 0.10,
+            materia: consumo * (pun + 0.09)
+        }
+    ];
+
+    const tbody = document.getElementById("tabella");
+    tbody.innerHTML = "";
 
     offerte.forEach(o => {
-        let totale = o.materia + o.fisso + o.perdite;
-
-        html += `
+        const totale = o.materia + o.fisso + o.perdite;
+        tbody.innerHTML += `
             <tr>
                 <td>${o.nome}</td>
-                <td>€ ${o.materia.toFixed(2)}</td>
-                <td>€ ${o.fisso.toFixed(2)}</td>
-                <td>€ ${o.perdite.toFixed(2)}</td>
-                <td><b>€ ${totale.toFixed(2)}</b></td>
-            </tr>`;
+                <td>€ ${fmt(o.materia)}</td>
+                <td>€ ${fmt(o.fisso)}</td>
+                <td>€ ${fmt(o.perdite)}</td>
+                <td><b>€ ${fmt(totale)}</b></td>
+            </tr>
+        `;
     });
-
-    html += "</table>";
-    document.getElementById("risultati").innerHTML = html;
 }
 </script>
 
