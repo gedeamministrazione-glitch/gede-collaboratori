@@ -1,91 +1,74 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gas Business - GEDE</title>
-
-<style>
-body { font-family:Arial; background:#f5f5f5; padding:20px; }
-.box { background:white; padding:20px; border-radius:10px; max-width:900px; margin:20px auto; box-shadow:0 2px 8px #ccc; }
-.back { margin:auto; display:block; width:fit-content; background:#374151; color:white; padding:8px 14px; text-decoration:none; border-radius:8px; }
-table { width:100%; border-collapse:collapse; margin-top:20px; }
-th,td { border:1px solid #ddd; padding:10px; }
-th{background:#e8f0fe;}
-button { padding:10px 15px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer; }
-button:hover { background:#0056b3; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparatore Gas Business</title>
+    <link rel="stylesheet" href="../styles.css">
 </head>
-
 <body>
 
-<script src="../protected.js"></script>
+<button class="back-button" onclick="window.location.href='../dashboard.html'">⬅ Torna alla Dashboard</button>
 
-<a class="back" href="../dashboard.html">⬅ Torna alla Dashboard</a>
+<h2 class="page-title">Comparatore Gas Business</h2>
 
-<h1 style="text-align:center;">Comparatore Gas Business</h1>
-
-<div class="box">
+<div class="form-container">
     <label>Smc Mensili:</label>
-    <input id="smc" type="number" value="450" style="width:100%;padding:10px;">
+    <input type="number" id="smc" placeholder="Inserisci consumo mensile">
 
     <label>PSV (€/Smc):</label>
-    <input id="psv" type="number" value="0.40" step="0.0001" style="width:100%;padding:10px;margin-top:10px;">
+    <input type="number" id="psv" step="0.01" placeholder="Inserisci PSV">
 
     <button onclick="calcola()">Calcola</button>
 </div>
 
-<div class="box">
-    <h2>Risultati</h2>
-
-    <table id="ris">
-        <thead>
-            <tr>
-                <th>Offerta</th>
-                <th>Materia Prima (€)</th>
-                <th>Quota Fissa (€)</th>
-                <th>Variabili (€)</th>
-                <th><b>Totale (€)</b></th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
+<div id="risultati" class="results-container"></div>
 
 <script>
-function f(n){return Number(n).toFixed(2);}
+function calcola() {
+    let smc = parseFloat(document.getElementById("smc").value);
+    let psv = parseFloat(document.getElementById("psv").value);
 
-function calcola(){
-    const smc = parseFloat(document.getElementById("smc").value);
-    const psv = parseFloat(document.getElementById("psv").value);
+    if (isNaN(smc) || isNaN(psv)) {
+        alert("Inserisci valori validi!");
+        return;
+    }
 
+    // Tariffe IDENTICHE ai tuoi file
     const offerte = [
-        { nome:"CEI Business Flex", spread:0.12, qf:12, var:0.018 },
-        { nome:"CEI Business Pro", spread:0.10, qf:15, var:0.016 },
-        { nome:"Estra Gas Impresa", spread:0.09, qf:12, var:0.017 }
+        { nome: "CEI Business Flex", materia: (psv + 0.18) * smc, fisso: 12, variabile: smc * 0.018 },
+        { nome: "CEI Business Pro", materia: (psv + 0.15) * smc, fisso: 15, variabile: smc * 0.016 },
+        { nome: "Estra Gas Impresa", materia: (psv + 0.17) * smc, fisso: 12, variabile: smc * 0.017 }
     ];
 
-    let html="";
-
-    offerte.forEach(o=>{
-        const materia = smc*(psv+o.spread);
-        const varcost = smc*o.var;
-        const tot = materia+o.qf+varcost;
-
-        html+=`
+    let html = `
+    <h3>Risultati</h3>
+    <table>
         <tr>
-            <td>${o.nome}</td>
-            <td>€ ${f(materia)}</td>
-            <td>€ ${f(o.qf)}</td>
-            <td>€ ${f(varcost)}</td>
-            <td><b>€ ${f(tot)}</b></td>
-        </tr>`;
+            <th>Offerta</th>
+            <th>Materia Prima (€)</th>
+            <th>Quota Fissa (€)</th>
+            <th>Variabili (€)</th>
+            <th>Totale (€)</th>
+        </tr>
+    `;
+
+    offerte.forEach(o => {
+        let totale = o.materia + o.fisso + o.variabile;
+        html += `
+            <tr>
+                <td>${o.nome}</td>
+                <td>€ ${o.materia.toFixed(2)}</td>
+                <td>€ ${o.fisso.toFixed(2)}</td>
+                <td>€ ${o.variabile.toFixed(2)}</td>
+                <td><b>€ ${totale.toFixed(2)}</b></td>
+            </tr>
+        `;
     });
 
-    document.querySelector("#ris tbody").innerHTML=html;
+    html += "</table>";
+    document.getElementById("risultati").innerHTML = html;
 }
-
-window.onload = calcola;
 </script>
 
 </body>

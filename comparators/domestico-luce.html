@@ -1,91 +1,73 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Luce Domestica - GEDE</title>
-
-<style>
-body { font-family:Arial; background:#f5f5f5; padding:20px; }
-.box { background:white; padding:20px; border-radius:10px; max-width:900px; margin:20px auto; box-shadow:0 2px 8px #ccc; }
-.back { margin:auto; display:block; width:fit-content; background:#374151; color:white; padding:8px 14px; text-decoration:none; border-radius:8px; }
-table { width:100%; border-collapse:collapse; }
-th,td { border:1px solid #ddd; padding:10px; }
-th{background:#e8f0fe;}
-button { padding:10px 15px; background:#007bff; color:white; border:none; border-radius:6px; cursor:pointer; }
-button:hover { background:#0056b3; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparatore Luce Domestica</title>
+    <link rel="stylesheet" href="../styles.css">
 </head>
-
 <body>
 
-<script src="../protected.js"></script>
+<button class="back-button" onclick="window.location.href='../dashboard.html'">⬅ Torna alla Dashboard</button>
 
-<a class="back" href="../dashboard.html">⬅ Torna alla Dashboard</a>
+<h2 class="page-title">Comparatore Luce Domestica</h2>
 
-<h1 style="text-align:center;">Comparatore Luce Domestica</h1>
-
-<div class="box">
+<div class="form-container">
     <label>kWh Mensili:</label>
-    <input id="kwh" type="number" value="270" style="width:100%;padding:10px;">
+    <input type="number" id="kwh">
 
     <label>PUN:</label>
-    <input id="pun" type="number" value="0.12" step="0.0001" style="width:100%;padding:10px;margin-top:10px;">
+    <input type="number" id="pun" step="0.01">
 
     <button onclick="calcola()">Calcola</button>
 </div>
 
-<div class="box">
-    <h2>Risultati</h2>
-
-    <table id="ris">
-        <thead>
-            <tr>
-                <th>Offerta</th>
-                <th>Materia (€)</th>
-                <th>Fisso (€)</th>
-                <th>Perdite (€)</th>
-                <th>Totale (€)</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
+<div id="risultati" class="results-container"></div>
 
 <script>
-function f(n){return Number(n).toFixed(2);}
+function calcola() {
+    let kwh = parseFloat(document.getElementById("kwh").value);
+    let pun = parseFloat(document.getElementById("pun").value);
 
-function calcola(){
-    const k = parseFloat(document.getElementById("kwh").value);
-    const p = parseFloat(document.getElementById("pun").value);
+    if (isNaN(kwh) || isNaN(pun)) {
+        alert("Valori non validi");
+        return;
+    }
 
     const offerte = [
-        { nome:"CEI Casa Flex", spread:0.025, qf:6, perdite:0.1027 },
-        { nome:"CEI Casa Pro", spread:0.020, qf:8, perdite:0.1027 },
-        { nome:"Estra Casa Luce", spread:0.03, qf:7, perdite:0.10 }
+        { nome: "CEI Casa Flex", materia: (pun + 0.06) * kwh, fisso: 6, perdite: kwh * 0.1027 },
+        { nome: "CEI Casa Pro", materia: (pun + 0.05) * kwh, fisso: 8, perdite: kwh * 0.1027 },
+        { nome: "Estra Casa Luce", materia: (pun + 0.065) * kwh, fisso: 7, perdite: kwh * 0.10 }
     ];
 
-    let html="";
-
-    offerte.forEach(o=>{
-        const materia = k*(p+o.spread);
-        const perdite = k*o.perdite;
-        const tot = materia+o.qf+perdite;
-
-        html+=`
+    let html = `
+    <h3>Risultati</h3>
+    <table>
         <tr>
-            <td>${o.nome}</td>
-            <td>€ ${f(materia)}</td>
-            <td>€ ${f(o.qf)}</td>
-            <td>€ ${f(perdite)}</td>
-            <td><b>€ ${f(tot)}</b></td>
-        </tr>`;
+            <th>Offerta</th>
+            <th>Materia (€)</th>
+            <th>Fisso (€)</th>
+            <th>Perdite (€)</th>
+            <th>Totale (€)</th>
+        </tr>
+    `;
+
+    offerte.forEach(o => {
+        let totale = o.materia + o.fisso + o.perdite;
+
+        html += `
+            <tr>
+                <td>${o.nome}</td>
+                <td>€ ${o.materia.toFixed(2)}</td>
+                <td>€ ${o.fisso.toFixed(2)}</td>
+                <td>€ ${o.perdite.toFixed(2)}</td>
+                <td><b>€ ${totale.toFixed(2)}</b></td>
+            </tr>`;
     });
 
-    document.querySelector("#ris tbody").innerHTML = html;
+    html += "</table>";
+    document.getElementById("risultati").innerHTML = html;
 }
-
-window.onload = calcola;
 </script>
 
 </body>
