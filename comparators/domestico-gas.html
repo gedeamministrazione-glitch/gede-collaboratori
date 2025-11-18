@@ -2,47 +2,40 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comparatore Gas Domestico</title>
-    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        h1 { text-align: center; }
+        .input-box { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #f4f4f4; }
+        button { padding: 10px 20px; cursor: pointer; }
+        .back-btn { display: inline-block; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
 
-<button class="back-button" onclick="window.location.href='../dashboard.html'">⬅ Torna alla Dashboard</button>
+<a href="/dashboard.html" class="back-btn">⬅ Torna alla Dashboard</a>
 
-<h2 class="page-title">Comparatore Gas Domestico</h2>
+<h1>Comparatore Gas Domestico</h1>
 
-<div class="form-container">
+<div class="input-box">
     <label>Consumo Mensile (Smc):</label>
-    <input type="number" id="smc">
-
-    <label>PSV:</label>
-    <input type="number" id="psv" step="0.01">
-
-    <button onclick="calcola()">Calcola</button>
+    <input type="number" id="consumo" value="70">
 </div>
 
-<div id="risultati" class="results-container"></div>
+<div class="input-box">
+    <label>PSV:</label>
+    <input type="number" id="psv" step="0.01" value="0.40">
+</div>
 
-<script>
-function calcola() {
-    let smc = parseFloat(document.getElementById("smc").value);
-    let psv = parseFloat(document.getElementById("psv").value);
+<button onclick="calcola()">Calcola</button>
 
-    if (isNaN(smc) || isNaN(psv)) {
-        alert("Valori non validi");
-        return;
-    }
+<h2>Risultati</h2>
 
-    const offerte = [
-        { nome: "CEI Domestico Flex", materia: (psv + 0.12) * smc, fisso: 8, variabile: smc * 0.05 },
-        { nome: "CEI Domestico Pro", materia: (psv + 0.10) * smc, fisso: 10, variabile: smc * 0.045 },
-        { nome: "Estra Gas Casa", materia: (psv + 0.11) * smc, fisso: 8, variabile: smc * 0.04 }
-    ];
-
-    let html = `
-    <h3>Risultati</h3>
-    <table>
+<table>
+    <thead>
         <tr>
             <th>Offerta</th>
             <th>Materia (€)</th>
@@ -50,23 +43,57 @@ function calcola() {
             <th>Variabile (€)</th>
             <th>Totale (€)</th>
         </tr>
-    `;
+    </thead>
+    <tbody id="tabella"></tbody>
+</table>
+
+<script>
+function fmt(n) { return n.toFixed(2).replace(".", ","); }
+
+function calcola() {
+    const consumo = parseFloat(document.getElementById("consumo").value) || 0;
+    const psv = parseFloat(document.getElementById("psv").value) || 0;
+
+    // === TARIFFE DOMESTICO GAS ===
+    const offerte = [
+        {
+            nome: "CEI Domestico Flex",
+            spread: 0.08,
+            fisso: 8,
+            variabile: 3.50,
+            materia: consumo * (psv + 0.08)
+        },
+        {
+            nome: "CEI Domestico Pro",
+            spread: 0.05,
+            fisso: 10,
+            variabile: 3.15,
+            materia: consumo * (psv + 0.05)
+        },
+        {
+            nome: "Estra Gas Casa",
+            spread: 0.06,
+            fisso: 8,
+            variabile: 2.80,
+            materia: consumo * (psv + 0.06)
+        }
+    ];
+
+    const tbody = document.getElementById("tabella");
+    tbody.innerHTML = "";
 
     offerte.forEach(o => {
-        let totale = o.materia + o.fisso + o.variabile;
-
-        html += `
+        const totale = o.materia + o.fisso + o.variabile;
+        tbody.innerHTML += `
             <tr>
                 <td>${o.nome}</td>
-                <td>€ ${o.materia.toFixed(2)}</td>
-                <td>€ ${o.fisso.toFixed(2)}</td>
-                <td>€ ${o.variabile.toFixed(2)}</td>
-                <td><b>€ ${totale.toFixed(2)}</b></td>
-            </tr>`;
+                <td>€ ${fmt(o.materia)}</td>
+                <td>€ ${fmt(o.fisso)}</td>
+                <td>€ ${fmt(o.variabile)}</td>
+                <td><b>€ ${fmt(totale)}</b></td>
+            </tr>
+        `;
     });
-
-    html += "</table>";
-    document.getElementById("risultati").innerHTML = html;
 }
 </script>
 
