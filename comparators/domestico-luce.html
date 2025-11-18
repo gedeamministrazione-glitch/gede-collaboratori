@@ -2,47 +2,40 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comparatore Luce Domestica</title>
-    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        h1 { text-align: center; }
+        .input-box { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #f4f4f4; }
+        button { padding: 10px 20px; cursor: pointer; }
+        .back-btn { display: inline-block; margin-bottom: 20px; }
+    </style>
 </head>
 <body>
 
-<button class="back-button" onclick="window.location.href='../dashboard.html'">⬅ Torna alla Dashboard</button>
+<a href="/dashboard.html" class="back-btn">⬅ Torna alla Dashboard</a>
 
-<h2 class="page-title">Comparatore Luce Domestica</h2>
+<h1>Comparatore Luce Domestica</h1>
 
-<div class="form-container">
+<div class="input-box">
     <label>kWh Mensili:</label>
-    <input type="number" id="kwh">
-
-    <label>PUN:</label>
-    <input type="number" id="pun" step="0.01">
-
-    <button onclick="calcola()">Calcola</button>
+    <input type="number" id="kwh" value="270">
 </div>
 
-<div id="risultati" class="results-container"></div>
+<div class="input-box">
+    <label>PUN:</label>
+    <input type="number" id="pun" step="0.01" value="0.12">
+</div>
 
-<script>
-function calcola() {
-    let kwh = parseFloat(document.getElementById("kwh").value);
-    let pun = parseFloat(document.getElementById("pun").value);
+<button onclick="calcola()">Calcola</button>
 
-    if (isNaN(kwh) || isNaN(pun)) {
-        alert("Valori non validi");
-        return;
-    }
+<h2>Risultati</h2>
 
-    const offerte = [
-        { nome: "CEI Casa Flex", materia: (pun + 0.06) * kwh, fisso: 6, perdite: kwh * 0.1027 },
-        { nome: "CEI Casa Pro", materia: (pun + 0.05) * kwh, fisso: 8, perdite: kwh * 0.1027 },
-        { nome: "Estra Casa Luce", materia: (pun + 0.065) * kwh, fisso: 7, perdite: kwh * 0.10 }
-    ];
-
-    let html = `
-    <h3>Risultati</h3>
-    <table>
+<table>
+    <thead>
         <tr>
             <th>Offerta</th>
             <th>Materia (€)</th>
@@ -50,23 +43,57 @@ function calcola() {
             <th>Perdite (€)</th>
             <th>Totale (€)</th>
         </tr>
-    `;
+    </thead>
+    <tbody id="tabella"></tbody>
+</table>
+
+<script>
+function fmt(n) { return n.toFixed(2).replace(".", ","); }
+
+function calcola() {
+    const kwh = parseFloat(document.getElementById("kwh").value) || 0;
+    const pun = parseFloat(document.getElementById("pun").value) || 0;
+
+    // === TARIFFE DOMESTICO LUCE ===
+    const offerte = [
+        {
+            nome: "CEI Casa Flex",
+            spread: 0.05,
+            fisso: 6,
+            perdite: kwh * 0.103,
+            materia: kwh * (pun + 0.05)
+        },
+        {
+            nome: "CEI Casa Pro",
+            spread: 0.03,
+            fisso: 8,
+            perdite: kwh * 0.103,
+            materia: kwh * (pun + 0.03)
+        },
+        {
+            nome: "Estra Casa Luce",
+            spread: 0.06,
+            fisso: 7,
+            perdite: kwh * 0.10,
+            materia: kwh * (pun + 0.06)
+        }
+    ];
+
+    const tbody = document.getElementById("tabella");
+    tbody.innerHTML = "";
 
     offerte.forEach(o => {
-        let totale = o.materia + o.fisso + o.perdite;
-
-        html += `
+        const totale = o.materia + o.fisso + o.perdite;
+        tbody.innerHTML += `
             <tr>
                 <td>${o.nome}</td>
-                <td>€ ${o.materia.toFixed(2)}</td>
-                <td>€ ${o.fisso.toFixed(2)}</td>
-                <td>€ ${o.perdite.toFixed(2)}</td>
-                <td><b>€ ${totale.toFixed(2)}</b></td>
-            </tr>`;
+                <td>€ ${fmt(o.materia)}</td>
+                <td>€ ${fmt(o.fisso)}</td>
+                <td>€ ${fmt(o.perdite)}</td>
+                <td><b>€ ${fmt(totale)}</b></td>
+            </tr>
+        `;
     });
-
-    html += "</table>";
-    document.getElementById("risultati").innerHTML = html;
 }
 </script>
 
