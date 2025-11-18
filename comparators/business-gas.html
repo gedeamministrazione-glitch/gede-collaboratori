@@ -1,96 +1,169 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparatore Gas Business</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Comparatore Offerte Gas Business - CEI & Estra</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #003366; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-        th { background-color: #003366; color: white; }
-        input { padding: 8px; width: 200px; margin-bottom: 10px; }
-        button { padding: 10px 20px; background: #003366; color: white; border: none; cursor: pointer; }
-        button:hover { background: #0055aa; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; line-height: 1.6; }
+        h1 { text-align: center; color: #444; margin-bottom: 18px; }
+        .input-section, .results-section { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.08); margin-bottom: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; margin-bottom: 6px; color: #555; font-weight: 600; }
+        .input-group input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+        button.primary { display: inline-block; background-color: #007bff; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+        button.primary:hover { background-color: #0056b3; }
+        .section-title { text-align: center; color: #007bff; margin-top: 18px; margin-bottom: 8px; font-weight: 700; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #e2e6ea; padding: 10px; text-align: left; font-size: 0.95rem; }
+        th { background: #f4f8ff; font-weight: 700; color: #223; }
+        tr:nth-child(even) { background: #fbfbfb; }
+        tr:hover { background: #f1f7ff; }
+        .small-note { font-size: 0.9rem; color: #666; margin-top: 12px; }
+        .print-button { display:block; width:auto; margin: 14px auto 6px; padding: 8px 12px; background:#6c757d; color:#fff; border-radius:6px; border:none; cursor:pointer; }
+        #footer { text-align:center; color:#777; font-size:0.9rem; margin-top:18px; }
+        @media (max-width:700px) {
+            .grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
+    <h1>GEDE SERVIZI - Comparatore Offerte Gas Business (CEI & Estra)</h1>
 
-<h1>Comparatore Gas Business</h1>
+    <div class="input-section">
+        <h2 style="margin-top:0">Inserisci i tuoi dati di consumo</h2>
+        <div class="grid">
+            <div class="input-group">
+                <label for="consumo">Consumo (Smc) — inserire il valore mensile</label>
+                <input type="number" id="consumo" value="416.67" step="0.01" />
+            </div>
+            <div class="input-group">
+                <label for="psv">PSV (€/Smc)</label>
+                <input type="number" id="psv" value="0.40" step="0.0001" />
+            </div>
+        </div>
+        <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+            <button class="primary" onclick="calcolaTutteLeOfferteGasBusiness()">Calcola Offerte</button>
+            <button class="print-button" onclick="window.print()">Stampa risultati</button>
+        </div>
 
-<label>Smc Mensili:</label>
-<input type="number" id="consumo" value="100"><br>
+        <p class="small-note">
+            Nota: i calcoli mostrati sono stime mensili riferite alla componente Materia Prima, Quote Fisse e costi di commercializzazione/servizi di vendita
+            indicati nelle condizioni. I valori sono **IVA e imposte escluse** e non comprendono costi di trasporto e oneri di sistema regolati da ARERA.
+        </p>
+    </div>
 
-<label>PSV (€/Smc):</label>
-<input type="number" step="0.01" id="psv" value="0.40"><br>
+    <div class="results-section">
+        <h2 id="results-title">Risultati comparazione (stima mensile)</h2>
 
-<button onclick="calcola()">Calcola</button>
+        <h3 class="section-title">Offerte CEI &gt; 10.000 Smc</h3>
+        <table id="tabella-cei-superiore">
+            <thead>
+                <tr><th>Offerta</th><th>Costo Materia Prima (€)</th><th>Quota Fissa Mensile (€)</th><th>Costi Variabili Servizi Vendita (€)</th><th>Totale Stimato (€)</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
 
-<h2>Risultati</h2>
+        <h3 class="section-title">Offerte CEI &lt; 10.000 Smc</h3>
+        <table id="tabella-cei-inferiore">
+            <thead>
+                <tr><th>Offerta</th><th>Costo Materia Prima (€)</th><th>Quota Fissa Mensile (€)</th><th>Costi Variabili Servizi Vendita (€)</th><th>Totale Stimato (€)</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
 
-<table>
-    <thead>
-        <tr>
-            <th>Offerta</th>
-            <th>Materia Prima (€)</th>
-            <th>Quota Fissa (€)</th>
-            <th>Variabili (€)</th>
-            <th>Totale (€)</th>
-        </tr>
-    </thead>
-    <tbody id="risultati"></tbody>
-</table>
+        <h3 class="section-title">Altre Offerte (Estra)</h3>
+        <table id="tabella-altre">
+            <thead>
+                <tr><th>Offerta</th><th>Costo Materia Prima (€)</th><th>Quota Fissa Mensile (€)</th><th>Costi Variabili (€)</th><th>Totale Stimato (€)</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-<script>
-function fmt(num) {
-    return num.toFixed(2).replace(".", ",");
-}
+    <div id="footer">
+        <p>&copy; 2025 GEDE SERVIZI — valori stimati. Tutti i diritti riservati.</p>
+    </div>
 
-function calcola() {
-    const smc = parseFloat(document.getElementById("consumo").value);
-    const psv = parseFloat(document.getElementById("psv").value);
+    <script>
+        function fmt(n){ return parseFloat(n).toFixed(2); }
 
-    const offerte = [
-        {
-            nome: "CEI Business Flex",
-            materia: smc * (psv + 0.058),
-            fisso: 12.00,
-            variabile: 1.80
-        },
-        {
-            nome: "CEI Business Pro",
-            materia: smc * (psv + 0.055),
-            fisso: 15.00,
-            variabile: 1.60
-        },
-        {
-            nome: "Estra Gas Impresa",
-            materia: smc * (psv + 0.057),
-            fisso: 12.00,
-            variabile: 1.70
+        function calcolaCeiPartner(consumoMensile, psv) {
+            const spread = 0.120, quotaFissa = 14.00, variabiliUnit = 0.02 + 0.0219 + 0.0145;
+            const costoMateriaPrima = consumoMensile * (psv + spread);
+            const costiVariabili = consumoMensile * variabiliUnit;
+            return { nome: "CEI Partner (> 10.000 Smc)", costoMateriaPrima: fmt(costoMateriaPrima), quotaFissa: fmt(quotaFissa), costiVariabili: fmt(costiVariabili), totale: fmt(costoMateriaPrima + quotaFissa + costiVariabili) };
         }
-    ];
 
-    let html = "";
+        function calcolaCeiPro(consumoMensile, psv) {
+            const spread = 0.100, quotaFissa = 14.00, variabiliUnit = 0.02 + 0.0219 + 0.0145;
+            const costoMateriaPrima = consumoMensile * (psv + spread);
+            const costiVariabili = consumoMensile * variabiliUnit;
+            return { nome: "CEI Pro (> 10.000 Smc)", costoMateriaPrima: fmt(costoMateriaPrima), quotaFissa: fmt(quotaFissa), costiVariabili: fmt(costiVariabili), totale: fmt(costoMateriaPrima + quotaFissa + costiVariabili) };
+        }
 
-    offerte.forEach(o => {
-        const totale = o.materia + o.fisso + o.variabile;
+        function calcolaCeiFlex(consumoMensile, psv) {
+            const spread = 0.080, quotaFissa = 14.00, variabiliUnit = 0.02 + 0.0219 + 0.0145;
+            const costoMateriaPrima = consumoMensile * (psv + spread);
+            const costiVariabili = consumoMensile * variabiliUnit;
+            return { nome: "CEI Flex (> 10.000 Smc)", costoMateriaPrima: fmt(costoMateriaPrima), quotaFissa: fmt(quotaFissa), costiVariabili: fmt(costiVariabili), totale: fmt(costoMateriaPrima + quotaFissa + costiVariabili) };
+        }
 
-        html += `
-            <tr>
-                <td>${o.nome}</td>
-                <td>€ ${fmt(o.materia)}</td>
-                <td>€ ${fmt(o.fisso)}</td>
-                <td>€ ${fmt(o.variabile)}</td>
-                <td><b>€ ${fmt(totale)}</b></td>
-            </tr>
-        `;
-    });
+        function calcolaCeiReflex(consumoMensile, psv) {
+            const spread = 0.080, quotaFissa = 26.00, variabiliUnit = 0.05 + 0.02 + 0.0219 + 0.0145;
+            const costoMateriaPrima = consumoMensile * (psv + spread);
+            const costiVariabili = consumoMensile * variabiliUnit;
+            return { nome: "CEI Reflex (< 10.000 Smc)", costoMateriaPrima: fmt(costoMateriaPrima), quotaFissa: fmt(quotaFissa), costiVariabili: fmt(costiVariabili), totale: fmt(costoMateriaPrima + quotaFissa + costiVariabili) };
+        }
 
-    document.getElementById("risultati").innerHTML = html;
-}
-</script>
+        function calcolaCeiCanon(consumoMensile, psv) {
+            const spread = 0.080, quotaFissa = 19.50, variabiliUnit = 0.02 + 0.0219 + 0.0145 + 0.03;
+            const costoMateriaPrima = consumoMensile * (psv + spread);
+            const costiVariabili = consumoMensile * variabiliUnit;
+            return { nome: "CEI Canon (< 10.000 Smc)", costoMateriaPrima: fmt(costoMateriaPrima), quotaFissa: fmt(quotaFissa), costiVariabili: fmt(costiVariabili), totale: fmt(costoMateriaPrima + quotaFissa + costiVariabili) };
+        }
 
+        function calcolaCeiVision(consumoMensile, psv) {
+            const spread = 0.090, quotaFissa = 15.00, variabiliUnit = 0.02 + 0.0219 + 0.0145;
+            const costoMateriaPrima = consumoMensile * (psv + spread);
+            const costiVariabili = consumoMensile * variabiliUnit;
+            return { nome: "CEI Vision (< 10.000 Smc)", costoMateriaPrima: fmt(costoMateriaPrima), quotaFissa: fmt(quotaFissa), costiVariabili: fmt(costiVariabili), totale: fmt(costoMateriaPrima + quotaFissa + costiVariabili) };
+        }
+
+        function calcolaEstraBusinessVariabile(consumoMensile, psv) {
+            const spread = 0.10, quotaFissa = 12.00;
+            const costoMateriaPrima = consumoMensile * (psv + spread);
+            return { nome: "Estra Business Variabile", costoMateriaPrima: fmt(costoMateriaPrima), quotaFissa: fmt(quotaFissa), costiVariabili: "0.00", totale: fmt(costoMateriaPrima + quotaFissa) };
+        }
+
+        function calcolaEstraBusinessFissa(consumoMensile) {
+            const prezzoFisso = 0.52, quotaFissa = 12.00;
+            const costoMateriaPrima = consumoMensile * prezzoFisso;
+            return { nome: "Estra Business Fissa", costoMateriaPrima: fmt(costoMateriaPrima), quotaFissa: fmt(quotaFissa), costiVariabili: "0.00", totale: fmt(costoMateriaPrima + quotaFissa) };
+        }
+
+        function calcolaTutteLeOfferteGasBusiness() {
+            const consumoMensile = parseFloat(document.getElementById('consumo').value) || 0;
+            const psv = parseFloat(document.getElementById('psv').value) || 0;
+
+            const ceiSuperiori = [calcolaCeiPartner(consumoMensile, psv), calcolaCeiPro(consumoMensile, psv), calcolaCeiFlex(consumoMensile, psv)];
+            const ceiInferiori = [calcolaCeiReflex(consumoMensile, psv), calcolaCeiCanon(consumoMensile, psv), calcolaCeiVision(consumoMensile, psv)];
+            const altre = [calcolaEstraBusinessVariabile(consumoMensile, psv), calcolaEstraBusinessFissa(consumoMensile)];
+
+            const tbodySuper = document.querySelector('#tabella-cei-superiore tbody');
+            const tbodyInfer = document.querySelector('#tabella-cei-inferiore tbody');
+            const tbodyAltre = document.querySelector('#tabella-altre tbody');
+
+            tbodySuper.innerHTML = "";
+            ceiSuperiori.forEach(o => tbodySuper.innerHTML += `<tr><td>${o.nome}</td><td>€ ${o.costoMateriaPrima}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.costiVariabili}</td><td>€ ${o.totale}</td></tr>`);
+            tbodyInfer.innerHTML = "";
+            ceiInferiori.forEach(o => tbodyInfer.innerHTML += `<tr><td>${o.nome}</td><td>€ ${o.costoMateriaPrima}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.costiVariabili}</td><td>€ ${o.totale}</td></tr>`);
+            tbodyAltre.innerHTML = "";
+            altre.forEach(o => tbodyAltre.innerHTML += `<tr><td>${o.nome}</td><td>€ ${o.costoMateriaPrima}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.costiVariabili}</td><td>€ ${o.totale}</td></tr>`);
+        }
+
+        window.addEventListener('load', calcolaTutteLeOfferteGasBusiness);
+    </script>
 </body>
 </html>
