@@ -4,46 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comparatore Gas Business</title>
-    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #003366; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #003366; color: white; }
+        input { padding: 8px; width: 200px; margin-bottom: 10px; }
+        button { padding: 10px 20px; background: #003366; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0055aa; }
+    </style>
 </head>
 <body>
 
-<button class="back-button" onclick="window.location.href='../dashboard.html'">⬅ Torna alla Dashboard</button>
+<h1>Comparatore Gas Business</h1>
 
-<h2 class="page-title">Comparatore Gas Business</h2>
+<label>Smc Mensili:</label>
+<input type="number" id="consumo" value="100"><br>
 
-<div class="form-container">
-    <label>Smc Mensili:</label>
-    <input type="number" id="smc" placeholder="Inserisci consumo mensile">
+<label>PSV (€/Smc):</label>
+<input type="number" step="0.01" id="psv" value="0.40"><br>
 
-    <label>PSV (€/Smc):</label>
-    <input type="number" id="psv" step="0.01" placeholder="Inserisci PSV">
+<button onclick="calcola()">Calcola</button>
 
-    <button onclick="calcola()">Calcola</button>
-</div>
+<h2>Risultati</h2>
 
-<div id="risultati" class="results-container"></div>
-
-<script>
-function calcola() {
-    let smc = parseFloat(document.getElementById("smc").value);
-    let psv = parseFloat(document.getElementById("psv").value);
-
-    if (isNaN(smc) || isNaN(psv)) {
-        alert("Inserisci valori validi!");
-        return;
-    }
-
-    // Tariffe IDENTICHE ai tuoi file
-    const offerte = [
-        { nome: "CEI Business Flex", materia: (psv + 0.18) * smc, fisso: 12, variabile: smc * 0.018 },
-        { nome: "CEI Business Pro", materia: (psv + 0.15) * smc, fisso: 15, variabile: smc * 0.016 },
-        { nome: "Estra Gas Impresa", materia: (psv + 0.17) * smc, fisso: 12, variabile: smc * 0.017 }
-    ];
-
-    let html = `
-    <h3>Risultati</h3>
-    <table>
+<table>
+    <thead>
         <tr>
             <th>Offerta</th>
             <th>Materia Prima (€)</th>
@@ -51,22 +38,56 @@ function calcola() {
             <th>Variabili (€)</th>
             <th>Totale (€)</th>
         </tr>
-    `;
+    </thead>
+    <tbody id="risultati"></tbody>
+</table>
+
+<script>
+function fmt(num) {
+    return num.toFixed(2).replace(".", ",");
+}
+
+function calcola() {
+    const smc = parseFloat(document.getElementById("consumo").value);
+    const psv = parseFloat(document.getElementById("psv").value);
+
+    const offerte = [
+        {
+            nome: "CEI Business Flex",
+            materia: smc * (psv + 0.058),
+            fisso: 12.00,
+            variabile: 1.80
+        },
+        {
+            nome: "CEI Business Pro",
+            materia: smc * (psv + 0.055),
+            fisso: 15.00,
+            variabile: 1.60
+        },
+        {
+            nome: "Estra Gas Impresa",
+            materia: smc * (psv + 0.057),
+            fisso: 12.00,
+            variabile: 1.70
+        }
+    ];
+
+    let html = "";
 
     offerte.forEach(o => {
-        let totale = o.materia + o.fisso + o.variabile;
+        const totale = o.materia + o.fisso + o.variabile;
+
         html += `
             <tr>
                 <td>${o.nome}</td>
-                <td>€ ${o.materia.toFixed(2)}</td>
-                <td>€ ${o.fisso.toFixed(2)}</td>
-                <td>€ ${o.variabile.toFixed(2)}</td>
-                <td><b>€ ${totale.toFixed(2)}</b></td>
+                <td>€ ${fmt(o.materia)}</td>
+                <td>€ ${fmt(o.fisso)}</td>
+                <td>€ ${fmt(o.variabile)}</td>
+                <td><b>€ ${fmt(totale)}</b></td>
             </tr>
         `;
     });
 
-    html += "</table>";
     document.getElementById("risultati").innerHTML = html;
 }
 </script>
