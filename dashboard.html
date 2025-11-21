@@ -3,20 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Collaboratori</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Dashboard Collaboratori - GEDE Servizi</title>
+    <style>
+        body { margin:0; font-family: Arial, sans-serif; }
+        .sidebar {
+            width: 220px; background: #00366d; color: white; height: 100vh;
+            position: fixed; padding: 20px 10px;
+        }
+        .sidebar h1 { font-size: 22px; margin-bottom:30px; }
+        .sidebar a {
+            display: block; color: white; text-decoration:none;
+            margin: 10px 0; padding:8px 12px; border-radius:4px;
+        }
+        .sidebar a:hover { background: #0055aa; }
+        .content {
+            margin-left: 240px; padding:40px;
+        }
+    </style>
 </head>
 <body>
 
 <div class="sidebar">
     <h1>GEDE Servizi</h1>
-
     <a href="comparators/business-gas.html">Business Gas</a>
     <a href="comparators/business-luce.html">Business Luce</a>
     <a href="comparators/domestico-gas.html">Domestico Gas</a>
     <a href="comparators/domestico-luce.html">Domestico Luce</a>
-
-    <!-- 🔴 BOTTONE LOGOUT RIMOSSO -->
 </div>
 
 <div class="content">
