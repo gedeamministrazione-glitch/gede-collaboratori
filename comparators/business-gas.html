@@ -1,219 +1,184 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GEDE SERVIZI - Gas Business</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparatore Gas Business</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
             margin: 0;
             padding: 0;
-            background: #f5f7fa;
+        }
+        h1 {
+            text-align: center;
+            padding: 20px;
             color: #333;
         }
-
-        header {
-            background: #003366;
-            color: white;
-            padding: 18px;
-            font-size: 22px;
-            text-align: center;
-            font-weight: bold;
-        }
-
         .container {
-            max-width: 1100px;
-            margin: 25px auto;
+            width: 90%;
+            max-width: 900px;
+            margin: auto;
             background: white;
             padding: 25px;
             border-radius: 10px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-
-        h2 {
-            color: #003366;
-            margin-bottom: 12px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
         label {
-            font-weight: 600;
+            font-weight: bold;
             display: block;
-            margin-bottom: 6px;
+            margin-top: 15px;
         }
-
         input {
             width: 100%;
             padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 16px;
+            border: 1px solid #bbb;
+            border-radius: 5px;
+            margin-top: 5px;
         }
-
         button {
-            background-color: #0066cc;
-            padding: 12px 18px;
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #007bff;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 16px;
-            margin-top: 15px;
         }
-
-        button:hover { background-color: #004c99; }
-
+        button:hover {
+            background-color: #0056b3;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 18px;
+            margin-top: 25px;
         }
-
         th, td {
             border: 1px solid #ddd;
             padding: 12px;
+            text-align: left;
         }
-
         th {
-            background: #e8f0fe;
-            font-weight: 700;
+            background-color: #007bff;
+            color: white;
         }
-
-        tr:nth-child(even) { background: #f9f9f9; }
-
-        .section-title {
-            margin-top: 30px;
-            font-size: 20px;
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .back {
+            display: inline-block;
+            margin: 15px;
+            text-decoration: none;
+            color: #007bff;
             font-weight: bold;
-            color: #004080;
-            text-align: center;
-        }
-
-        .note {
-            margin-top: 12px;
-            font-size: 14px;
-            color: #666;
-            text-align: center;
-        }
-
-        @media (max-width:700px) {
-            .grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-
 <body>
 
-<header>GEDE SERVIZI – Comparatore Gas Business</header>
+<a href="/dashboard.html" class="back">← Torna alla Dashboard</a>
+
+<h1>Comparatore Gas Business</h1>
 
 <div class="container">
 
-    <h2>Dati di Consumo</h2>
+    <label>Smc Mensili:</label>
+    <input type="number" id="consumo" value="100">
 
-    <div class="grid">
-        <div>
-            <label>Consumo Mensile (Smc)</label>
-            <input type="number" id="consumo" value="100" step="0.01">
-        </div>
-        <div>
-            <label>PSV (€/Smc)</label>
-            <input type="number" id="psv" value="0.40" step="0.0001">
-        </div>
-    </div>
+    <label>PSV (€/Smc):</label>
+    <input type="number" id="psv" value="0,40" step="0.01">
 
-    <button onclick="calcola()">Calcola Offerte</button>
+    <button onclick="calcola()">Calcola</button>
 
-    <p class="note">
-        I valori mostrati sono stime mensili **IVA e imposte escluse**.
-    </p>
+    <h2>Risultati</h2>
 
-    <div id="risultati"></div>
+    <table>
+        <thead>
+            <tr>
+                <th>Offerta</th>
+                <th>Materia Prima (€)</th>
+                <th>Quota Fissa (€)</th>
+                <th>Variabili (€)</th>
+                <th>Totale (€)</th>
+            </tr>
+        </thead>
+        <tbody id="risultati"></tbody>
+    </table>
 
 </div>
 
 <script>
-
-function fmt(n) { return parseFloat(n).toFixed(2); }
-
-// ---- MODELLI DI TARIFFE ---- //
-
-function CEI(name, spread, qf, varUnit, consumo, psv) {
-    const materia = consumo * (psv + spread);
-    const variabili = consumo * varUnit;
-    const totale = materia + variabili + qf;
-
-    return `
-        <tr>
-            <td>${name}</td>
-            <td>€ ${fmt(materia)}</td>
-            <td>€ ${fmt(qf)}</td>
-            <td>€ ${fmt(variabili)}</td>
-            <td><b>€ ${fmt(totale)}</b></td>
-        </tr>`;
-}
-
-function Estra(name, prezzo, qf, consumo) {
-    const materia = consumo * prezzo;
-    const totale = materia + qf;
-
-    return `
-        <tr>
-            <td>${name}</td>
-            <td>€ ${fmt(materia)}</td>
-            <td>€ ${fmt(qf)}</td>
-            <td>€ 0.00</td>
-            <td><b>€ ${fmt(totale)}</b></td>
-        </tr>`;
-}
-
-// ---- CALCOLO PRINCIPALE ---- //
-
 function calcola() {
-
     const consumo = parseFloat(document.getElementById("consumo").value);
-    const psv = parseFloat(document.getElementById("psv").value);
+    const psv = parseFloat(document.getElementById("psv").value.replace(",", "."));
 
-    let html = `
-        <h2 class="section-title">Risultati Comparazione</h2>
+    const offerte = [
+        {
+            nome: "CEI Partner (> 10.000 Smc)",
+            mp: consumo * (psv + 0.12),
+            fissa: 14,
+            var: consumo * 0.0564
+        },
+        {
+            nome: "CEI Pro (> 10.000 Smc)",
+            mp: consumo * (psv + 0.10),
+            fissa: 14,
+            var: consumo * 0.0564
+        },
+        {
+            nome: "CEI Flex (> 10.000 Smc)",
+            mp: consumo * (psv + 0.08),
+            fissa: 14,
+            var: consumo * 0.0564
+        },
+        {
+            nome: "CEI Reflex (< 10.000 Smc)",
+            mp: consumo * (psv + 0.08),
+            fissa: 26,
+            var: consumo * 0.1064
+        },
+        {
+            nome: "CEI Canon (< 10.000 Smc)",
+            mp: consumo * (psv + 0.08),
+            fissa: 19.5,
+            var: consumo * 0.0864
+        },
+        {
+            nome: "CEI Vision (< 10.000 Smc)",
+            mp: consumo * (psv + 0.09),
+            fissa: 15,
+            var: consumo * 0.0564
+        },
+        {
+            nome: "Estra Business Variabile",
+            mp: consumo * (psv + 0.10),
+            fissa: 12,
+            var: 0
+        },
+        {
+            nome: "Estra Business Fissa",
+            mp: consumo * 0.52,
+            fissa: 12,
+            var: 0
+        }
+    ];
 
-        <table>
+    let html = "";
+    offerte.forEach(o => {
+        const totale = o.mp + o.fissa + o.var;
+        html += `
             <tr>
-                <th>Offerta</th>
-                <th>Materia Prima</th>
-                <th>Quota Fissa</th>
-                <th>Variabili</th>
-                <th>Totale</th>
-            </tr>
-    `;
-
-    // CEI > 10.000 Smc – Spread e Quote corrette
-    html += CEI("CEI Partner (>10.000 Smc)", 0.120, 14, 0.0564, consumo, psv);
-    html += CEI("CEI Pro (>10.000 Smc)", 0.100, 14, 0.0564, consumo, psv);
-    html += CEI("CEI Flex (>10.000 Smc)", 0.080, 14, 0.0564, consumo, psv);
-
-    // CEI < 10.000 Smc
-    html += CEI("CEI Reflex (<10.000 Smc)", 0.080, 26, 0.1064, consumo, psv);
-    html += CEI("CEI Canon (<10.000 Smc)", 0.080, 19.50, 0.0864, consumo, psv);
-    html += CEI("CEI Vision (<10.000 Smc)", 0.090, 15, 0.0564, consumo, psv);
-
-    // Estra
-    html += Estra("Estra Business Variabile", psv + 0.10, 12, consumo);
-    html += Estra("Estra Business Fissa", 0.52, 12, consumo);
-
-    html += `</table>`;
+                <td>${o.nome}</td>
+                <td>€ ${o.mp.toFixed(2)}</td>
+                <td>€ ${o.fissa.toFixed(2)}</td>
+                <td>€ ${o.var.toFixed(2)}</td>
+                <td><b>€ ${totale.toFixed(2)}</b></td>
+            </tr>`;
+    });
 
     document.getElementById("risultati").innerHTML = html;
 }
-
-window.onload = calcola;
-
 </script>
 
 </body>
