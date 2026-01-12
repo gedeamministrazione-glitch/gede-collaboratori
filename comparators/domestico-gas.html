@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Comparatore Offerte Gas Domestico</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; line-height: 1.6; }
     h1 { text-align: center; color: #444; margin-bottom: 30px; }
-    .input-section, .results-section { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .input-section, .results-section { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto; }
     .input-group { margin-bottom: 18px; }
     .input-group label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
     .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
     button { display: block; width: 100%; background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; font-size: 1.1rem; margin-top: 20px; }
     button:hover { background-color: #0056b3; }
     table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: top; }
     th { background-color: #f2f2f2; font-weight: bold; color: #333; }
     tr:nth-child(even) { background-color: #f9f9f9; }
     tr:hover { background-color: #e9e9e9; }
     .print-button { display: block; width: auto; margin: 20px auto; padding: 10px 15px; background-color: #6c757d; border: none; color: white; border-radius: 5px; cursor: pointer; font-size: 1rem; text-align: center; }
     .print-button:hover { background-color: #5a6268; }
     #footer { text-align: center; padding-top: 20px; margin-top: 30px; border-top: 1px solid #ccc; color: #777; font-size: 0.9rem; }
+    .note { font-size: 0.95rem; color: #666; margin-top: 10px; }
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef3ff; color:#2d4bff; font-size:0.85rem; margin-left:6px; }
   </style>
 </head>
 <body>
@@ -30,33 +32,46 @@
 
   <div class="input-section">
     <h2>Inserisci i tuoi dati di consumo</h2>
+
     <div class="input-group">
       <label for="consumo">Consumo mensile (Smc):</label>
-      <input type="number" id="consumo" value="100" step="0.01">
+      <input type="number" id="consumo" value="100" step="0.01" />
     </div>
+
     <div class="input-group">
-      <label for="psv">PSV (€/Smc):</label>
-      <input type="number" id="psv" value="0.40" step="0.001">
+      <label for="psv">Indice Gas (€/Smc) <span class="badge">PSV/ICIS</span>:</label>
+      <input type="number" id="psv" value="0.40" step="0.0001" />
+      <div class="note">
+        Nota: l’“Indice Gas” è il valore mensile che inserisci tu (es. PSV, oppure ICIS PSV Day-Ahead se vuoi replicare l’offerta Estra Natura).
+        I calcoli mostrano una stima mensile riferita alla componente vendita (Materia Prima + quote/corrispettivi di vendita) e sono <b>IVA e imposte escluse</b>.
+      </div>
     </div>
+
     <button onclick="calcolaTutteLeOfferteGas()">Calcola Offerte</button>
   </div>
 
   <div class="results-section">
     <h2>Risultati Comparazione Mensile Stimata</h2>
+
     <table id="risultati-tabella-gas">
       <thead>
         <tr>
           <th>Offerta</th>
           <th>Costo Materia Prima (€)</th>
           <th>Quota Fissa (€)</th>
-          <th>Costi di Commercializzazione (€)</th>
+          <th>Costi di Commercializzazione / Servizi vendita (€)</th>
           <th>Sconti/Bonus (€)</th>
           <th>Totale stimato (€)</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
+
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
+
+    <div class="note" style="margin-top:14px;">
+      Nota: non include trasporto, distribuzione, misura, oneri di sistema ARERA, né eventuali componenti legate a morosità/servizi accessori.
+    </div>
   </div>
 
   <div id="footer">
@@ -64,104 +79,132 @@
   </div>
 
   <script>
-    // ESTRA FISSA GAS
+    function fmt(n) {
+      const x = Number(n);
+      if (!isFinite(x)) return "0.00";
+      return x.toFixed(2);
+    }
+
+    // =========================
+    // ESTRA - DOMESTICO GAS
+    // =========================
+
+    // ESTRA FISSA GAS (CTE: P = 0,429 €/Smc; quota fissa 132 €/anno; sconto domiciliazione 2 €/mese)
     function calcolaEstraFissa(consumo) {
-      const prezzoFisso = 0.459; // €/Smc da CTE
-      const costoMateriaPrimaNum = consumo * prezzoFisso;
-      const quotaFissaNum = 132 / 12; // 132 €/anno = 11 €/mese
-      const scontoNum = -2; // -2 €/mese con domiciliazione
-      const totaleNum = costoMateriaPrimaNum + quotaFissaNum + scontoNum;
+      const prezzoFisso = 0.429; // €/Smc
+      const quotaFissaMensile = 132 / 12; // €/mese
+      const scontoMensile = 2.00; // €/mese (in bolletta, se domiciliazione)
+
+      const costoMateriaPrima = consumo * prezzoFisso;
+      const totale = costoMateriaPrima + quotaFissaMensile - scontoMensile;
 
       return {
         nome: "Estra Fissa Gas",
-        costoMateriaPrima: costoMateriaPrimaNum.toFixed(2),
-        quotaFissa: quotaFissaNum.toFixed(2),
-        costiCommercializzazione: "0.00",
-        sconto: scontoNum.toFixed(2),
-        totale: totaleNum.toFixed(2)
+        costoMateriaPrima: fmt(costoMateriaPrima),
+        quotaFissa: fmt(quotaFissaMensile),
+        costiCommercializzazione: fmt(0),
+        sconto: fmt(-scontoMensile),
+        totale: fmt(totale)
       };
     }
 
-    // ESTRA NATURA GAS
-    function calcolaEstraNatura(consumo, psv) {
-      const spread = 0.10; // €/Smc da CTE
-      const costoMateriaPrimaNum = consumo * (psv + spread);
-      const quotaFissaNum = 132 / 12; // 11 €/mese
-      const scontoNum = -2; // -2 €/mese con domiciliazione
-      const totaleNum = costoMateriaPrimaNum + quotaFissaNum + scontoNum;
+    // ESTRA NATURA GAS (CTE: Indice ICIS PSV Day-Ahead (input) + spread 0,09 €/Smc; quota fissa 132 €/anno; sconto 2 €/mese)
+    function calcolaEstraNatura(consumo, indiceGas) {
+      const spread = 0.09; // €/Smc
+      const quotaFissaMensile = 132 / 12; // €/mese
+      const scontoMensile = 2.00; // €/mese
+
+      const costoMateriaPrima = consumo * (indiceGas + spread);
+      const totale = costoMateriaPrima + quotaFissaMensile - scontoMensile;
 
       return {
         nome: "Estra Natura Gas",
-        costoMateriaPrima: costoMateriaPrimaNum.toFixed(2),
-        quotaFissa: quotaFissaNum.toFixed(2),
-        costiCommercializzazione: "0.00",
-        sconto: scontoNum.toFixed(2),
-        totale: totaleNum.toFixed(2)
+        costoMateriaPrima: fmt(costoMateriaPrima),
+        quotaFissa: fmt(quotaFissaMensile),
+        costiCommercializzazione: fmt(0),
+        sconto: fmt(-scontoMensile),
+        totale: fmt(totale)
       };
     }
 
-    // CEI TURBO
-    function calcolaCeiTurbo(consumo, psv) {
-      const costoMateriaPrimaNum = consumo * psv;
-      const quotaFissaNum = 20; // €/mese da CTE
-      const variabiliNum = (0.0219 + 0.0145) * consumo; // CcP + CrA
-      const totaleNum = costoMateriaPrimaNum + quotaFissaNum + variabiliNum;
+    // =========================
+    // CEI - PLACET GAS (DOMESTICO)
+    // NB: Spread = 0 nelle CTE allegate
+    // =========================
+
+    // CEI GO (CTE: quota fissa pdr 7,5 €/mese + quota fissa comm 5,5 €/mese = 13 €/mese
+    //         variabili: 0,03 + 0,02 + 0,0219 + 0,0145 = 0,0864 €/Smc)
+    function calcolaCeiGo(consumo, indiceGas) {
+      const quotaFissaMensile = 7.5 + 5.5; // €/mese
+      const variabiliUnit = 0.03 + 0.02 + 0.0219 + 0.0145; // €/Smc
+
+      const costoMateriaPrima = consumo * indiceGas;
+      const costiVenditaVariabili = consumo * variabiliUnit;
+      const totale = costoMateriaPrima + quotaFissaMensile + costiVenditaVariabili;
 
       return {
-        nome: "CEI Turbo",
-        costoMateriaPrima: costoMateriaPrimaNum.toFixed(2),
-        quotaFissa: quotaFissaNum.toFixed(2),
-        costiCommercializzazione: variabiliNum.toFixed(2),
-        sconto: "0.00",
-        totale: totaleNum.toFixed(2)
+        nome: "CEI Go (PLACET Gas)",
+        costoMateriaPrima: fmt(costoMateriaPrima),
+        quotaFissa: fmt(quotaFissaMensile),
+        costiCommercializzazione: fmt(costiVenditaVariabili),
+        sconto: fmt(0),
+        totale: fmt(totale)
       };
     }
 
-    // CEI BOOST
-    function calcolaCeiBoost(consumo, psv) {
-      const costoMateriaPrimaNum = consumo * psv;
-      const quotaFissaNum = 15; // €/mese da CTE
-      const variabiliNum = (0.0219 + 0.0145) * consumo; // CcP + CrA
-      const totaleNum = costoMateriaPrimaNum + quotaFissaNum + variabiliNum;
+    // CEI BOOST (CTE: quota fissa pdr 8 €/mese + quota fissa comm 7 €/mese = 15 €/mese
+    //           variabili: 0,0219 + 0,0145 + 0,06 = 0,0964 €/Smc)
+    function calcolaCeiBoost(consumo, indiceGas) {
+      const quotaFissaMensile = 8 + 7; // €/mese
+      const variabiliUnit = 0.0219 + 0.0145 + 0.06; // €/Smc
+
+      const costoMateriaPrima = consumo * indiceGas;
+      const costiVenditaVariabili = consumo * variabiliUnit;
+      const totale = costoMateriaPrima + quotaFissaMensile + costiVenditaVariabili;
 
       return {
-        nome: "CEI Boost",
-        costoMateriaPrima: costoMateriaPrimaNum.toFixed(2),
-        quotaFissa: quotaFissaNum.toFixed(2),
-        costiCommercializzazione: variabiliNum.toFixed(2),
-        sconto: "0.00",
-        totale: totaleNum.toFixed(2)
+        nome: "CEI Boost (PLACET Gas)",
+        costoMateriaPrima: fmt(costoMateriaPrima),
+        quotaFissa: fmt(quotaFissaMensile),
+        costiCommercializzazione: fmt(costiVenditaVariabili),
+        sconto: fmt(0),
+        totale: fmt(totale)
       };
     }
 
-    // CEI GO
-    function calcolaCeiGo(consumo, psv) {
-      const costoMateriaPrimaNum = consumo * psv;
-      const quotaFissaNum = 12; // €/mese da CTE
-      const variabiliNum = (0.0219 + 0.0145) * consumo; // CcP + CrA
-      const totaleNum = costoMateriaPrimaNum + quotaFissaNum + variabiliNum;
+    // CEI TURBO (CTE: quota fissa pdr 12 €/mese + quota fissa comm 10 €/mese = 22 €/mese
+    //           variabili: 0,05 + 0,0219 + 0,0145 + 0,03 = 0,1164 €/Smc)
+    function calcolaCeiTurbo(consumo, indiceGas) {
+      const quotaFissaMensile = 12 + 10; // €/mese
+      const variabiliUnit = 0.05 + 0.0219 + 0.0145 + 0.03; // €/Smc
+
+      const costoMateriaPrima = consumo * indiceGas;
+      const costiVenditaVariabili = consumo * variabiliUnit;
+      const totale = costoMateriaPrima + quotaFissaMensile + costiVenditaVariabili;
 
       return {
-        nome: "CEI Go",
-        costoMateriaPrima: costoMateriaPrimaNum.toFixed(2),
-        quotaFissa: quotaFissaNum.toFixed(2),
-        costiCommercializzazione: variabiliNum.toFixed(2),
-        sconto: "0.00",
-        totale: totaleNum.toFixed(2)
+        nome: "CEI Turbo (PLACET Gas)",
+        costoMateriaPrima: fmt(costoMateriaPrima),
+        quotaFissa: fmt(quotaFissaMensile),
+        costiCommercializzazione: fmt(costiVenditaVariabili),
+        sconto: fmt(0),
+        totale: fmt(totale)
       };
     }
 
+    // =========================
     // CALCOLO TUTTE LE OFFERTE
+    // =========================
     function calcolaTutteLeOfferteGas() {
       const consumo = parseFloat(document.getElementById('consumo').value) || 0;
-      const psv = parseFloat(document.getElementById('psv').value) || 0;
+      const indiceGas = parseFloat(document.getElementById('psv').value) || 0;
 
       const offerte = [
         calcolaEstraFissa(consumo),
-        calcolaEstraNatura(consumo, psv),
-        calcolaCeiTurbo(consumo, psv),
-        calcolaCeiBoost(consumo, psv),
-        calcolaCeiGo(consumo, psv)
+        calcolaEstraNatura(consumo, indiceGas),
+        calcolaCeiTurbo(consumo, indiceGas),
+        calcolaCeiBoost(consumo, indiceGas),
+        calcolaCeiGo(consumo, indiceGas),
       ];
 
       const tabellaBody = document.querySelector('#risultati-tabella-gas tbody');
