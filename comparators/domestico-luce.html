@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -21,6 +22,8 @@
     .print-button { display: block; width: auto; margin: 20px auto; padding: 10px 15px; background-color: #6c757d; border: none; color: white; border-radius: 5px; cursor: pointer; font-size: 1rem; text-align: center; }
     .print-button:hover { background-color: #5a6268; }
     #footer { text-align: center; padding-top: 20px; margin-top: 30px; border-top: 1px solid #ccc; color: #777; font-size: 0.9rem; }
+    .note { font-size: 0.95rem; color: #666; margin-top: 10px; }
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:0.85rem; margin-left:6px; }
   </style>
 </head>
 <body>
@@ -32,12 +35,15 @@
     <h2>Inserisci i tuoi dati di consumo</h2>
     <div class="input-group">
       <label for="consumo">Consumo mensile (kWh):</label>
-      <input type="number" id="consumo" value="225" step="0.01">
+      <input type="number" id="consumo" value="225" step="0.01" min="0">
     </div>
     <div class="input-group">
-      <label for="pun">PUN (€/kWh):</label>
-      <input type="number" id="pun" value="0.12" step="0.001">
+      <label for="pun">PUN (€/kWh) <span class="badge">puro</span>:</label>
+      <input type="number" id="pun" value="0.12" step="0.001" min="0">
     </div>
+    <p class="note">
+      Nota: il PUN inserito è considerato <b>puro</b> (senza perdite). Le offerte indicizzate che prevedono perdite applicano <b>×1,10</b>.
+    </p>
     <button onclick="calcolaTutteLeOfferteLuce()">Calcola Offerte</button>
   </div>
 
@@ -63,96 +69,156 @@
   </div>
 
   <script>
-    // ---------- ESTRA ----------
-    function calcolaEstraFissa(consumo, pun) {
-      // Prezzo fisso da contratto: 0,1562 €/kWh - Corrispettivo commerc.: 132 €/anno
-      const prezzoFisso = 0.1562;
-      const costoMateriaPrima = (consumo * prezzoFisso).toFixed(2);
+    /***************************************************************
+     * IMPOSTAZIONI GENERALI
+     ***************************************************************/
+    // Perdite rete BT (se PUN è "puro")
+    const LOSS_MULTIPLIER_BT = 1.10;
 
-      // 132 €/anno -> quota mensile
-      const costiComm = (132 / 12).toFixed(2);
+    // Helper: arrotondamento 2 decimali come number
+    const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-      // Sconto domiciliazione: 24 €/anno -> 2 €/mese
-      const sconto = 2.00;
-
-      const totale = (parseFloat(costoMateriaPrima) + parseFloat(costiComm) - sconto).toFixed(2);
+    function makeResult(nome, costoMateriaPrima, costiComm, sconto) {
+      const totale = costoMateriaPrima + costiComm - sconto;
       return {
-        nome: "Estra Fissa Luce",
-        costoMateriaPrima,
-        costiCommercializzazione: costiComm,
-        sconti: (-sconto).toFixed(2),
-        totale
+        nome,
+        costoMateriaPrima: round2(costoMateriaPrima).toFixed(2),
+        costiCommercializzazione: round2(costiComm).toFixed(2),
+        sconti: (-round2(sconto)).toFixed(2),
+        totale: round2(totale).toFixed(2)
       };
     }
 
-    function calcolaEstraNatura(consumo, pun) {
-      // Spread contrattuale: 0,033 €/kWh
-      const spread = 0.033;
-      const costoMateriaPrima = (consumo * (pun + spread)).toFixed(2);
+    /***************************************************************
+     * PARAMETRI "ARERA / SISTEMA" (valori che cambiano nel tempo)
+     * In questo file li lasciamo fissi come da CTE caricate.
+     ***************************************************************/
 
-      // Corrispettivo fisso: 133,3151 €/anno -> quota mensile
-      const costiComm = (133.3151 / 12).toFixed(2);
+    // ESTRA (valori indicati nelle tue nuove CTE)
+    const ESTRA_DISP_KWH = 0.01078;
+    const ESTRA_CAPACITA_KWH = 0.009008;
 
-      // Sconto domiciliazione: 24 €/anno -> 2 €/mese
+    // CEI (valori indicati nelle tue nuove CTE)
+    const CEI_DISP_KWH = 0.010780;
+    const CEI_CAPACITA_KWH = 0.008189;
+
+    /***************************************************************
+     * OFFERTA: ESTRA FISSA LUCE (nuove CTE)
+     ***************************************************************/
+    function calcolaEstraFissa(consumoKwh, punPuro) {
+      // Prezzo fisso energia (€/kWh) – già al lordo delle perdite secondo CTE
+      const prezzoEnergiaFisso = 0.1507;
+
+      // Componenti aggiuntive in quota energia
+      const prezzoKwhTot =
+        prezzoEnergiaFisso +
+        ESTRA_DISP_KWH +
+        ESTRA_CAPACITA_KWH;
+
+      const costoMateriaPrima = consumoKwh * prezzoKwhTot;
+
+      // PCV/Commercializzazione: 132 €/anno
+      const costiComm = 132 / 12;
+
+      // Sconto SDD: 24 €/anno -> 2 €/mese
       const sconto = 2.00;
 
-      const totale = (parseFloat(costoMateriaPrima) + parseFloat(costiComm) - sconto).toFixed(2);
-      return {
-        nome: "Estra Natura Luce",
-        costoMateriaPrima,
-        costiCommercializzazione: costiComm,
-        sconti: (-sconto).toFixed(2),
-        totale
-      };
+      return makeResult("Estra Fissa Luce", costoMateriaPrima, costiComm, sconto);
     }
 
-    // ---------- CEI PLACET ----------
-    function calcolaCei(consumo, pun, quotaMensile) {
-      // CEI PLACET: Spread energia = 0, ma ci sono CcP + CsP + CrA = 0,01264 €/kWh
-      const oneriVariabili = 0.01264;
+    /***************************************************************
+     * OFFERTA: ESTRA NATURA LUCE (nuove CTE)
+     ***************************************************************/
+    function calcolaEstraNatura(consumoKwh, punPuro) {
+      // Prezzo energia: PUN * 1,10 + spread
+      const spread = 0.0319;
 
-      // PUN (input utente) + oneri variabili €/kWh
-      const costoMateriaPrima = (consumo * (pun + oneriVariabili)).toFixed(2);
+      const prezzoKwhTot =
+        (punPuro * LOSS_MULTIPLIER_BT) +
+        spread +
+        ESTRA_DISP_KWH +
+        ESTRA_CAPACITA_KWH;
 
-      // Quota fissa mensile (12, 15, 20 €/mese a seconda dell'offerta)
-      const costiComm = quotaMensile.toFixed(2);
+      const costoMateriaPrima = consumoKwh * prezzoKwhTot;
 
+      // PCV/Commercializzazione: 132 €/anno
+      const costiComm = 132 / 12;
+
+      // Sconto SDD: 2 €/mese
+      const sconto = 2.00;
+
+      return makeResult("Estra Natura Luce", costoMateriaPrima, costiComm, sconto);
+    }
+
+    /***************************************************************
+     * OFFERTE: CEI (GO / BOOST / TURBO) (nuove CTE)
+     * Struttura:
+     * - Energia: PUN * 1,10 (perdite)
+     * - + dispacciamento
+     * - + mercato capacità
+     * - + componenti variabili specifiche (CcP/CsP/CrA/altre)
+     * - Quote fisse mensili specifiche
+     ***************************************************************/
+    function calcolaCeiBase(consumoKwh, punPuro, nome, quotaFissaMensile, extraVariabiliKwh) {
+      const prezzoKwhTot =
+        (punPuro * LOSS_MULTIPLIER_BT) +
+        CEI_DISP_KWH +
+        CEI_CAPACITA_KWH +
+        extraVariabiliKwh;
+
+      const costoMateriaPrima = consumoKwh * prezzoKwhTot;
+
+      const costiComm = quotaFissaMensile;
       const sconto = 0.00;
-      const totale = (parseFloat(costoMateriaPrima) + parseFloat(costiComm) - sconto).toFixed(2);
 
-      return {
-        costoMateriaPrima,
-        costiCommercializzazione: costiComm,
-        sconti: (-sconto).toFixed(2),
-        totale
-      };
+      return makeResult(nome, costoMateriaPrima, costiComm, sconto);
     }
 
-    function calcolaCeiGo(consumo, pun) {
-      // GO: 12 €/mese fissi
-      const r = calcolaCei(consumo, pun, 12);
-      r.nome = "CEI Go Luce";
-      return r;
+    function calcolaCeiGo(consumoKwh, punPuro) {
+      // Fissi: 5,5 + 8 = 13,5 €/mese
+      const fissi = 5.5 + 8;
+
+      // Variabili: CsP 0,0095 + CrA 0,00235
+      const extra = 0.0095 + 0.00235;
+
+      return calcolaCeiBase(consumoKwh, punPuro, "CEI Go Luce", fissi, extra);
     }
 
-    function calcolaCeiBoost(consumo, pun) {
-      // BOOST: 15 €/mese fissi
-      const r = calcolaCei(consumo, pun, 15);
-      r.nome = "CEI Boost Luce";
-      return r;
+    function calcolaCeiBoost(consumoKwh, punPuro) {
+      // Fissi: 7 + 8,5 = 15,5 €/mese
+      const fissi = 7 + 8.5;
+
+      // Variabili: CcP 0,00219 + CrA 0,00235 + CsP 0,0095
+      const extra = 0.00219 + 0.00235 + 0.0095;
+
+      return calcolaCeiBase(consumoKwh, punPuro, "CEI Boost Luce", fissi, extra);
     }
 
-    function calcolaCeiTurbo(consumo, pun) {
-      // TURBO: 20 €/mese fissi
-      const r = calcolaCei(consumo, pun, 20);
-      r.nome = "CEI Turbo Luce";
-      return r;
+    function calcolaCeiTurbo(consumoKwh, punPuro) {
+      // Fissi: 12 + 10 = 22 €/mese
+      const fissi = 12 + 10;
+
+      // Variabili: 0,003 + CcP 0,00219 + CrA 0,00235 + CsP 0,0095
+      const extra = 0.003 + 0.00219 + 0.00235 + 0.0095;
+
+      return calcolaCeiBase(consumoKwh, punPuro, "CEI Turbo Luce", fissi, extra);
     }
 
-    // ---------- CALCOLO TOTALE ----------
+    /***************************************************************
+     * CALCOLO TOTALE + RENDER TABELLA
+     ***************************************************************/
     function calcolaTutteLeOfferteLuce() {
       const consumo = parseFloat(document.getElementById('consumo').value);
       const pun = parseFloat(document.getElementById('pun').value);
+
+      if (Number.isNaN(consumo) || consumo < 0) {
+        alert("Inserisci un consumo mensile valido (kWh).");
+        return;
+      }
+      if (Number.isNaN(pun) || pun < 0) {
+        alert("Inserisci un PUN valido (€/kWh).");
+        return;
+      }
 
       const offerte = [
         calcolaEstraFissa(consumo, pun),
@@ -182,3 +248,4 @@
   </script>
 </body>
 </html>
+
