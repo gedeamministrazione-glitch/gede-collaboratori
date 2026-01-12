@@ -42,8 +42,17 @@
       <input type="number" id="pun" value="0.12" step="0.001" min="0">
     </div>
 
+    <div class="input-group">
+      <label for="tensione">Tensione di fornitura:</label>
+      <select id="tensione">
+        <option value="BT" selected>BT - Bassa Tensione</option>
+        <option value="MT">MT - Media Tensione</option>
+      </select>
+    </div>
+
     <p class="note">
-      Nota: il PUN inserito è considerato <b>puro</b> (senza perdite). Le offerte indicizzate applicano <b>×1,10</b> (perdite BT).
+      Nota: il PUN inserito è considerato <b>puro</b> (senza perdite).
+      In BT applichiamo perdite <b>10%</b> (×1,10); in MT perdite <b>3,8%</b> (×1,038).
     </p>
 
     <button onclick="calcolaTutteLeOfferte()">Calcola Offerte</button>
@@ -93,7 +102,7 @@
 
     <p class="note">
       Nota: i totali stimati includono <b>solo</b> i costi di vendita su base mensile (Materia Prima e Quota Fissa),
-      includendo perdite (×1,10), dispacciamento e mercato capacità.
+      includendo perdite (BT/MT), dispacciamento e mercato capacità (valori di sistema).
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
     </p>
   </div>
@@ -102,9 +111,31 @@
 
   <script>
     /***************************************************************
-     * IMPOSTAZIONI GENERALI
+     * COEFFICIENTI PERDITE (PUN PURO -> PUN "con perdite")
+     * BT: 10% (x 1,10) | MT: 3,8% (x 1,038)
      ***************************************************************/
-    const LOSS_MULTIPLIER_BT = 1.10;
+    const LOSS_MULTIPLIER = {
+      BT: 1.10,
+      MT: 1.038
+    };
+
+    /***************************************************************
+     * DISPACCIAMENTO + MERCATO CAPACITÀ (valori copiati dalle CTE ESTRA)
+     * Per ora li usiamo uguali in BT/MT per non “inventare” differenze.
+     * Se in futuro vuoi differenziarli, cambia solo questi numeri.
+     ***************************************************************/
+    const DISP_KWH = {
+      BT: 0.01078,
+      MT: 0.01078
+    };
+
+    const CAPACITA_KWH = {
+      BT: 0.009008,
+      MT: 0.009008
+    };
+
+    // Estra: costo GO (da CTE)
+    const ESTRA_GO_KWH = 0.011;
 
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
@@ -118,97 +149,97 @@
       };
     }
 
-    /***************************************************************
-     * PARAMETRI “SISTEMA” (copiati dalle CTE ESTRA per aggiornare subito)
-     * - Dispacciamento: 0,01078 €/kWh
-     * - Mercato capacità: 0,009008 €/kWh
-     ***************************************************************/
-    const DISP_KWH = 0.01078;
-    const CAPACITA_KWH = 0.009008;
+    function getTensione() {
+      const t = document.getElementById('tensione').value;
+      return (t === "MT") ? "MT" : "BT";
+    }
 
-    // Estra: costo GO indicato nelle CTE business
-    const ESTRA_GO_KWH = 0.011;
+    function prezzoIndicizzatoKwh(punPuro, spread, variabiliOfferta, tensione, includePerdite = true) {
+      const loss = LOSS_MULTIPLIER[tensione] ?? LOSS_MULTIPLIER.BT;
+      const punEff = includePerdite ? (punPuro * loss) : punPuro;
 
-    function prezzoIndicizzatoKwh(punPuro, spread, variabiliOfferta, includePerdite = true) {
-      const punEff = includePerdite ? (punPuro * LOSS_MULTIPLIER_BT) : punPuro;
-      return punEff + spread + variabiliOfferta + DISP_KWH + CAPACITA_KWH;
+      const disp = DISP_KWH[tensione] ?? DISP_KWH.BT;
+      const cap = CAPACITA_KWH[tensione] ?? CAPACITA_KWH.BT;
+
+      return punEff + spread + variabiliOfferta + disp + cap;
     }
 
     /***************************************************************
      * CEI < 30.000 kWh
      ***************************************************************/
-    function calcolaCeiReflex(consumo, pun) {
+    function calcolaCeiReflex(consumo, pun, tensione) {
       const spread = 0.014;
       const quotaFissa = 26.5;
       const variabili = 0.002 + 0.0035 + 0.00219;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
       return resultRow("CEI REFLEX (< 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
     }
 
-    function calcolaCanon(consumo, pun) {
+    function calcolaCanon(consumo, pun, tensione) {
       const spread = 0.012;
       const quotaFissa = 19.5;
       const variabili = 0.002 + 0.0035 + 0.00219;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
       return resultRow("CEI CANON (< 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
     }
 
-    function calcolaVision(consumo, pun) {
+    function calcolaVision(consumo, pun, tensione) {
       const spread = 0.012;
       const quotaFissa = 16.0;
       const variabili = 0.002 + 0.0035;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
       return resultRow("CEI VISION (< 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
     }
 
     /***************************************************************
      * CEI > 30.000 kWh
      ***************************************************************/
-    function calcolaCeiPartner(consumo, pun) {
+    function calcolaCeiPartner(consumo, pun, tensione) {
       const spread = 0.0130;
       const quotaFissa = 15;
       const variabili = 0.00185 + 0.0035;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
       return resultRow("CEI PARTNER (> 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
     }
 
-    function calcolaCeiFlex(consumo, pun) {
+    function calcolaCeiFlex(consumo, pun, tensione) {
       const spread = 0.0090;
       const quotaFissa = 15;
       const variabili = 0.002 + 0.0035;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
       return resultRow("CEI FLEX (> 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
     }
 
-    function calcolaCeiPro(consumo, pun) {
+    function calcolaCeiPro(consumo, pun, tensione) {
       const spread = 0.0110;
       const quotaFissa = 15;
       const variabili = 0.002 + 0.0035;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
       return resultRow("CEI PRO (> 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
     }
 
     /***************************************************************
-     * ESTRA (da CTE)
+     * ESTRA
      ***************************************************************/
-    function calcolaEstraTrendUnica(consumo, pun) {
+    function calcolaEstraTrendUnica(consumo, pun, tensione) {
       const spread = 0.0242;
       const quotaFissa = 168.084 / 12;
 
-      // Trend: PUN*1,10 + spread + GO + disp + capacità
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread + ESTRA_GO_KWH, 0.0, true);
-
+      // Trend: PUN con perdite + spread + GO + disp + capacità
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread + ESTRA_GO_KWH, 0.0, tensione, true);
       return resultRow("ESTRA TREND UNICA VARIABILE", prezzoKwh * consumo, quotaFissa);
     }
 
-    function calcolaEstraRelaxUnica(consumo) {
-      // Relax: prezzo fisso energia P = 0,143 €/kWh
-      // + GO + disp + capacità
-      // Nota: CTE indica corrispettivi al lordo perdite -> NON applico *1,10 qui
+    function calcolaEstraRelaxUnica(consumo, tensione) {
+      // Relax: prezzo fisso energia + GO + disp + capacità
+      // Nota: se la fissa è “al lordo perdite” NON va moltiplicata.
       const prezzoFissoEnergia = 0.143;
       const quotaFissa = 168.084 / 12;
 
-      const prezzoKwhTot = prezzoFissoEnergia + ESTRA_GO_KWH + DISP_KWH + CAPACITA_KWH;
+      const disp = DISP_KWH[tensione] ?? DISP_KWH.BT;
+      const cap = CAPACITA_KWH[tensione] ?? CAPACITA_KWH.BT;
+
+      const prezzoKwhTot = prezzoFissoEnergia + ESTRA_GO_KWH + disp + cap;
       return resultRow("ESTRA RELAX UNICA FISSA", prezzoKwhTot * consumo, quotaFissa);
     }
 
@@ -227,6 +258,7 @@
     function calcolaTutteLeOfferte() {
       const consumoMensile = parseFloat(document.getElementById('consumo').value);
       const pun = parseFloat(document.getElementById('pun').value);
+      const tensione = getTensione();
 
       if (Number.isNaN(consumoMensile) || consumoMensile < 0) {
         alert("Inserisci un consumo mensile valido (kWh).");
@@ -238,20 +270,20 @@
       }
 
       const ceiSuperiori = [
-        calcolaCeiPartner(consumoMensile, pun),
-        calcolaCeiPro(consumoMensile, pun),
-        calcolaCeiFlex(consumoMensile, pun)
+        calcolaCeiPartner(consumoMensile, pun, tensione),
+        calcolaCeiPro(consumoMensile, pun, tensione),
+        calcolaCeiFlex(consumoMensile, pun, tensione)
       ];
 
       const ceiInferiori = [
-        calcolaCeiReflex(consumoMensile, pun),
-        calcolaCanon(consumoMensile, pun),
-        calcolaVision(consumoMensile, pun)
+        calcolaCeiReflex(consumoMensile, pun, tensione),
+        calcolaCanon(consumoMensile, pun, tensione),
+        calcolaVision(consumoMensile, pun, tensione)
       ];
 
       const altre = [
-        calcolaEstraTrendUnica(consumoMensile, pun),
-        calcolaEstraRelaxUnica(consumoMensile)
+        calcolaEstraTrendUnica(consumoMensile, pun, tensione),
+        calcolaEstraRelaxUnica(consumoMensile, tensione)
       ];
 
       renderTable(document.querySelector('#tabella-cei-superiore tbody'), ceiSuperiori);
