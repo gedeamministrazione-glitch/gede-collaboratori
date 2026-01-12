@@ -1,174 +1,265 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparatore Offerte Energia Elettrica Business</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; line-height: 1.6; }
-        h1 { text-align: center; color: #444; margin-bottom: 30px; }
-        .input-section { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto; }
-        .input-group { margin-bottom: 18px; }
-        .input-group label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
-        .input-group input[type="number"], .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
-        button { display: block; width: 100%; background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; font-size: 1.1rem; margin-top: 20px; }
-        button:hover { background-color: #0056b3; }
-        .results-section { margin-top: 30px; background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); max-width: 800px; margin-left: auto; margin-right: auto; overflow-x: auto; }
-        .results-section h2 { text-align: center; color: #007bff; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 600px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: bold; color: #333; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        tr:hover { background-color: #e9e9e9; }
-        .print-button { display: block; width: auto; margin: 20px auto; padding: 10px 15px; background-color: #6c757d; border: none; color: white; border-radius: 5px; cursor: pointer; font-size: 1rem; text-align: center; }
-        .print-button:hover { background-color: #5a6268; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparatore Offerte Energia Elettrica Business</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; line-height: 1.6; }
+    h1 { text-align: center; color: #444; margin-bottom: 30px; }
+    .input-section { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto; }
+    .input-group { margin-bottom: 18px; }
+    .input-group label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
+    .input-group input[type="number"], .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+    button { display: block; width: 100%; background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; font-size: 1.1rem; margin-top: 20px; }
+    button:hover { background-color: #0056b3; }
+    .results-section { margin-top: 30px; background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); max-width: 800px; margin-left: auto; margin-right: auto; overflow-x: auto; }
+    .results-section h2 { text-align: center; color: #007bff; margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 600px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #f2f2f2; font-weight: bold; color: #333; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    tr:hover { background-color: #e9e9e9; }
+    .print-button { display: block; width: auto; margin: 20px auto; padding: 10px 15px; background-color: #6c757d; border: none; color: white; border-radius: 5px; cursor: pointer; font-size: 1rem; text-align: center; }
+    .print-button:hover { background-color: #5a6268; }
+    .note { margin-top: 18px; font-size: 0.92em; color: #555; }
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:0.85rem; margin-left:6px; }
+  </style>
 </head>
 <body>
-    <h1>GEDE SERVIZI - Energia Elettrica Business</h1>
-    <div class="input-section">
-        <h2>Inserisci i tuoi dati di consumo</h2>
-        <div class="input-group"><label for="consumo">Consumo mensile (kWh):</label><input type="number" id="consumo" value="833"></div>
-        <div class="input-group"><label for="pun">PUN Monorario (€/kWh):</label><input type="number" id="pun" value="0.12" step="0.001"></div>
-        <button onclick="calcolaTutteLeOfferte()">Calcola Offerte</button>
+  <h1>GEDE SERVIZI - Energia Elettrica Business</h1>
+
+  <div class="input-section">
+    <h2>Inserisci i tuoi dati di consumo</h2>
+
+    <div class="input-group">
+      <label for="consumo">Consumo mensile (kWh):</label>
+      <input type="number" id="consumo" value="833" step="1" min="0">
     </div>
 
-    <div class="results-section">
-        <h2 id="results-title">Risultati Comparazione Mensile Stimata</h2>
-
-        <h3 style="text-align:center; color:#007bff;">Offerte CEI &gt; 30.000 kWh</h3>
-        <table id="tabella-cei-superiore"><thead><tr><th>Offerta</th><th>Costo Materia Prima (€)</th><th>Quota Fissa (€)</th><th>Totale Stimato (€)</th></tr></thead><tbody></tbody></table>
-
-        <h3 style="text-align:center; color:#007bff; margin-top:30px;">Offerte CEI &lt; 30.000 kWh</h3>
-        <table id="tabella-cei-inferiore"><thead><tr><th>Offerta</th><th>Costo Materia Prima (€)</th><th>Quota Fissa (€)</th><th>Totale Stimato (€)</th></tr></thead><tbody></tbody></table>
-
-        <h3 style="text-align:center; color:#007bff; margin-top:30px;">Altre Offerte</h3>
-        <table id="tabella-altre"><thead><tr><th>Offerta</th><th>Costo Materia Prima (€)</th><th>Quota Fissa (€)</th><th>Totale Stimato (€)</th></tr></thead><tbody></tbody></table>
-
-        <p style="margin-top: 20px; font-size: 0.9em; color: #555;">Nota: I costi totali stimati mostrano solo i costi di vendita su base mensile (Materia Prima e Quota Fissa) e sono al netto di IVA, imposte, perdite di rete, dispacciamento e dei costi di Rete e Oneri di Sistema regolati da ARERA.</p>
+    <div class="input-group">
+      <label for="pun">PUN Monorario (€/kWh) <span class="badge">puro</span>:</label>
+      <input type="number" id="pun" value="0.12" step="0.001" min="0">
     </div>
 
-    <button onclick="window.print()" class="print-button">Stampa Risultati</button>
+    <p class="note">
+      Nota: il PUN inserito è considerato <b>puro</b> (senza perdite). Le offerte indicizzate applicano <b>×1,10</b> (perdite BT).
+    </p>
 
-    <script>
-        function calcolaCeiReflex(consumoMensile, pun) {
-            const spread = 0.014;
-            const quotaFissaMensileBase = 26.5;
-            const quotaVariabilePerKwh = 0.002 + 0.0035 + 0.00219;
-            const costoMateriaPrimaMensile = (pun + spread + quotaVariabilePerKwh) * consumoMensile;
-            const quotaFissaMensile = quotaFissaMensileBase;
-            const totaleStimatoMensile = costoMateriaPrimaMensile + quotaFissaMensile;
-            return { nome: "CEI REFLEX (< 30.000 kWh)", costoMateriaPrima: costoMateriaPrimaMensile.toFixed(2), quotaFissa: quotaFissaMensile.toFixed(2), totale: totaleStimatoMensile.toFixed(2) };
-        }
+    <button onclick="calcolaTutteLeOfferte()">Calcola Offerte</button>
+  </div>
 
-        function calcolaVision(consumoMensile, pun) {
-            const spread = 0.012;
-            const quotaFissaMensileBase = 16.0;
-            const quotaVariabilePerKwh = 0.0035 + 0.002;
-            const costoMateriaPrimaMensile = (pun + spread + quotaVariabilePerKwh) * consumoMensile;
-            const quotaFissaMensile = quotaFissaMensileBase;
-            const totaleStimatoMensile = costoMateriaPrimaMensile + quotaFissaMensile;
-            return { nome: "CEI VISION (< 30.000 kWh)", costoMateriaPrima: costoMateriaPrimaMensile.toFixed(2), quotaFissa: quotaFissaMensile.toFixed(2), totale: totaleStimatoMensile.toFixed(2) };
-        }
+  <div class="results-section">
+    <h2 id="results-title">Risultati Comparazione Mensile Stimata</h2>
 
-        function calcolaCanon(consumoMensile, pun) {
-            const spread = 0.012;
-            const quotaFissaMensileBase = 19.5;
-            const quotaVariabilePerKwh = 0.002 + 0.0035 + 0.00219;
-            const costoMateriaPrimaMensile = (pun + spread + quotaVariabilePerKwh) * consumoMensile;
-            const quotaFissaMensile = quotaFissaMensileBase;
-            const totaleStimatoMensile = costoMateriaPrimaMensile + quotaFissaMensile;
-            return { nome: "CEI CANON (< 30.000 kWh)", costoMateriaPrima: costoMateriaPrimaMensile.toFixed(2), quotaFissa: quotaFissaMensile.toFixed(2), totale: totaleStimatoMensile.toFixed(2) };
-        }
+    <h3 style="text-align:center; color:#007bff;">Offerte CEI &gt; 30.000 kWh</h3>
+    <table id="tabella-cei-superiore">
+      <thead>
+        <tr>
+          <th>Offerta</th>
+          <th>Costo Materia Prima (€)</th>
+          <th>Quota Fissa (€)</th>
+          <th>Totale Stimato (€)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-        function calcolaCeiPartner(consumoMensile, pun) {
-            const spread = 0.0130;
-            const quotaFissaMensileBase = 15;
-            const costoMateriaPrimaMensile = (pun + spread) * consumoMensile;
-            const totaleStimatoMensile = costoMateriaPrimaMensile + quotaFissaMensileBase;
-            return { nome: "CEI PARTNER (> 30.000 kWh)", costoMateriaPrima: costoMateriaPrimaMensile.toFixed(2), quotaFissa: quotaFissaMensileBase.toFixed(2), totale: totaleStimatoMensile.toFixed(2) };
-        }
+    <h3 style="text-align:center; color:#007bff; margin-top:30px;">Offerte CEI &lt; 30.000 kWh</h3>
+    <table id="tabella-cei-inferiore">
+      <thead>
+        <tr>
+          <th>Offerta</th>
+          <th>Costo Materia Prima (€)</th>
+          <th>Quota Fissa (€)</th>
+          <th>Totale Stimato (€)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-        function calcolaCeiFlex(consumoMensile, pun) {
-            const spread = 0.0090;
-            const quotaFissaMensileBase = 15;
-            const costoMateriaPrimaMensile = (pun + spread) * consumoMensile;
-            const totaleStimatoMensile = costoMateriaPrimaMensile + quotaFissaMensileBase;
-            return { nome: "CEI FLEX (> 30.000 kWh)", costoMateriaPrima: costoMateriaPrimaMensile.toFixed(2), quotaFissa: quotaFissaMensileBase.toFixed(2), totale: totaleStimatoMensile.toFixed(2) };
-        }
+    <h3 style="text-align:center; color:#007bff; margin-top:30px;">Altre Offerte</h3>
+    <table id="tabella-altre">
+      <thead>
+        <tr>
+          <th>Offerta</th>
+          <th>Costo Materia Prima (€)</th>
+          <th>Quota Fissa (€)</th>
+          <th>Totale Stimato (€)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-        function calcolaCeiPro(consumoMensile, pun) {
-            const spread = 0.0110;
-            const quotaFissaMensileBase = 15;
-            const costoMateriaPrimaMensile = (pun + spread) * consumoMensile;
-            const totaleStimatoMensile = costoMateriaPrimaMensile + quotaFissaMensileBase;
-            return { nome: "CEI PRO (> 30.000 kWh)", costoMateriaPrima: costoMateriaPrimaMensile.toFixed(2), quotaFissa: quotaFissaMensileBase.toFixed(2), totale: totaleStimatoMensile.toFixed(2) };
-        }
+    <p class="note">
+      Nota: i totali stimati includono <b>solo</b> i costi di vendita su base mensile (Materia Prima e Quota Fissa),
+      includendo perdite (×1,10), dispacciamento e mercato capacità.
+      Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
+    </p>
+  </div>
 
-        function calcolaEstraTrendUnica(consumoMensile, pun) {
-            const quotaFissaMensileBase = 168.084 / 12;
-            const costoMateriaPrimaMensile = (pun + 0.0242) * consumoMensile;
-            const totaleStimatoMensile = costoMateriaPrimaMensile + quotaFissaMensileBase;
-            return { nome: "ESTRA TREND UNICA VARIABILE", costoMateriaPrima: costoMateriaPrimaMensile.toFixed(2), quotaFissa: quotaFissaMensileBase.toFixed(2), totale: totaleStimatoMensile.toFixed(2) };
-        }
+  <button onclick="window.print()" class="print-button">Stampa Risultati</button>
 
-        function calcolaEstraRelaxUnica(consumoMensile) {
-            const prezzoFissoKwh = 0.15235;
-            const quotaFissaMensileBase = 168.084 / 12;
-            const costoMateriaPrimaMensile = prezzoFissoKwh * consumoMensile;
-            const totaleStimatoMensile = costoMateriaPrimaMensile + quotaFissaMensileBase;
-            return { nome: "ESTRA RELAX UNICA FISSA", costoMateriaPrima: costoMateriaPrimaMensile.toFixed(2), quotaFissa: quotaFissaMensileBase.toFixed(2), totale: totaleStimatoMensile.toFixed(2) };
-        }
+  <script>
+    /***************************************************************
+     * IMPOSTAZIONI GENERALI
+     ***************************************************************/
+    const LOSS_MULTIPLIER_BT = 1.10;
 
-        function calcolaTutteLeOfferte() {
-            const consumoMensile = parseFloat(document.getElementById('consumo').value);
-            const pun = parseFloat(document.getElementById('pun').value);
+    const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-            // Ordinamento e categorie CEI
-            const ceiSuperiori = [
-                calcolaCeiPartner(consumoMensile, pun),
-                calcolaCeiPro(consumoMensile, pun),
-                calcolaCeiFlex(consumoMensile, pun)
-            ];
+    function resultRow(nome, costoMateriaPrima, quotaFissa) {
+      const totale = costoMateriaPrima + quotaFissa;
+      return {
+        nome,
+        costoMateriaPrima: round2(costoMateriaPrima).toFixed(2),
+        quotaFissa: round2(quotaFissa).toFixed(2),
+        totale: round2(totale).toFixed(2)
+      };
+    }
 
-            const ceiInferiori = [
-                calcolaCeiReflex(consumoMensile, pun),
-                calcolaCanon(consumoMensile, pun),
-                calcolaVision(consumoMensile, pun)
-            ];
+    /***************************************************************
+     * PARAMETRI “SISTEMA” (copiati dalle CTE ESTRA per aggiornare subito)
+     * - Dispacciamento: 0,01078 €/kWh
+     * - Mercato capacità: 0,009008 €/kWh
+     ***************************************************************/
+    const DISP_KWH = 0.01078;
+    const CAPACITA_KWH = 0.009008;
 
-            const altre = [
-                calcolaEstraTrendUnica(consumoMensile, pun),
-                calcolaEstraRelaxUnica(consumoMensile)
-            ];
+    // Estra: costo GO indicato nelle CTE business
+    const ESTRA_GO_KWH = 0.011;
 
-            const tabelle = {
-                superiore: document.querySelector('#tabella-cei-superiore tbody'),
-                inferiore: document.querySelector('#tabella-cei-inferiore tbody'),
-                altre: document.querySelector('#tabella-altre tbody')
-            };
+    function prezzoIndicizzatoKwh(punPuro, spread, variabiliOfferta, includePerdite = true) {
+      const punEff = includePerdite ? (punPuro * LOSS_MULTIPLIER_BT) : punPuro;
+      return punEff + spread + variabiliOfferta + DISP_KWH + CAPACITA_KWH;
+    }
 
-            tabelle.superiore.innerHTML = "";
-            ceiSuperiori.forEach(offerta => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${offerta.nome}</td><td>${offerta.costoMateriaPrima}</td><td>${offerta.quotaFissa}</td><td>${offerta.totale}</td>`;
-                tabelle.superiore.appendChild(row);
-            });
+    /***************************************************************
+     * CEI < 30.000 kWh
+     ***************************************************************/
+    function calcolaCeiReflex(consumo, pun) {
+      const spread = 0.014;
+      const quotaFissa = 26.5;
+      const variabili = 0.002 + 0.0035 + 0.00219;
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      return resultRow("CEI REFLEX (< 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    }
 
-            tabelle.inferiore.innerHTML = "";
-            ceiInferiori.forEach(offerta => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${offerta.nome}</td><td>${offerta.costoMateriaPrima}</td><td>${offerta.quotaFissa}</td><td>${offerta.totale}</td>`;
-                tabelle.inferiore.appendChild(row);
-            });
+    function calcolaCanon(consumo, pun) {
+      const spread = 0.012;
+      const quotaFissa = 19.5;
+      const variabili = 0.002 + 0.0035 + 0.00219;
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      return resultRow("CEI CANON (< 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    }
 
-            tabelle.altre.innerHTML = "";
-            altre.forEach(offerta => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${offerta.nome}</td><td>${offerta.costoMateriaPrima}</td><td>${offerta.quotaFissa}</td><td>${offerta.totale}</td>`;
-                tabelle.altre.appendChild(row);
-            });
-        }
-    </script>
+    function calcolaVision(consumo, pun) {
+      const spread = 0.012;
+      const quotaFissa = 16.0;
+      const variabili = 0.002 + 0.0035;
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      return resultRow("CEI VISION (< 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    }
+
+    /***************************************************************
+     * CEI > 30.000 kWh
+     ***************************************************************/
+    function calcolaCeiPartner(consumo, pun) {
+      const spread = 0.0130;
+      const quotaFissa = 15;
+      const variabili = 0.00185 + 0.0035;
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      return resultRow("CEI PARTNER (> 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    }
+
+    function calcolaCeiFlex(consumo, pun) {
+      const spread = 0.0090;
+      const quotaFissa = 15;
+      const variabili = 0.002 + 0.0035;
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      return resultRow("CEI FLEX (> 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    }
+
+    function calcolaCeiPro(consumo, pun) {
+      const spread = 0.0110;
+      const quotaFissa = 15;
+      const variabili = 0.002 + 0.0035;
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, true);
+      return resultRow("CEI PRO (> 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    }
+
+    /***************************************************************
+     * ESTRA (da CTE)
+     ***************************************************************/
+    function calcolaEstraTrendUnica(consumo, pun) {
+      const spread = 0.0242;
+      const quotaFissa = 168.084 / 12;
+
+      // Trend: PUN*1,10 + spread + GO + disp + capacità
+      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread + ESTRA_GO_KWH, 0.0, true);
+
+      return resultRow("ESTRA TREND UNICA VARIABILE", prezzoKwh * consumo, quotaFissa);
+    }
+
+    function calcolaEstraRelaxUnica(consumo) {
+      // Relax: prezzo fisso energia P = 0,143 €/kWh
+      // + GO + disp + capacità
+      // Nota: CTE indica corrispettivi al lordo perdite -> NON applico *1,10 qui
+      const prezzoFissoEnergia = 0.143;
+      const quotaFissa = 168.084 / 12;
+
+      const prezzoKwhTot = prezzoFissoEnergia + ESTRA_GO_KWH + DISP_KWH + CAPACITA_KWH;
+      return resultRow("ESTRA RELAX UNICA FISSA", prezzoKwhTot * consumo, quotaFissa);
+    }
+
+    /***************************************************************
+     * RENDER
+     ***************************************************************/
+    function renderTable(tbody, offerte) {
+      tbody.innerHTML = "";
+      offerte.forEach(offerta => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${offerta.nome}</td><td>${offerta.costoMateriaPrima}</td><td>${offerta.quotaFissa}</td><td>${offerta.totale}</td>`;
+        tbody.appendChild(row);
+      });
+    }
+
+    function calcolaTutteLeOfferte() {
+      const consumoMensile = parseFloat(document.getElementById('consumo').value);
+      const pun = parseFloat(document.getElementById('pun').value);
+
+      if (Number.isNaN(consumoMensile) || consumoMensile < 0) {
+        alert("Inserisci un consumo mensile valido (kWh).");
+        return;
+      }
+      if (Number.isNaN(pun) || pun < 0) {
+        alert("Inserisci un PUN valido (€/kWh).");
+        return;
+      }
+
+      const ceiSuperiori = [
+        calcolaCeiPartner(consumoMensile, pun),
+        calcolaCeiPro(consumoMensile, pun),
+        calcolaCeiFlex(consumoMensile, pun)
+      ];
+
+      const ceiInferiori = [
+        calcolaCeiReflex(consumoMensile, pun),
+        calcolaCanon(consumoMensile, pun),
+        calcolaVision(consumoMensile, pun)
+      ];
+
+      const altre = [
+        calcolaEstraTrendUnica(consumoMensile, pun),
+        calcolaEstraRelaxUnica(consumoMensile)
+      ];
+
+      renderTable(document.querySelector('#tabella-cei-superiore tbody'), ceiSuperiori);
+      renderTable(document.querySelector('#tabella-cei-inferiore tbody'), ceiInferiori);
+      renderTable(document.querySelector('#tabella-altre tbody'), altre);
+    }
+
+    window.onload = calcolaTutteLeOfferte;
+  </script>
 </body>
 </html>
