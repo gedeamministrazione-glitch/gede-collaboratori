@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GEDE COMPARA</title>
+  <style>
+    body{font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;margin:20px;background:#f8f8f8;color:#333}
+    .wrap{max-width:980px;margin:0 auto}
+    .card{background:#fff;padding:18px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);margin-bottom:14px}
+    h1{text-align:center;margin:10px 0 14px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{font-weight:600;display:block;margin-bottom:6px}
+    input,select{width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;font-size:1rem;box-sizing:border-box}
+    button{width:100%;padding:12px;border:0;border-radius:8px;background:#007bff;color:#fff;font-size:1.05rem;cursor:pointer}
+    button:hover{background:#0056b3}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border:1px solid #e2e6ea;padding:10px;text-align:left;font-size:.95rem}
+    th{background:#f4f8ff}
+    .muted{color:#666;font-size:.92rem}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .right{margin-left:auto}
+    @media (max-width:760px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>GEDE COMPARA</h1>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>Canale</label>
+        <select id="canale">
+          <option>Business Gas</option>
+          <option>Business Luce</option>
+          <option>Domestico Gas</option>
+          <option>Domestico Luce</option>
+        </select>
+      </div>
+      <div>
+        <label>Consumo mensile</label>
+        <input id="consumo" type="number" min="0" step="0.01" value="100"/>
+        <div class="muted" id="unit">Unità: Smc/kWh</div>
+      </div>
+      <div>
+        <label>Indice (PUN/PSV)</label>
+        <input id="indice" type="number" min="0" step="0.0001" value="0.40"/>
+        <div class="muted">Se l’offerta è fissa, l’indice è ignorato.</div>
+      </div>
+      <div>
+        <label>Tensione (solo Business Luce)</label>
+        <select id="tensione">
+          <option value="BT" selected>BT</option>
+          <option value="MT">MT</option>
+        </select>
+        <div class="muted">Perdite: BT ×1,10 — MT ×1,038</div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <button id="calc" style="max-width:260px">Calcola</button>
+      <div class="right muted" id="fascia"></div>
+    </div>
+
+    <div class="muted" style="margin-top:10px">
+      Regola GEDE: <b>Energia verde sempre esclusa</b> (es. 3€ o 0,011) anche se presente nei PDF/CTE.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <b>Risultati</b>
+      <div class="right muted" id="status"></div>
+    </div>
+
+    <table>
+      <thead>
+      <tr>
+        <th>Offerta</th>
+        <th>Materia (mese)</th>
+        <th>Fissi (mese)</th>
+        <th>Variabili (mese)</th>
+        <th>Sconto (mese)</th>
+        <th>Totale (mese)</th>
+        <th>Totale (anno)</th>
+      </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const LOSS = { BT: 1.10, MT: 1.038 };
+
+  const toNum = (v) => {
+    if (v === null || v === undefined) return 0;
+    const n = Number(String(v).trim().replace(",", "."));
+    return Number.isFinite(n) ? n : 0;
+  };
+  const fmt2 = (n) => (Math.round((n + Number.EPSILON) * 100) / 100).toFixed(2);
+
+  const isBusiness = (c) => c.startsWith("Business");
+  const isLuce = (c) => c.includes("Luce");
+  const unitFor = (c) => isLuce(c) ? "kWh" : "Smc";
+
+  async function loadData() {
+    const [o, r] = await Promise.all([fetch("/api/offers"), fetch("/api/rules")]);
+    const offers = (await o.json()).offers || [];
+    const rules  = (await r.json()).rules || [];
+    return { offers, rules };
+  }
+
+  function pickFascia(canale, consumoMensile, rules) {
+    if (!isBusiness(canale)) return "";
+    const rule = rules.find(x => x.canale === canale);
+    if (!rule) return "";
+    const annuo = consumoMensile * 12;
+    return annuo >= toNum(rule.soglia_annua) ? rule.fascia_sopra : rule.fascia_sotto;
+  }
+
+  function unitPrice(offer, indiceInput, tensione) {
+    // VERDE sempre escluso
+    const verde_unit = 0;
+
+    const tipo = String(offer.tipo_prezzo || "").toUpperCase();
+    if (tipo === "FISSO") {
+      return toNum(offer.prezzo_fisso_unit) + toNum(offer.spread_unit) + toNum(offer.variabili_unit) + verde_unit;
+    }
+
+    // indicizzato
+    let idx = toNum(indiceInput);
+    const indice = String(offer.indice || "").toUpperCase();
+    if (indice === "PUN" && offer.perdite_applica) {
+      idx *= (LOSS[tensione] || LOSS.BT);
+    }
+    return idx + toNum(offer.spread_unit) + toNum(offer.variabili_unit) + verde_unit;
+  }
+
+  function calcRow(offer, consumoMensile, indiceInput, tensione) {
+    const up = unitPrice(offer, indiceInput, tensione);
+    const variabili = consumoMensile * toNum(offer.variabili_unit);
+    const materia = consumoMensile * (up - toNum(offer.variabili_unit));
+
+    // VERDE mese sempre escluso
+    const fissi = toNum(offer.quota_fissa_mese);
+    const sconto = toNum(offer.sconto_mese);
+
+    const totaleMese = materia + variabili + fissi - sconto;
+    return {
+      label: `${offer.fornitore} — ${offer.nome_offerta}`,
+      materia, fissi, variabili, sconto,
+      totaleMese,
+      totaleAnno: totaleMese * 12
+    };
+  }
+
+  function render(rows) {
+    const tb = document.getElementById("tbody");
+    tb.innerHTML = "";
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.label}</td>
+        <td>€ ${fmt2(r.materia)}</td>
+        <td>€ ${fmt2(r.fissi)}</td>
+        <td>€ ${fmt2(r.variabili)}</td>
+        <td>€ ${fmt2(r.sconto)}</td>
+        <td><b>€ ${fmt2(r.totaleMese)}</b></td>
+        <td><b>€ ${fmt2(r.totaleAnno)}</b></td>
+      `;
+      tb.appendChild(tr);
+    });
+  }
+
+  let DATA = { offers: [], rules: [] };
+
+  async function init() {
+    document.getElementById("status").textContent = "Carico dati…";
+    try {
+      DATA = await loadData();
+      document.getElementById("status").textContent = `Offerte: ${DATA.offers.length}`;
+      updateHints();
+      doCalc();
+    } catch (e) {
+      console.error(e);
+      document.getElementById("status").textContent = "Errore: /api/offers o /api/rules";
+    }
+  }
+
+  function updateHints(){
+    const canale = document.getElementById("canale").value;
+    document.getElementById("unit").textContent = `Unità: ${unitFor(canale)} (mensile)`;
+    document.getElementById("tensione").disabled = !(canale === "Business Luce");
+  }
+
+  function doCalc() {
+    const canale = document.getElementById("canale").value;
+    const consumo = toNum(document.getElementById("consumo").value);
+    const indice  = toNum(document.getElementById("indice").value);
+    const tensione = document.getElementById("tensione").value || "BT";
+
+    const fascia = pickFascia(canale, consumo, DATA.rules);
+    document.getElementById("fascia").textContent =
+      isBusiness(canale) ? `Fascia: ${fascia} (annuo ${fmt2(consumo*12)} ${unitFor(canale)})` : "";
+
+    let offers = DATA.offers.filter(o => o.canale === canale);
+    if (isBusiness(canale) && fascia) offers = offers.filter(o => (o.fascia || "") === fascia);
+
+    offers.sort((a,b) => toNum(a.ordine_visualizzazione) - toNum(b.ordine_visualizzazione));
+    render(offers.map(o => calcRow(o, consumo, indice, tensione)));
+  }
+
+  document.getElementById("calc").addEventListener("click", doCalc);
+  document.getElementById("canale").addEventListener("change", () => { updateHints(); doCalc(); });
+
+  init();
+</script>
+</body>
+</html>
