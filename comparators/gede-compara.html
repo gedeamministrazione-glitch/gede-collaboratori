@@ -1,13 +1,286 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>GEDE COMPARA</title>
+  <style>
+    body{font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;margin:20px;background:#f8f8f8;color:#333}
+    .wrap{max-width:1100px;margin:0 auto}
+    h1{text-align:center;margin:10px 0 14px}
+    .card{background:#fff;padding:18px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);margin-bottom:14px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{font-weight:700;display:block;margin-bottom:6px}
+    input,select{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:1rem;box-sizing:border-box}
+    button{padding:12px 14px;border:0;border-radius:10px;background:#007bff;color:#fff;font-size:1.02rem;cursor:pointer;font-weight:800}
+    button:hover{background:#0056b3}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .right{margin-left:auto}
+    .muted{color:#666;font-size:.92rem;line-height:1.35}
+    table{width:100%;border-collapse:collapse;margin-top:10px;min-width:860px}
+    th,td{border:1px solid #e2e6ea;padding:10px;text-align:left;font-size:.95rem}
+    th{background:#f4f8ff}
+    tr:nth-child(even){background:#fbfbfb}
+    tr:hover td{background:#f1f7ff}
+    .warn{color:#9a3412;background:#ffedd5;border:1px solid #fed7aa;padding:10px;border-radius:10px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr} table{min-width:0}}
+  </style>
 </head>
-<body style="font-family: Arial; padding: 30px;">
-  <h1>GEDE COMPARA OK ✅</h1>
-  <p>Se leggi questo, il file è nel posto giusto e Vercel lo sta servendo.</p>
+<body>
+<div class="wrap">
+  <h1>GEDE COMPARA</h1>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>Canale</label>
+        <select id="canale">
+          <option>Business Gas</option>
+          <option>Business Luce</option>
+          <option>Domestico Gas</option>
+          <option>Domestico Luce</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Consumo mensile</label>
+        <input id="consumo" type="number" min="0" step="0.01" value="100"/>
+        <div class="muted" id="unit"></div>
+      </div>
+
+      <div>
+        <label>Indice (PUN/PSV)</label>
+        <input id="indice" type="number" min="0" step="0.0001" value="0.40"/>
+        <div class="muted">Per offerte fisse l’indice è ignorato.</div>
+      </div>
+
+      <div>
+        <label>Tensione (solo Business Luce)</label>
+        <select id="tensione">
+          <option value="BT" selected>BT</option>
+          <option value="MT">MT</option>
+        </select>
+        <div class="muted">Perdite: BT ×1,10 — MT ×1,038</div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <button id="calc">Calcola</button>
+      <div class="right muted" id="fascia"></div>
+    </div>
+
+    <div class="muted" style="margin-top:10px">
+      Regola GEDE: <b>energia verde sempre esclusa</b> (es. 3€/mese o 0,011€/kWh) anche se presente nelle CTE.
+    </div>
+
+    <div id="err" style="margin-top:10px; display:none" class="warn"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <b>Risultati</b>
+      <div class="right muted" id="status">—</div>
+    </div>
+
+    <div style="overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Offerta</th>
+            <th>Materia (mese)</th>
+            <th>Fissi (mese)</th>
+            <th>Variabili (mese)</th>
+            <th>Sconto (mese)</th>
+            <th>Totale (mese)</th>
+            <th>Totale (anno)</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="muted" style="margin-top:10px">
+      Totali stimati: solo componente vendita (energia + quote vendita). Esclusi trasporto, oneri ARERA, imposte e IVA.
+    </div>
+  </div>
+</div>
+
+<script>
+  const LOSS = { BT: 1.10, MT: 1.038 };
+
+  const toNum = (v) => {
+    if (v === null || v === undefined) return 0;
+    const n = Number(String(v).trim().replace(",", "."));
+    return Number.isFinite(n) ? n : 0;
+  };
+  const fmt2 = (n) => (Math.round((n + Number.EPSILON) * 100) / 100).toFixed(2);
+
+  const isBusiness = (c) => c.startsWith("Business");
+  const isLuce = (c) => c.includes("Luce");
+  const unitFor = (c) => isLuce(c) ? "kWh" : "Smc";
+
+  // Mappa canali UI -> chiavi usate nel backend
+  const CANALE_KEY = {
+    "Business Gas": "business_gas",
+    "Business Luce": "business_luce",
+    "Domestico Gas": "domestico_gas",
+    "Domestico Luce": "domestico_luce",
+  };
+
+  function showErr(msg){
+    const e = document.getElementById("err");
+    e.style.display = msg ? "block" : "none";
+    e.textContent = msg || "";
+  }
+
+  async function loadData() {
+    const [o, r] = await Promise.all([fetch("/api/offers"), fetch("/api/rules")]);
+    if(!o.ok) throw new Error("Errore /api/offers");
+    if(!r.ok) throw new Error("Errore /api/rules");
+    const offersJson = await o.json();
+    const rulesJson  = await r.json();
+    return {
+      offers: offersJson.offers || [],
+      rules:  rulesJson.rules  || []
+    };
+  }
+
+  function pickFascia(canaleUI, consumoMensile, rules) {
+    if (!isBusiness(canaleUI)) return "";
+    const key = CANALE_KEY[canaleUI];
+    const rule = rules.find(x => x.canale === key);
+    if (!rule) return "";
+    const annuo = consumoMensile * 12;
+
+    // supportiamo sia soglia_annua che soglia_annua_unit (nomi diversi)
+    const soglia = toNum(rule.soglia_annua ?? rule.soglia_annua_unit ?? 0);
+    if (!soglia) return "";
+
+    return annuo >= soglia ? (rule.fascia_sopra || "") : (rule.fascia_sotto || "");
+  }
+
+  // Energia verde sempre esclusa
+  function verdeUnitExclusa(){ return 0; }
+  function verdeMeseExclusa(){ return 0; }
+
+  function unitPrice(offer, indiceInput, tensione) {
+    const tipo = String(offer.tipo_prezzo || "").toUpperCase();
+
+    if (tipo === "FISSO") {
+      return toNum(offer.prezzo_fisso_unit) + toNum(offer.spread_unit) + toNum(offer.variabili_unit) + verdeUnitExclusa();
+    }
+
+    // INDICIZZATO
+    let idx = toNum(indiceInput);
+    const indice = String(offer.indice || "").toUpperCase();
+
+    // perdite solo su PUN e solo se offerta richiede perdite
+    const perdite = !!offer.perdite_applica;
+    if (indice === "PUN" && perdite) idx *= (LOSS[tensione] || LOSS.BT);
+
+    return idx + toNum(offer.spread_unit) + toNum(offer.variabili_unit) + verdeUnitExclusa();
+  }
+
+  function calcRow(offer, consumoMensile, indiceInput, tensione) {
+    const up = unitPrice(offer, indiceInput, tensione);
+
+    // variabili_unit sono “costi variabili servizi vendita” (se presenti)
+    const variabili = consumoMensile * toNum(offer.variabili_unit);
+
+    // materia = consumo * (prezzo unitario totale - variabili_unit) se vogliamo separare,
+    // ma qui per semplicità consideriamo "materia" = consumo * (prezzo unitario totale - variabili_unit)
+    const materia = consumoMensile * (up - toNum(offer.variabili_unit));
+
+    const fissi  = toNum(offer.quota_fissa_mese);
+    const sconto = toNum(offer.sconto_mese);
+
+    // se qualcuno ha “verde_mese” (es. 3€) lo escludiamo:
+    const verdeMese = 0;
+
+    const totaleMese = materia + variabili + fissi - sconto + verdeMese;
+    return {
+      label: `${offer.fornitore} — ${offer.nome_offerta}`,
+      materia, fissi, variabili, sconto,
+      totaleMese,
+      totaleAnno: totaleMese * 12
+    };
+  }
+
+  function render(rows) {
+    const tb = document.getElementById("tbody");
+    tb.innerHTML = "";
+    rows.forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.label}</td>
+        <td>€ ${fmt2(r.materia)}</td>
+        <td>€ ${fmt2(r.fissi)}</td>
+        <td>€ ${fmt2(r.variabili)}</td>
+        <td>€ ${fmt2(r.sconto)}</td>
+        <td><b>€ ${fmt2(r.totaleMese)}</b></td>
+        <td><b>€ ${fmt2(r.totaleAnno)}</b></td>
+      `;
+      tb.appendChild(tr);
+    });
+  }
+
+  let DATA = { offers: [], rules: [] };
+
+  function updateHints(){
+    const canale = document.getElementById("canale").value;
+    document.getElementById("unit").textContent = `Unità: ${unitFor(canale)} (mensile)`;
+    document.getElementById("tensione").disabled = !(canale === "Business Luce");
+  }
+
+  function doCalc() {
+    showErr("");
+    const canaleUI = document.getElementById("canale").value;
+    const canaleKey = CANALE_KEY[canaleUI];
+
+    const consumo = toNum(document.getElementById("consumo").value);
+    const indice  = toNum(document.getElementById("indice").value);
+    const tensione = document.getElementById("tensione").value || "BT";
+
+    if (!canaleKey) {
+      showErr("Canale non riconosciuto.");
+      return;
+    }
+
+    const fascia = pickFascia(canaleUI, consumo, DATA.rules);
+    document.getElementById("fascia").textContent =
+      isBusiness(canaleUI) && fascia ? `Fascia: ${fascia} — annuo ${fmt2(consumo*12)} ${unitFor(canaleUI)}` : "";
+
+    let offers = DATA.offers.filter(o => o.canale === canaleKey);
+
+    if (isBusiness(canaleUI) && fascia) {
+      offers = offers.filter(o => String(o.fascia || "") === String(fascia));
+    }
+
+    // ordinamento: ordine_visualizzazione (così puoi mettere prima la più “importante”)
+    offers.sort((a,b) => toNum(a.ordine_visualizzazione) - toNum(b.ordine_visualizzazione));
+
+    render(offers.map(o => calcRow(o, consumo, indice, tensione)));
+    document.getElementById("status").textContent = `Offerte: ${offers.length}`;
+  }
+
+  async function init() {
+    document.getElementById("status").textContent = "Carico dati…";
+    try {
+      DATA = await loadData();
+      document.getElementById("status").textContent = `Offerte totali: ${DATA.offers.length}`;
+      updateHints();
+      doCalc();
+    } catch (e) {
+      console.error(e);
+      showErr(String(e.message || e));
+      document.getElementById("status").textContent = "Errore dati";
+    }
+  }
+
+  document.getElementById("calc").addEventListener("click", doCalc);
+  document.getElementById("canale").addEventListener("change", () => { updateHints(); doCalc(); });
+
+  init();
+</script>
 </body>
 </html>
-
