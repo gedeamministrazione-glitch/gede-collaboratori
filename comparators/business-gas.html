@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Comparatore Offerte Gas Business - CEI & Estra</title>
+  <title>Comparatore Offerte Gas Business</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; line-height: 1.6; }
     h1 { text-align: center; color: #444; margin-bottom: 18px; }
@@ -24,24 +24,23 @@
     .print-button { display:block; width:auto; margin: 14px auto 6px; padding: 8px 12px; background:#6c757d; color:#fff; border-radius:6px; border:none; cursor:pointer; }
     #footer { text-align:center; color:#777; font-size:0.9rem; margin-top:18px; }
     .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:0.85rem; margin-left:6px; }
+    .validita { font-size: 0.82rem; color: #888; margin-left: 8px; font-weight: normal; }
     @media (max-width:700px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <h1>GEDE SERVIZI - Comparatore Offerte Gas Business (CEI & Estra)</h1>
+  <h1>GEDE SERVIZI - Comparatore Offerte Gas Business</h1>
 
   <div class="input-section">
     <h2 style="margin-top:0">Inserisci i tuoi dati di consumo</h2>
     <div class="grid">
       <div class="input-group">
-        <label for="consumo">Consumo (Smc) — inserire il valore mensile</label>
+        <label for="consumo">Consumo mensile (Smc)</label>
         <input type="number" id="consumo" value="416.67" step="0.01" min="0" />
       </div>
       <div class="input-group">
-        <label for="psv">
-          Indice Gas (€/Smc) <span class="badge">PSV/ICIS</span>
-        </label>
-        <input type="number" id="psv" value="0.40" step="0.0001" min="0" />
+        <label for="psv">Indice Gas (€/Smc) <span class="badge">PSV</span></label>
+        <input type="number" id="psv" value="0.33" step="0.0001" min="0" />
       </div>
     </div>
 
@@ -51,50 +50,67 @@
     </div>
 
     <p class="small-note">
-      Nota: l’“Indice Gas” è il valore mensile che inserisci tu (es. PSV, oppure ICIS PSV Business Day-Ahead se vuoi replicare esattamente l’offerta Estra Trend).
-      I calcoli mostrano stime mensili riferite alla componente Materia Prima e ai costi/quote di vendita indicati nelle CTE.
-      Valori <b>IVA e imposte escluse</b>, e non comprendono costi di trasporto e oneri di sistema ARERA.
+      PSV dicembre 2025 = 0,33 €/Smc. Calcoli su base mensile, solo componente vendita.
+      Valori <b>IVA e imposte escluse</b>. Non comprende trasporto, distribuzione e oneri di sistema ARERA.
     </p>
   </div>
 
   <div class="results-section">
-    <h2 id="results-title">Risultati comparazione (stima mensile)</h2>
+    <h2>Risultati comparazione (stima mensile)</h2>
 
-    <h3 class="section-title">Offerte CEI &gt; 10.000 Smc</h3>
+    <!-- CEI > 10.000 Smc -->
+    <h3 class="section-title">🔵 CEI &gt; 10.000 Smc/anno</h3>
     <table id="tabella-cei-superiore">
       <thead>
         <tr>
           <th>Offerta</th>
           <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa Mensile (€)</th>
-          <th>Costi Variabili Servizi Vendita (€)</th>
+          <th>Quota Fissa (€/mese)</th>
+          <th>Costi Variabili Vendita (€)</th>
           <th>Totale Stimato (€)</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
 
-    <h3 class="section-title">Offerte CEI &lt; 10.000 Smc</h3>
+    <!-- CEI < 10.000 Smc -->
+    <h3 class="section-title">🔵 CEI &lt; 10.000 Smc/anno</h3>
     <table id="tabella-cei-inferiore">
       <thead>
         <tr>
           <th>Offerta</th>
           <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa Mensile (€)</th>
-          <th>Costi Variabili Servizi Vendita (€)</th>
+          <th>Quota Fissa (€/mese)</th>
+          <th>Costi Variabili Vendita (€)</th>
           <th>Totale Stimato (€)</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
 
-    <h3 class="section-title">Altre Offerte (Estra)</h3>
-    <table id="tabella-altre">
+    <!-- ESTRA -->
+    <h3 class="section-title">🟠 Estra Business Gas</h3>
+    <table id="tabella-estra">
       <thead>
         <tr>
           <th>Offerta</th>
           <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa Mensile (€)</th>
+          <th>Quota Fissa (€/mese)</th>
+          <th>Costi Variabili (€)</th>
+          <th>Totale Stimato (€)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- SINERGY -->
+    <h3 class="section-title">🟢 Sinergy Business Gas <span class="validita">(valida fino 31/03/2026 — cod. 025867GSVML03XX00000325SHGBPSVDA)</span></h3>
+    <table id="tabella-sinergy">
+      <thead>
+        <tr>
+          <th>Offerta</th>
+          <th>Costo Materia Prima (€)</th>
+          <th>Quota Fissa (€/mese)</th>
           <th>Costi Variabili (€)</th>
           <th>Totale Stimato (€)</th>
         </tr>
@@ -108,159 +124,124 @@
   </div>
 
   <script>
-    /***************************************************************
-     * PARAMETRI CTE (aggiornabili dall’alto)
-     ***************************************************************/
-
-    // CEI > 10.000 Smc (Partner/Pro/Flex): spread + quota fissa 14€/mese + variabili (0,02 + 0,0219 + 0,0145)
-    const CEI_GT = {
-      quotaFissa: 14.00,
-      variabiliUnit: (0.02 + 0.0219 + 0.0145),
-      spread: {
-        PARTNER: 0.12,
-        PRO:     0.10,
-        FLEX:    0.08
-      }
-    };
-
-    // CEI < 10.000 Smc
-    const CEI_LT = {
-      spreads: { REFLEX: 0.08, CANON: 0.08, VISION: 0.09 },
-      quotaFissa: {
-        // Reflex: 7€/mese (pdr) + 10€/mese (CGA) + 9€/mese = 26€/mese
-        REFLEX: 26.00,
-        // Canon: 9,5€/mese (pdr) + 10€/mese = 19,5€/mese
-        CANON:  19.50,
-        // Vision: 15€/mese
-        VISION: 15.00
-      },
-      variabiliUnit: {
-        // Reflex: 0,05 + 0,02 + 0,0219 + 0,0145
-        REFLEX: (0.05 + 0.02 + 0.0219 + 0.0145),
-        // Canon: 0,02 + 0,0219 + 0,0145 + 0,03
-        CANON:  (0.02 + 0.0219 + 0.0145 + 0.03),
-        // Vision: 0,02 + 0,0219 + 0,0145
-        VISION: (0.02 + 0.0219 + 0.0145)
-      }
-    };
-
-    // ESTRA (nuove CTE)
-    const ESTRA = {
-      // TREND: indice (tu lo inserisci) + spread 0,08 €/Smc + quota fissa 168€/anno (=14€/mese)
-      TREND: { spread: 0.08, quotaFissaMensile: 168 / 12, variabiliUnit: 0.0 },
-      // RELAX: prezzo fisso 0,409 €/Smc + quota fissa 168€/anno (=14€/mese)
-      RELAX: { prezzoFisso: 0.409, quotaFissaMensile: 168 / 12, variabiliUnit: 0.0 }
-    };
-
-    /***************************************************************
-     * HELPERS
-     ***************************************************************/
     function fmt2(n){ return (Math.round((n + Number.EPSILON) * 100) / 100).toFixed(2); }
 
-    function makeOffer(nome, costoMateriaPrima, quotaFissa, costiVariabili) {
-      const totale = costoMateriaPrima + quotaFissa + costiVariabili;
-      return {
-        nome,
-        costoMateriaPrima: fmt2(costoMateriaPrima),
-        quotaFissa: fmt2(quotaFissa),
-        costiVariabili: fmt2(costiVariabili),
-        totale: fmt2(totale)
-      };
-    }
-
-    function calcIndicizzata(consumoSmc, indice, spread, quotaFissa, variabiliUnit) {
-      const costoMateriaPrima = consumoSmc * (indice + spread);
-      const costiVariabili = consumoSmc * (variabiliUnit || 0);
-      return { costoMateriaPrima, quotaFissa, costiVariabili };
+    function makeOffer(nome, costoMP, quotaFissa, costiVar) {
+      const totale = costoMP + quotaFissa + costiVar;
+      return { nome, costoMP: fmt2(costoMP), quotaFissa: fmt2(quotaFissa), costiVar: fmt2(costiVar), totale: fmt2(totale) };
     }
 
     /***************************************************************
-     * CEI > 10.000 Smc
+     * CEI > 10.000 Smc/anno
+     * Spread: Partner 0,12 | Pro 0,10 | Flex 0,08
+     * Quota fissa: 14 €/mese
+     * Variabili: bilanciamento 0,02 + CrA 0,0219 + CcP 0,0145 = 0,0564 €/Smc
      ***************************************************************/
-    function calcolaCeiPartner(consumoSmc, idx) {
-      const r = calcIndicizzata(consumoSmc, idx, CEI_GT.spread.PARTNER, CEI_GT.quotaFissa, CEI_GT.variabiliUnit);
-      return makeOffer("CEI Partner (> 10.000 Smc)", r.costoMateriaPrima, r.quotaFissa, r.costiVariabili);
-    }
-    function calcolaCeiPro(consumoSmc, idx) {
-      const r = calcIndicizzata(consumoSmc, idx, CEI_GT.spread.PRO, CEI_GT.quotaFissa, CEI_GT.variabiliUnit);
-      return makeOffer("CEI Pro (> 10.000 Smc)", r.costoMateriaPrima, r.quotaFissa, r.costiVariabili);
-    }
-    function calcolaCeiFlex(consumoSmc, idx) {
-      const r = calcIndicizzata(consumoSmc, idx, CEI_GT.spread.FLEX, CEI_GT.quotaFissa, CEI_GT.variabiliUnit);
-      return makeOffer("CEI Flex (> 10.000 Smc)", r.costoMateriaPrima, r.quotaFissa, r.costiVariabili);
+    const CEI_GT = {
+      quotaFissa: 14.00,
+      varUnit: 0.02 + 0.0219 + 0.0145,
+      spreads: { PARTNER: 0.12, PRO: 0.10, FLEX: 0.08 }
+    };
+
+    function ceiGT(consumo, psv, nome, spread) {
+      const costoMP  = consumo * (psv + spread);
+      const costiVar = consumo * CEI_GT.varUnit;
+      return makeOffer("CEI " + nome + " (>10k Smc)", costoMP, CEI_GT.quotaFissa, costiVar);
     }
 
     /***************************************************************
-     * CEI < 10.000 Smc
+     * CEI < 10.000 Smc/anno
      ***************************************************************/
-    function calcolaCeiReflex(consumoSmc, idx) {
-      const r = calcIndicizzata(consumoSmc, idx, CEI_LT.spreads.REFLEX, CEI_LT.quotaFissa.REFLEX, CEI_LT.variabiliUnit.REFLEX);
-      return makeOffer("CEI Reflex (< 10.000 Smc)", r.costoMateriaPrima, r.quotaFissa, r.costiVariabili);
-    }
-    function calcolaCeiCanon(consumoSmc, idx) {
-      const r = calcIndicizzata(consumoSmc, idx, CEI_LT.spreads.CANON, CEI_LT.quotaFissa.CANON, CEI_LT.variabiliUnit.CANON);
-      return makeOffer("CEI Canon (< 10.000 Smc)", r.costoMateriaPrima, r.quotaFissa, r.costiVariabili);
-    }
-    function calcolaCeiVision(consumoSmc, idx) {
-      const r = calcIndicizzata(consumoSmc, idx, CEI_LT.spreads.VISION, CEI_LT.quotaFissa.VISION, CEI_LT.variabiliUnit.VISION);
-      return makeOffer("CEI Vision (< 10.000 Smc)", r.costoMateriaPrima, r.quotaFissa, r.costiVariabili);
+    const CEI_LT = {
+      REFLEX: { spread: 0.08, quotaFissa: 26.00, varUnit: 0.05 + 0.02 + 0.0219 + 0.0145 },
+      CANON:  { spread: 0.08, quotaFissa: 19.50, varUnit: 0.02 + 0.0219 + 0.0145 + 0.03 },
+      VISION: { spread: 0.09, quotaFissa: 15.00, varUnit: 0.02 + 0.0219 + 0.0145 }
+    };
+
+    function ceiLT(consumo, psv, nome, cfg) {
+      const costoMP  = consumo * (psv + cfg.spread);
+      const costiVar = consumo * cfg.varUnit;
+      return makeOffer("CEI " + nome + " (<10k Smc)", costoMP, cfg.quotaFissa, costiVar);
     }
 
     /***************************************************************
-     * ESTRA (nuove offerte)
+     * ESTRA BUSINESS GAS (invariato)
      ***************************************************************/
-    function calcolaEstraTrend(consumoSmc, idx) {
-      const r = calcIndicizzata(consumoSmc, idx, ESTRA.TREND.spread, ESTRA.TREND.quotaFissaMensile, ESTRA.TREND.variabiliUnit);
-      return makeOffer("ESTRA TREND GAS (variabile)", r.costoMateriaPrima, r.quotaFissa, r.costiVariabili);
+    function calcolaEstraTrend(consumo, psv) {
+      const spread = 0.08;
+      const quotaFissa = 168 / 12;
+      const costoMP  = consumo * (psv + spread);
+      const costiVar = 0;
+      return makeOffer("Estra TREND Gas (variabile)", costoMP, quotaFissa, costiVar);
     }
 
-    function calcolaEstraRelax(consumoSmc) {
-      const costoMateriaPrima = consumoSmc * ESTRA.RELAX.prezzoFisso;
-      const quotaFissa = ESTRA.RELAX.quotaFissaMensile;
-      const costiVariabili = consumoSmc * (ESTRA.RELAX.variabiliUnit || 0);
-      return makeOffer("ESTRA RELAX GAS (fissa)", costoMateriaPrima, quotaFissa, costiVariabili);
+    function calcolaEstraRelax(consumo) {
+      const prezzoFisso = 0.409;
+      const quotaFissa  = 168 / 12;
+      const costoMP  = consumo * prezzoFisso;
+      const costiVar = 0;
+      return makeOffer("Estra RELAX Gas (fissa 0,409 €/Smc)", costoMP, quotaFissa, costiVar);
     }
 
     /***************************************************************
-     * RENDER + MAIN
+     * SINERGY BUSINESS GAS
+     * CTE cod. 025867GSVML03XX00000325SHGBPSVDA — valida fino 31/03/2026
+     * Materia prima: PSV + 0,120 €/Smc
+     * Quota fissa: 120+24 = 144 €/anno = 12 €/mese
+     * Bilanciamento Business: 0,020 €/Smc
+     * (CCR sistema non indicato in questa CTE business)
      ***************************************************************/
-    function renderTable(tbody, rows) {
+    function calcolaSinergyBusinessGas(consumo, psv) {
+      const spread    = 0.120;
+      const quotaFissa = (120 + 24) / 12;  // 12 €/mese
+      const varUnit   = 0.020;             // bilanciamento business
+
+      const costoMP  = consumo * (psv + spread);
+      const costiVar = consumo * varUnit;
+      return makeOffer("Sinergy Business Gas (PSV + 0,12)", costoMP, quotaFissa, costiVar);
+    }
+
+    /***************************************************************
+     * RENDER
+     ***************************************************************/
+    function renderTable(id, rows) {
+      const tbody = document.querySelector('#' + id + ' tbody');
       tbody.innerHTML = "";
       rows.forEach(o => {
         tbody.innerHTML += `<tr>
           <td>${o.nome}</td>
-          <td>€ ${o.costoMateriaPrima}</td>
+          <td>€ ${o.costoMP}</td>
           <td>€ ${o.quotaFissa}</td>
-          <td>€ ${o.costiVariabili}</td>
+          <td>€ ${o.costiVar}</td>
           <td>€ ${o.totale}</td>
         </tr>`;
       });
     }
 
     function calcolaTutteLeOfferteGasBusiness() {
-      const consumoMensile = parseFloat(document.getElementById('consumo').value) || 0;
-      const indice = parseFloat(document.getElementById('psv').value) || 0;
+      const consumo = parseFloat(document.getElementById('consumo').value) || 0;
+      const psv     = parseFloat(document.getElementById('psv').value) || 0;
 
-      const ceiSuperiori = [
-        calcolaCeiPartner(consumoMensile, indice),
-        calcolaCeiPro(consumoMensile, indice),
-        calcolaCeiFlex(consumoMensile, indice)
-      ];
+      renderTable('tabella-cei-superiore', [
+        ceiGT(consumo, psv, "Partner", CEI_GT.spreads.PARTNER),
+        ceiGT(consumo, psv, "Pro",     CEI_GT.spreads.PRO),
+        ceiGT(consumo, psv, "Flex",    CEI_GT.spreads.FLEX),
+      ]);
 
-      const ceiInferiori = [
-        calcolaCeiReflex(consumoMensile, indice),
-        calcolaCeiCanon(consumoMensile, indice),
-        calcolaCeiVision(consumoMensile, indice)
-      ];
+      renderTable('tabella-cei-inferiore', [
+        ceiLT(consumo, psv, "Reflex", CEI_LT.REFLEX),
+        ceiLT(consumo, psv, "Canon",  CEI_LT.CANON),
+        ceiLT(consumo, psv, "Vision", CEI_LT.VISION),
+      ]);
 
-      const altre = [
-        calcolaEstraTrend(consumoMensile, indice),
-        calcolaEstraRelax(consumoMensile)
-      ];
+      renderTable('tabella-estra', [
+        calcolaEstraTrend(consumo, psv),
+        calcolaEstraRelax(consumo),
+      ]);
 
-      renderTable(document.querySelector('#tabella-cei-superiore tbody'), ceiSuperiori);
-      renderTable(document.querySelector('#tabella-cei-inferiore tbody'), ceiInferiori);
-      renderTable(document.querySelector('#tabella-altre tbody'), altre);
+      renderTable('tabella-sinergy', [
+        calcolaSinergyBusinessGas(consumo, psv),
+      ]);
     }
 
     window.addEventListener('load', calcolaTutteLeOfferteGasBusiness);
