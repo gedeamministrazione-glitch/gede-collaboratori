@@ -13,7 +13,7 @@
     .input-group input[type="number"], .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
     button { display: block; width: 100%; background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; font-size: 1.1rem; margin-top: 20px; }
     button:hover { background-color: #0056b3; }
-    .results-section { margin-top: 30px; background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); max-width: 800px; margin-left: auto; margin-right: auto; overflow-x: auto; }
+    .results-section { margin-top: 30px; background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); max-width: 900px; margin-left: auto; margin-right: auto; overflow-x: auto; }
     .results-section h2 { text-align: center; color: #007bff; margin-bottom: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 600px; }
     th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
@@ -24,6 +24,8 @@
     .print-button:hover { background-color: #5a6268; }
     .note { margin-top: 18px; font-size: 0.92em; color: #555; }
     .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:0.85rem; margin-left:6px; }
+    .section-title { text-align:center; color:#007bff; margin-top:28px; margin-bottom:6px; font-weight:700; }
+    .validita { font-size: 0.82rem; color: #888; margin-left: 8px; font-weight: normal; }
   </style>
 </head>
 <body>
@@ -51,8 +53,8 @@
     </div>
 
     <p class="note">
-      Nota: il PUN inserito è considerato <b>puro</b> (senza perdite).
-      In BT applichiamo perdite <b>10%</b> (×1,10); in MT perdite <b>3,8%</b> (×1,038).
+      Il PUN inserito è <b>puro</b> (senza perdite). In BT: ×1,10; in MT: ×1,038.
+      PUN dicembre 2025 monorario ≈ 0,1197 €/kWh.
     </p>
 
     <button onclick="calcolaTutteLeOfferte()">Calcola Offerte</button>
@@ -61,39 +63,56 @@
   <div class="results-section">
     <h2 id="results-title">Risultati Comparazione Mensile Stimata</h2>
 
-    <h3 style="text-align:center; color:#007bff;">Offerte CEI &gt; 30.000 kWh</h3>
+    <!-- CEI > 30.000 kWh -->
+    <h3 class="section-title">🔵 CEI &gt; 30.000 kWh/mese</h3>
     <table id="tabella-cei-superiore">
       <thead>
         <tr>
           <th>Offerta</th>
           <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa (€)</th>
+          <th>Quota Fissa (€/mese)</th>
           <th>Totale Stimato (€)</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
 
-    <h3 style="text-align:center; color:#007bff; margin-top:30px;">Offerte CEI &lt; 30.000 kWh</h3>
+    <!-- CEI < 30.000 kWh -->
+    <h3 class="section-title">🔵 CEI &lt; 30.000 kWh/mese</h3>
     <table id="tabella-cei-inferiore">
       <thead>
         <tr>
           <th>Offerta</th>
           <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa (€)</th>
+          <th>Quota Fissa (€/mese)</th>
           <th>Totale Stimato (€)</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
 
-    <h3 style="text-align:center; color:#007bff; margin-top:30px;">Altre Offerte</h3>
-    <table id="tabella-altre">
+    <!-- ESTRA -->
+    <h3 class="section-title">🟠 Estra Business Luce</h3>
+    <table id="tabella-estra">
       <thead>
         <tr>
           <th>Offerta</th>
           <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa (€)</th>
+          <th>Quota Fissa (€/mese)</th>
+          <th>Totale Stimato (€)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- SINERGY -->
+    <h3 class="section-title">🟢 Sinergy Business Luce <span class="validita">(valida fino 31/03/2026 — cod. 025867ESVFL03XX0000000325SHEBPUN)</span></h3>
+    <table id="tabella-sinergy">
+      <thead>
+        <tr>
+          <th>Offerta</th>
+          <th>Costo Materia Prima (€)</th>
+          <th>Quota Fissa (€/mese)</th>
           <th>Totale Stimato (€)</th>
         </tr>
       </thead>
@@ -101,8 +120,7 @@
     </table>
 
     <p class="note">
-      Nota: i totali stimati includono <b>solo</b> i costi di vendita su base mensile (Materia Prima e Quota Fissa),
-      includendo perdite (BT/MT), dispacciamento e mercato capacità (valori di sistema).
+      I totali stimati includono solo i costi di vendita mensili (Materia Prima, Quota Fissa, perdite, dispacciamento e capacità).
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
     </p>
   </div>
@@ -111,184 +129,164 @@
 
   <script>
     /***************************************************************
-     * COEFFICIENTI PERDITE (PUN PURO -> PUN "con perdite")
-     * BT: 10% (x 1,10) | MT: 3,8% (x 1,038)
+     * PERDITE RETE
      ***************************************************************/
-    const LOSS_MULTIPLIER = {
-      BT: 1.10,
-      MT: 1.038
-    };
+    const LOSS = { BT: 1.10, MT: 1.038 };
 
     /***************************************************************
-     * DISPACCIAMENTO + MERCATO CAPACITÀ (valori copiati dalle CTE ESTRA)
-     * Per ora li usiamo uguali in BT/MT per non “inventare” differenze.
-     * Se in futuro vuoi differenziarli, cambia solo questi numeri.
+     * DISPACCIAMENTO + CAPACITÀ
+     * BT/MT stesso valore (da CTE)
      ***************************************************************/
-    const DISP_KWH = {
-      BT: 0.01078,
-      MT: 0.01078
-    };
+    const DISP = { BT: 0.01078, MT: 0.01078 };
+    const CAPA = { BT: 0.009008, MT: 0.009008 };
 
-    const CAPACITA_KWH = {
-      BT: 0.009008,
-      MT: 0.009008
-    };
-
-    // Estra: costo GO (da CTE)
-    const ESTRA_GO_KWH = 0.011;
+    // Estra GO (costo garanzia origine)
+    const ESTRA_GO = 0.011;
 
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-    function resultRow(nome, costoMateriaPrima, quotaFissa) {
-      const totale = costoMateriaPrima + quotaFissa;
+    function resultRow(nome, costoMP, quotaFissa) {
+      const totale = costoMP + quotaFissa;
       return {
         nome,
-        costoMateriaPrima: round2(costoMateriaPrima).toFixed(2),
+        costoMP:    round2(costoMP).toFixed(2),
         quotaFissa: round2(quotaFissa).toFixed(2),
-        totale: round2(totale).toFixed(2)
+        totale:     round2(totale).toFixed(2)
       };
     }
 
     function getTensione() {
-      const t = document.getElementById('tensione').value;
-      return (t === "MT") ? "MT" : "BT";
+      return document.getElementById('tensione').value === "MT" ? "MT" : "BT";
     }
 
-    function prezzoIndicizzatoKwh(punPuro, spread, variabiliOfferta, tensione, includePerdite = true) {
-      const loss = LOSS_MULTIPLIER[tensione] ?? LOSS_MULTIPLIER.BT;
-      const punEff = includePerdite ? (punPuro * loss) : punPuro;
-
-      const disp = DISP_KWH[tensione] ?? DISP_KWH.BT;
-      const cap = CAPACITA_KWH[tensione] ?? CAPACITA_KWH.BT;
-
-      return punEff + spread + variabiliOfferta + disp + cap;
+    function punEfficace(pun, tensione) {
+      return pun * (LOSS[tensione] ?? LOSS.BT);
     }
 
     /***************************************************************
-     * CEI < 30.000 kWh
+     * CEI < 30.000 kWh/mese
      ***************************************************************/
-    function calcolaCeiReflex(consumo, pun, tensione) {
-      const spread = 0.014;
-      const quotaFissa = 26.5;
-      const variabili = 0.002 + 0.0035 + 0.00219;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
-      return resultRow("CEI REFLEX (< 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    function calcolaCeiReflex(consumo, pun, t) {
+      const spread = 0.014, qf = 26.5;
+      const varKwh = 0.002 + 0.0035 + 0.00219;
+      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
+      return resultRow("CEI REFLEX (<30k kWh)", costo, qf);
     }
 
-    function calcolaCanon(consumo, pun, tensione) {
-      const spread = 0.012;
-      const quotaFissa = 19.5;
-      const variabili = 0.002 + 0.0035 + 0.00219;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
-      return resultRow("CEI CANON (< 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    function calcolaCanon(consumo, pun, t) {
+      const spread = 0.012, qf = 19.5;
+      const varKwh = 0.002 + 0.0035 + 0.00219;
+      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
+      return resultRow("CEI CANON (<30k kWh)", costo, qf);
     }
 
-    function calcolaVision(consumo, pun, tensione) {
-      const spread = 0.012;
-      const quotaFissa = 16.0;
-      const variabili = 0.002 + 0.0035;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
-      return resultRow("CEI VISION (< 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    function calcolaVision(consumo, pun, t) {
+      const spread = 0.012, qf = 16.0;
+      const varKwh = 0.002 + 0.0035;
+      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
+      return resultRow("CEI VISION (<30k kWh)", costo, qf);
     }
 
     /***************************************************************
-     * CEI > 30.000 kWh
+     * CEI > 30.000 kWh/mese
      ***************************************************************/
-    function calcolaCeiPartner(consumo, pun, tensione) {
-      const spread = 0.0130;
-      const quotaFissa = 15;
-      const variabili = 0.00185 + 0.0035;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
-      return resultRow("CEI PARTNER (> 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    function calcolaCeiPartner(consumo, pun, t) {
+      const spread = 0.0130, qf = 15;
+      const varKwh = 0.00185 + 0.0035;
+      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
+      return resultRow("CEI PARTNER (>30k kWh)", costo, qf);
     }
 
-    function calcolaCeiFlex(consumo, pun, tensione) {
-      const spread = 0.0090;
-      const quotaFissa = 15;
-      const variabili = 0.002 + 0.0035;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
-      return resultRow("CEI FLEX (> 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    function calcolaCeiFlex(consumo, pun, t) {
+      const spread = 0.0090, qf = 15;
+      const varKwh = 0.002 + 0.0035;
+      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
+      return resultRow("CEI FLEX (>30k kWh)", costo, qf);
     }
 
-    function calcolaCeiPro(consumo, pun, tensione) {
-      const spread = 0.0110;
-      const quotaFissa = 15;
-      const variabili = 0.002 + 0.0035;
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread, variabili, tensione, true);
-      return resultRow("CEI PRO (> 30.000 kWh)", prezzoKwh * consumo, quotaFissa);
+    function calcolaCeiPro(consumo, pun, t) {
+      const spread = 0.0110, qf = 15;
+      const varKwh = 0.002 + 0.0035;
+      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
+      return resultRow("CEI PRO (>30k kWh)", costo, qf);
     }
 
     /***************************************************************
-     * ESTRA
+     * ESTRA BUSINESS LUCE (invariato)
      ***************************************************************/
-    function calcolaEstraTrendUnica(consumo, pun, tensione) {
+    function calcolaEstraTrend(consumo, pun, t) {
       const spread = 0.0242;
-      const quotaFissa = 168.084 / 12;
-
-      // Trend: PUN con perdite + spread + GO + disp + capacità
-      const prezzoKwh = prezzoIndicizzatoKwh(pun, spread + ESTRA_GO_KWH, 0.0, tensione, true);
-      return resultRow("ESTRA TREND UNICA VARIABILE", prezzoKwh * consumo, quotaFissa);
+      const qf = 168.084 / 12;
+      const costo = consumo * (punEfficace(pun, t) + spread + ESTRA_GO + DISP[t] + CAPA[t]);
+      return resultRow("Estra TREND UNICA variabile", costo, qf);
     }
 
-    function calcolaEstraRelaxUnica(consumo, tensione) {
-      // Relax: prezzo fisso energia + GO + disp + capacità
-      // Nota: se la fissa è “al lordo perdite” NON va moltiplicata.
-      const prezzoFissoEnergia = 0.143;
-      const quotaFissa = 168.084 / 12;
-
-      const disp = DISP_KWH[tensione] ?? DISP_KWH.BT;
-      const cap = CAPACITA_KWH[tensione] ?? CAPACITA_KWH.BT;
-
-      const prezzoKwhTot = prezzoFissoEnergia + ESTRA_GO_KWH + disp + cap;
-      return resultRow("ESTRA RELAX UNICA FISSA", prezzoKwhTot * consumo, quotaFissa);
+    function calcolaEstraRelax(consumo, t) {
+      const prezzoFisso = 0.143;
+      const qf = 168.084 / 12;
+      const costo = consumo * (prezzoFisso + ESTRA_GO + DISP[t] + CAPA[t]);
+      return resultRow("Estra RELAX UNICA fissa", costo, qf);
     }
 
     /***************************************************************
-     * RENDER
+     * SINERGY BUSINESS LUCE
+     * CTE cod. 025867ESVFL03XX0000000325SHEBPUN — valida fino 31/03/2026
+     * Materia: PUN×1,10 + 0,022 €/kWh (spread F1/F2/F3 uguale)
+     * Quota fissa: 120+24 = 144 €/anno = 12 €/mese
+     * Sbilanciamento business: 0,005 €/kWh
+     * Dispacciamento: 0,013580 €/kWh (aggiornato 08/01/2026)
      ***************************************************************/
-    function renderTable(tbody, offerte) {
+    function calcolaSinergyBusinessLuce(consumo, pun, t) {
+      const spread    = 0.022;
+      const qf        = (120 + 24) / 12;  // 12 €/mese
+      const sbilanc   = 0.005;            // sbilanciamento business
+      const disp      = 0.013580;         // dispacciamento Sinergy aggiornato
+
+      const costo = consumo * (punEfficace(pun, t) + spread + sbilanc + disp);
+      return resultRow("Sinergy Business Luce (PUN×1,10 + 0,022)", costo, qf);
+    }
+
+    /***************************************************************
+     * RENDER + MAIN
+     ***************************************************************/
+    function renderTable(id, offerte) {
+      const tbody = document.querySelector('#' + id + ' tbody');
       tbody.innerHTML = "";
-      offerte.forEach(offerta => {
+      offerte.forEach(o => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${offerta.nome}</td><td>${offerta.costoMateriaPrima}</td><td>${offerta.quotaFissa}</td><td>${offerta.totale}</td>`;
+        row.innerHTML = `<td>${o.nome}</td><td>€ ${o.costoMP}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totale}</td>`;
         tbody.appendChild(row);
       });
     }
 
     function calcolaTutteLeOfferte() {
-      const consumoMensile = parseFloat(document.getElementById('consumo').value);
-      const pun = parseFloat(document.getElementById('pun').value);
-      const tensione = getTensione();
+      const consumo = parseFloat(document.getElementById('consumo').value);
+      const pun     = parseFloat(document.getElementById('pun').value);
+      const t       = getTensione();
 
-      if (Number.isNaN(consumoMensile) || consumoMensile < 0) {
-        alert("Inserisci un consumo mensile valido (kWh).");
-        return;
-      }
-      if (Number.isNaN(pun) || pun < 0) {
-        alert("Inserisci un PUN valido (€/kWh).");
-        return;
-      }
+      if (Number.isNaN(consumo) || consumo < 0) { alert("Inserisci un consumo valido."); return; }
+      if (Number.isNaN(pun) || pun < 0)         { alert("Inserisci un PUN valido."); return; }
 
-      const ceiSuperiori = [
-        calcolaCeiPartner(consumoMensile, pun, tensione),
-        calcolaCeiPro(consumoMensile, pun, tensione),
-        calcolaCeiFlex(consumoMensile, pun, tensione)
-      ];
+      renderTable('tabella-cei-superiore', [
+        calcolaCeiPartner(consumo, pun, t),
+        calcolaCeiPro(consumo, pun, t),
+        calcolaCeiFlex(consumo, pun, t),
+      ]);
 
-      const ceiInferiori = [
-        calcolaCeiReflex(consumoMensile, pun, tensione),
-        calcolaCanon(consumoMensile, pun, tensione),
-        calcolaVision(consumoMensile, pun, tensione)
-      ];
+      renderTable('tabella-cei-inferiore', [
+        calcolaCeiReflex(consumo, pun, t),
+        calcolaCanon(consumo, pun, t),
+        calcolaVision(consumo, pun, t),
+      ]);
 
-      const altre = [
-        calcolaEstraTrendUnica(consumoMensile, pun, tensione),
-        calcolaEstraRelaxUnica(consumoMensile, tensione)
-      ];
+      renderTable('tabella-estra', [
+        calcolaEstraTrend(consumo, pun, t),
+        calcolaEstraRelax(consumo, t),
+      ]);
 
-      renderTable(document.querySelector('#tabella-cei-superiore tbody'), ceiSuperiori);
-      renderTable(document.querySelector('#tabella-cei-inferiore tbody'), ceiInferiori);
-      renderTable(document.querySelector('#tabella-altre tbody'), altre);
+      renderTable('tabella-sinergy', [
+        calcolaSinergyBusinessLuce(consumo, pun, t),
+      ]);
     }
 
     window.onload = calcolaTutteLeOfferte;
