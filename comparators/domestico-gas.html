@@ -7,7 +7,7 @@
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; line-height: 1.6; }
     h1 { text-align: center; color: #444; margin-bottom: 30px; }
-    .input-section, .results-section { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto; }
+    .input-section, .results-section { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; max-width: 900px; margin-left: auto; margin-right: auto; }
     .input-group { margin-bottom: 18px; }
     .input-group label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
     .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
@@ -23,6 +23,8 @@
     #footer { text-align: center; padding-top: 20px; margin-top: 30px; border-top: 1px solid #ccc; color: #777; font-size: 0.9rem; }
     .note { font-size: 0.95rem; color: #666; margin-top: 10px; }
     .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef3ff; color:#2d4bff; font-size:0.85rem; margin-left:6px; }
+    .section-title { text-align: center; color: #007bff; margin-top: 24px; margin-bottom: 6px; font-weight: 700; font-size: 1.05rem; }
+    .validita { font-size: 0.82rem; color: #888; margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -39,11 +41,12 @@
     </div>
 
     <div class="input-group">
-      <label for="psv">Indice Gas (€/Smc) <span class="badge">PSV/ICIS</span>:</label>
-      <input type="number" id="psv" value="0.40" step="0.0001" />
+      <label for="psv">Indice Gas (€/Smc) <span class="badge">PSV</span>:</label>
+      <input type="number" id="psv" value="0.33" step="0.0001" />
       <div class="note">
-        Nota: l’“Indice Gas” è il valore mensile che inserisci tu (es. PSV, oppure ICIS PSV Day-Ahead se vuoi replicare l’offerta Estra Natura).
-        I calcoli mostrano una stima mensile riferita alla componente vendita (Materia Prima + quote/corrispettivi di vendita) e sono <b>IVA e imposte escluse</b>.
+        Inserisci il valore PSV mensile corrente (es. 0,33 €/Smc = dicembre 2025).
+        I calcoli mostrano una stima mensile della sola componente vendita (Materia Prima + quote/corrispettivi).
+        Valori <b>IVA e imposte escluse</b>. Non includono trasporto, distribuzione, oneri di sistema ARERA.
       </div>
     </div>
 
@@ -53,14 +56,45 @@
   <div class="results-section">
     <h2>Risultati Comparazione Mensile Stimata</h2>
 
-    <table id="risultati-tabella-gas">
+    <!-- CEI -->
+    <div class="section-title">🔵 CEI – Compagnia Energetica Italiana <span class="validita">(valide fino 31/03/2026)</span></div>
+    <table id="tabella-cei">
       <thead>
         <tr>
           <th>Offerta</th>
           <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa (€)</th>
-          <th>Costi di Commercializzazione / Servizi vendita (€)</th>
-          <th>Sconti/Bonus (€)</th>
+          <th>Quota Fissa (€/mese)</th>
+          <th>Costi Variabili Vendita (€)</th>
+          <th>Totale stimato (€)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- ESTRA -->
+    <div class="section-title">🟠 Estra</div>
+    <table id="tabella-estra">
+      <thead>
+        <tr>
+          <th>Offerta</th>
+          <th>Costo Materia Prima (€)</th>
+          <th>Quota Fissa (€/mese)</th>
+          <th>Costi Variabili Vendita (€)</th>
+          <th>Totale stimato (€)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- SINERGY -->
+    <div class="section-title">🟢 Sinergy Luce e Gas <span class="validita">(valide fino 31/03/2026)</span></div>
+    <table id="tabella-sinergy">
+      <thead>
+        <tr>
+          <th>Offerta</th>
+          <th>Costo Materia Prima (€)</th>
+          <th>Quota Fissa (€/mese)</th>
+          <th>Costi Variabili Vendita (€)</th>
           <th>Totale stimato (€)</th>
         </tr>
       </thead>
@@ -71,6 +105,7 @@
 
     <div class="note" style="margin-top:14px;">
       Nota: non include trasporto, distribuzione, misura, oneri di sistema ARERA, né eventuali componenti legate a morosità/servizi accessori.
+      Sinergy: il costo fisso di 50€/POD per prestazioni di connessione (voltura, subentro, ecc.) non è incluso.
     </div>
   </div>
 
@@ -86,139 +121,141 @@
     }
 
     // =========================
-    // ESTRA - DOMESTICO GAS
+    // CEI – DOMESTICO GAS
+    // CTE valide fino al 31/03/2026
+    // Spread = 0 su tutte e tre le offerte
+    // Variabili comuni: CcP 0,0145 + CrA 0,0219 = 0,0364 €/Smc
     // =========================
 
-    // ESTRA FISSA GAS (CTE: P = 0,429 €/Smc; quota fissa 132 €/anno; sconto domiciliazione 2 €/mese)
+    // CEI GO: quota fissa 12 €/mese | variabili: CcP 0,0145 + CrA 0,0219 = 0,0364 €/Smc
+    function calcolaCeiGo(consumo, psv) {
+      const spread = 0.00;
+      const quotaFissa = 12.00; // €/mese
+      const variabili = 0.0145 + 0.0219; // CcP + CrA = 0,0364 €/Smc
+
+      const costoMP = consumo * (psv + spread);
+      const costiVar = consumo * variabili;
+      const totale = costoMP + quotaFissa + costiVar;
+      return { nome: "CEI Go", costoMP: fmt(costoMP), quotaFissa: fmt(quotaFissa), costiVar: fmt(costiVar), totale: fmt(totale) };
+    }
+
+    // CEI BOOST: quota fissa 15 €/mese | variabili: CcP 0,0145 + CrA 0,0219 = 0,0364 €/Smc
+    function calcolaCeiBoost(consumo, psv) {
+      const spread = 0.00;
+      const quotaFissa = 15.00; // €/mese
+      const variabili = 0.0145 + 0.0219; // CcP + CrA = 0,0364 €/Smc
+
+      const costoMP = consumo * (psv + spread);
+      const costiVar = consumo * variabili;
+      const totale = costoMP + quotaFissa + costiVar;
+      return { nome: "CEI Boost", costoMP: fmt(costoMP), quotaFissa: fmt(quotaFissa), costiVar: fmt(costiVar), totale: fmt(totale) };
+    }
+
+    // CEI TURBO: quota fissa 20 €/mese | variabili: CcP 0,0145 + CrA 0,0219 = 0,0364 €/Smc
+    function calcolaCeiTurbo(consumo, psv) {
+      const spread = 0.00;
+      const quotaFissa = 20.00; // €/mese
+      const variabili = 0.0145 + 0.0219; // CcP + CrA = 0,0364 €/Smc
+
+      const costoMP = consumo * (psv + spread);
+      const costiVar = consumo * variabili;
+      const totale = costoMP + quotaFissa + costiVar;
+      return { nome: "CEI Turbo", costoMP: fmt(costoMP), quotaFissa: fmt(quotaFissa), costiVar: fmt(costiVar), totale: fmt(totale) };
+    }
+
+    // =========================
+    // ESTRA – DOMESTICO GAS (invariato)
+    // =========================
+
     function calcolaEstraFissa(consumo) {
-      const prezzoFisso = 0.429; // €/Smc
-      const quotaFissaMensile = 132 / 12; // €/mese
-      const scontoMensile = 2.00; // €/mese (in bolletta, se domiciliazione)
+      const prezzoFisso = 0.429;
+      const quotaFissa = 132 / 12;
+      const scontoMensile = 2.00;
 
-      const costoMateriaPrima = consumo * prezzoFisso;
-      const totale = costoMateriaPrima + quotaFissaMensile - scontoMensile;
-
-      return {
-        nome: "Estra Fissa Gas",
-        costoMateriaPrima: fmt(costoMateriaPrima),
-        quotaFissa: fmt(quotaFissaMensile),
-        costiCommercializzazione: fmt(0),
-        sconto: fmt(-scontoMensile),
-        totale: fmt(totale)
-      };
+      const costoMP = consumo * prezzoFisso;
+      const costiVar = -scontoMensile; // sconto espresso come negativo
+      const totale = costoMP + quotaFissa + costiVar;
+      return { nome: "Estra Fissa Gas (sconto -2€/mese SDD)", costoMP: fmt(costoMP), quotaFissa: fmt(quotaFissa), costiVar: fmt(costiVar), totale: fmt(totale) };
     }
 
-    // ESTRA NATURA GAS (CTE: Indice ICIS PSV Day-Ahead (input) + spread 0,09 €/Smc; quota fissa 132 €/anno; sconto 2 €/mese)
-    function calcolaEstraNatura(consumo, indiceGas) {
-      const spread = 0.09; // €/Smc
-      const quotaFissaMensile = 132 / 12; // €/mese
-      const scontoMensile = 2.00; // €/mese
+    function calcolaEstraNatura(consumo, psv) {
+      const spread = 0.09;
+      const quotaFissa = 132 / 12;
+      const scontoMensile = 2.00;
 
-      const costoMateriaPrima = consumo * (indiceGas + spread);
-      const totale = costoMateriaPrima + quotaFissaMensile - scontoMensile;
-
-      return {
-        nome: "Estra Natura Gas",
-        costoMateriaPrima: fmt(costoMateriaPrima),
-        quotaFissa: fmt(quotaFissaMensile),
-        costiCommercializzazione: fmt(0),
-        sconto: fmt(-scontoMensile),
-        totale: fmt(totale)
-      };
+      const costoMP = consumo * (psv + spread);
+      const costiVar = -scontoMensile;
+      const totale = costoMP + quotaFissa + costiVar;
+      return { nome: "Estra Natura Gas (sconto -2€/mese SDD)", costoMP: fmt(costoMP), quotaFissa: fmt(quotaFissa), costiVar: fmt(costiVar), totale: fmt(totale) };
     }
 
     // =========================
-    // CEI - PLACET GAS (DOMESTICO)
-    // NB: Spread = 0 nelle CTE allegate
+    // SINERGY – FAMILY GAS DOMESTICO
+    // CTE cod. 025867GSVML03XX00000325SHGDPSVDA — valida fino 31/03/2026
+    // Variabile: PSV + 0,120 €/Smc; quota fissa 96+24 = 120 €/anno = 10 €/mese
+    // Bilanciamento: 0,020 €/Smc | CCR (sistema): 0,026733 €/Smc
+    //
+    // CTE cod. 025867GSFML01XX000000000126FIXGD — valida fino 28/02/2026
+    // Fissa: 0,485 €/Smc; quota fissa 156+36 = 192 €/anno = 16 €/mese
     // =========================
 
-    // CEI GO (CTE: quota fissa pdr 7,5 €/mese + quota fissa comm 5,5 €/mese = 13 €/mese
-    //         variabili: 0,03 + 0,02 + 0,0219 + 0,0145 = 0,0864 €/Smc)
-    function calcolaCeiGo(consumo, indiceGas) {
-      const quotaFissaMensile = 7.5 + 5.5; // €/mese
-      const variabiliUnit = 0.03 + 0.02 + 0.0219 + 0.0145; // €/Smc
+    function calcolaSinergyFamilyGasVariabile(consumo, psv) {
+      const spread = 0.120;
+      const quotaFissa = (96 + 24) / 12; // 10 €/mese
+      const variabili = 0.020 + 0.026733; // bilanciamento + CCR = 0,046733 €/Smc
 
-      const costoMateriaPrima = consumo * indiceGas;
-      const costiVenditaVariabili = consumo * variabiliUnit;
-      const totale = costoMateriaPrima + quotaFissaMensile + costiVenditaVariabili;
-
-      return {
-        nome: "CEI Go (PLACET Gas)",
-        costoMateriaPrima: fmt(costoMateriaPrima),
-        quotaFissa: fmt(quotaFissaMensile),
-        costiCommercializzazione: fmt(costiVenditaVariabili),
-        sconto: fmt(0),
-        totale: fmt(totale)
-      };
+      const costoMP = consumo * (psv + spread);
+      const costiVar = consumo * variabili;
+      const totale = costoMP + quotaFissa + costiVar;
+      return { nome: "Sinergy Family Gas Variabile (PSV+0,12)", costoMP: fmt(costoMP), quotaFissa: fmt(quotaFissa), costiVar: fmt(costiVar), totale: fmt(totale) };
     }
 
-    // CEI BOOST (CTE: quota fissa pdr 8 €/mese + quota fissa comm 7 €/mese = 15 €/mese
-    //           variabili: 0,0219 + 0,0145 + 0,06 = 0,0964 €/Smc)
-    function calcolaCeiBoost(consumo, indiceGas) {
-      const quotaFissaMensile = 8 + 7; // €/mese
-      const variabiliUnit = 0.0219 + 0.0145 + 0.06; // €/Smc
+    function calcolaSinergyFamilyGasFissa(consumo) {
+      const prezzoFisso = 0.485;
+      const quotaFissa = (156 + 36) / 12; // 16 €/mese
+      const variabili = 0.026733; // solo CCR (no bilanciamento nella CTE fissa)
 
-      const costoMateriaPrima = consumo * indiceGas;
-      const costiVenditaVariabili = consumo * variabiliUnit;
-      const totale = costoMateriaPrima + quotaFissaMensile + costiVenditaVariabili;
-
-      return {
-        nome: "CEI Boost (PLACET Gas)",
-        costoMateriaPrima: fmt(costoMateriaPrima),
-        quotaFissa: fmt(quotaFissaMensile),
-        costiCommercializzazione: fmt(costiVenditaVariabili),
-        sconto: fmt(0),
-        totale: fmt(totale)
-      };
-    }
-
-    // CEI TURBO (CTE: quota fissa pdr 12 €/mese + quota fissa comm 10 €/mese = 22 €/mese
-    //           variabili: 0,05 + 0,0219 + 0,0145 + 0,03 = 0,1164 €/Smc)
-    function calcolaCeiTurbo(consumo, indiceGas) {
-      const quotaFissaMensile = 12 + 10; // €/mese
-      const variabiliUnit = 0.05 + 0.0219 + 0.0145 + 0.03; // €/Smc
-
-      const costoMateriaPrima = consumo * indiceGas;
-      const costiVenditaVariabili = consumo * variabiliUnit;
-      const totale = costoMateriaPrima + quotaFissaMensile + costiVenditaVariabili;
-
-      return {
-        nome: "CEI Turbo (PLACET Gas)",
-        costoMateriaPrima: fmt(costoMateriaPrima),
-        quotaFissa: fmt(quotaFissaMensile),
-        costiCommercializzazione: fmt(costiVenditaVariabili),
-        sconto: fmt(0),
-        totale: fmt(totale)
-      };
+      const costoMP = consumo * prezzoFisso;
+      const costiVar = consumo * variabili;
+      const totale = costoMP + quotaFissa + costiVar;
+      return { nome: "Sinergy Family Gas Fisso (0,485 €/Smc) ⚠️ scade 28/02/2026", costoMP: fmt(costoMP), quotaFissa: fmt(quotaFissa), costiVar: fmt(costiVar), totale: fmt(totale) };
     }
 
     // =========================
-    // CALCOLO TUTTE LE OFFERTE
+    // RENDER
     // =========================
+    function renderTabella(id, righe) {
+      const tbody = document.querySelector('#' + id + ' tbody');
+      tbody.innerHTML = '';
+      righe.forEach(o => {
+        const tr = tbody.insertRow();
+        tr.insertCell(0).textContent = o.nome;
+        tr.insertCell(1).textContent = '€ ' + o.costoMP;
+        tr.insertCell(2).textContent = '€ ' + o.quotaFissa;
+        tr.insertCell(3).textContent = '€ ' + o.costiVar;
+        tr.insertCell(4).textContent = '€ ' + o.totale;
+      });
+    }
+
     function calcolaTutteLeOfferteGas() {
       const consumo = parseFloat(document.getElementById('consumo').value) || 0;
-      const indiceGas = parseFloat(document.getElementById('psv').value) || 0;
+      const psv = parseFloat(document.getElementById('psv').value) || 0;
 
-      const offerte = [
+      renderTabella('tabella-cei', [
+        calcolaCeiGo(consumo, psv),
+        calcolaCeiBoost(consumo, psv),
+        calcolaCeiTurbo(consumo, psv),
+      ]);
+
+      renderTabella('tabella-estra', [
         calcolaEstraFissa(consumo),
-        calcolaEstraNatura(consumo, indiceGas),
-        calcolaCeiTurbo(consumo, indiceGas),
-        calcolaCeiBoost(consumo, indiceGas),
-        calcolaCeiGo(consumo, indiceGas),
-      ];
+        calcolaEstraNatura(consumo, psv),
+      ]);
 
-      const tabellaBody = document.querySelector('#risultati-tabella-gas tbody');
-      tabellaBody.innerHTML = '';
-
-      offerte.forEach(offerta => {
-        const row = tabellaBody.insertRow();
-        row.insertCell(0).textContent = offerta.nome;
-        row.insertCell(1).textContent = '€' + offerta.costoMateriaPrima;
-        row.insertCell(2).textContent = '€' + offerta.quotaFissa;
-        row.insertCell(3).textContent = '€' + offerta.costiCommercializzazione;
-        row.insertCell(4).textContent = '€' + offerta.sconto;
-        row.insertCell(5).textContent = '€' + offerta.totale;
-      });
+      renderTabella('tabella-sinergy', [
+        calcolaSinergyFamilyGasVariabile(consumo, psv),
+        calcolaSinergyFamilyGasFissa(consumo),
+      ]);
     }
 
     window.onload = calcolaTutteLeOfferteGas;
