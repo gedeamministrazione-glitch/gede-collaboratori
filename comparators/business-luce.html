@@ -7,25 +7,30 @@
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; line-height: 1.6; }
     h1 { text-align: center; color: #444; margin-bottom: 30px; }
-    .input-section { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto; }
+    .input-section { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto; }
     .input-group { margin-bottom: 18px; }
     .input-group label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
     .input-group input[type="number"], .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
     button { display: block; width: 100%; background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; font-size: 1.1rem; margin-top: 20px; }
     button:hover { background-color: #0056b3; }
-    .results-section { margin-top: 30px; background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); max-width: 900px; margin-left: auto; margin-right: auto; overflow-x: auto; }
+    .results-section { margin-top: 30px; background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 1000px; margin-left: auto; margin-right: auto; overflow-x: auto; }
     .results-section h2 { text-align: center; color: #007bff; margin-bottom: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 600px; }
-    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 700px; }
+    th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
     th { background-color: #f2f2f2; font-weight: bold; color: #333; }
     tr:nth-child(even) { background-color: #f9f9f9; }
     tr:hover { background-color: #e9e9e9; }
+    .best { background-color: #e6ffe6 !important; font-weight: bold; }
+    .saving-pos { color: #1a7a1a; font-weight: bold; }
+    .saving-neg { color: #cc0000; font-weight: bold; }
     .print-button { display: block; width: auto; margin: 20px auto; padding: 10px 15px; background-color: #6c757d; border: none; color: white; border-radius: 5px; cursor: pointer; font-size: 1rem; text-align: center; }
     .print-button:hover { background-color: #5a6268; }
-    .note { margin-top: 18px; font-size: 0.92em; color: #555; }
+    .note { margin-top: 18px; font-size: 0.88em; color: #555; }
     .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:0.85rem; margin-left:6px; }
     .section-title { text-align:center; color:#007bff; margin-top:28px; margin-bottom:6px; font-weight:700; }
     .validita { font-size: 0.82rem; color: #888; margin-left: 8px; font-weight: normal; }
+    .ref-box { background:#fff8e1; border:1px solid #ffe082; border-radius:6px; padding:12px 18px; margin-bottom:18px; font-size:0.95rem; }
+    .ref-box strong { color:#b45309; }
   </style>
 </head>
 <body>
@@ -52,8 +57,14 @@
       </select>
     </div>
 
+    <div class="input-group">
+      <label for="spesaAttuale">Spesa attuale mensile vendita (€) — opzionale, per confronto risparmio:</label>
+      <input type="number" id="spesaAttuale" value="" step="0.01" min="0" placeholder="es. 74.69">
+    </div>
+
     <p class="note">
       Il PUN inserito è <b>puro</b> (senza perdite). In BT: ×1,10; in MT: ×1,038.
+      Dispacciamento e oneri capacità sono anch'essi maggiorati delle perdite come da formula contrattuale reale.
       PUN dicembre 2025 monorario ≈ 0,1197 €/kWh.
     </p>
 
@@ -61,200 +72,178 @@
   </div>
 
   <div class="results-section">
-    <h2 id="results-title">Risultati Comparazione Mensile Stimata</h2>
+    <h2 id="results-title">Risultati Comparazione</h2>
+    <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
-    <!-- CEI > 30.000 kWh -->
     <h3 class="section-title">🔵 CEI &gt; 30.000 kWh/mese</h3>
     <table id="tabella-cei-superiore">
-      <thead>
-        <tr>
-          <th>Offerta</th>
-          <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa (€/mese)</th>
-          <th>Totale Stimato (€)</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>Offerta</th>
+        <th>Costo Energia (€/mese)</th>
+        <th>Quota Fissa (€/mese)</th>
+        <th>Totale Mese (€)</th>
+        <th>Totale Anno (€)</th>
+        <th>Risparmio vs attuale</th>
+      </tr></thead>
       <tbody></tbody>
     </table>
 
-    <!-- CEI < 30.000 kWh -->
     <h3 class="section-title">🔵 CEI &lt; 30.000 kWh/mese</h3>
     <table id="tabella-cei-inferiore">
-      <thead>
-        <tr>
-          <th>Offerta</th>
-          <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa (€/mese)</th>
-          <th>Totale Stimato (€)</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>Offerta</th>
+        <th>Costo Energia (€/mese)</th>
+        <th>Quota Fissa (€/mese)</th>
+        <th>Totale Mese (€)</th>
+        <th>Totale Anno (€)</th>
+        <th>Risparmio vs attuale</th>
+      </tr></thead>
       <tbody></tbody>
     </table>
 
-    <!-- ESTRA -->
     <h3 class="section-title">🟠 Estra Business Luce</h3>
     <table id="tabella-estra">
-      <thead>
-        <tr>
-          <th>Offerta</th>
-          <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa (€/mese)</th>
-          <th>Totale Stimato (€)</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>Offerta</th>
+        <th>Costo Energia (€/mese)</th>
+        <th>Quota Fissa (€/mese)</th>
+        <th>Totale Mese (€)</th>
+        <th>Totale Anno (€)</th>
+        <th>Risparmio vs attuale</th>
+      </tr></thead>
       <tbody></tbody>
     </table>
 
-    <!-- SINERGY -->
     <h3 class="section-title">🟢 Sinergy Business Luce <span class="validita">(valida fino 31/03/2026 — cod. 025867ESVFL03XX0000000325SHEBPUN)</span></h3>
     <table id="tabella-sinergy">
-      <thead>
-        <tr>
-          <th>Offerta</th>
-          <th>Costo Materia Prima (€)</th>
-          <th>Quota Fissa (€/mese)</th>
-          <th>Totale Stimato (€)</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>Offerta</th>
+        <th>Costo Energia (€/mese)</th>
+        <th>Quota Fissa (€/mese)</th>
+        <th>Totale Mese (€)</th>
+        <th>Totale Anno (€)</th>
+        <th>Risparmio vs attuale</th>
+      </tr></thead>
       <tbody></tbody>
     </table>
 
     <p class="note">
-      I totali stimati includono solo i costi di vendita mensili (Materia Prima, Quota Fissa, perdite, dispacciamento e capacità).
+      I totali includono solo i costi di vendita mensili (Materia Prima, Quota Fissa, perdite, dispacciamento e capacità).
+      Dispacciamento e oneri capacità sono maggiorati delle perdite di rete come da formula contrattuale reale.
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
+      Il risparmio % è calcolato rispetto alla spesa attuale mensile inserita.
     </p>
   </div>
 
   <button onclick="window.print()" class="print-button">Stampa Risultati</button>
 
   <script>
-    /***************************************************************
-     * PERDITE RETE
-     ***************************************************************/
     const LOSS = { BT: 1.10, MT: 1.038 };
-
-    /***************************************************************
-     * DISPACCIAMENTO + CAPACITÀ
-     * BT/MT stesso valore (da CTE)
-     ***************************************************************/
     const DISP = { BT: 0.01078, MT: 0.01078 };
     const CAPA = { BT: 0.009008, MT: 0.009008 };
-
-    // Estra GO (costo garanzia origine)
     const ESTRA_GO = 0.011;
-
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-    function resultRow(nome, costoMP, quotaFissa) {
-      const totale = costoMP + quotaFissa;
+    function getTensione() { return document.getElementById('tensione').value === "MT" ? "MT" : "BT"; }
+
+    function resultRow(nome, costoEnergia, quotaFissa, spesaAttuale) {
+      const totMese = costoEnergia + quotaFissa;
+      const totAnno = totMese * 12;
+      let risparmioMese = null, risparmioPerc = null;
+      if (spesaAttuale > 0) {
+        risparmioMese = spesaAttuale - totMese;
+        risparmioPerc = (risparmioMese / spesaAttuale) * 100;
+      }
       return {
         nome,
-        costoMP:    round2(costoMP).toFixed(2),
-        quotaFissa: round2(quotaFissa).toFixed(2),
-        totale:     round2(totale).toFixed(2)
+        costoEnergia: round2(costoEnergia).toFixed(2),
+        quotaFissa:   round2(quotaFissa).toFixed(2),
+        totMese:      round2(totMese).toFixed(2),
+        totAnno:      round2(totAnno).toFixed(2),
+        risparmioMese: risparmioMese !== null ? round2(risparmioMese).toFixed(2) : null,
+        risparmioPerc: risparmioPerc !== null ? risparmioPerc.toFixed(1) : null
       };
     }
 
-    function getTensione() {
-      return document.getElementById('tensione').value === "MT" ? "MT" : "BT";
-    }
-
-    function punEfficace(pun, tensione) {
-      return pun * (LOSS[tensione] ?? LOSS.BT);
-    }
-
-    /***************************************************************
-     * CEI < 30.000 kWh/mese
-     ***************************************************************/
-    function calcolaCeiReflex(consumo, pun, t) {
+    // CEI < 30.000 kWh/mese
+    function calcolaCeiReflex(consumo, pun, t, sa) {
       const spread = 0.014, qf = 26.5;
       const varKwh = 0.002 + 0.0035 + 0.00219;
-      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
-      return resultRow("CEI REFLEX (<30k kWh)", costo, qf);
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
+      return resultRow("CEI REFLEX (<30k kWh)", costo, qf, sa);
     }
-
-    function calcolaCanon(consumo, pun, t) {
+    function calcolaCanon(consumo, pun, t, sa) {
       const spread = 0.012, qf = 19.5;
       const varKwh = 0.002 + 0.0035 + 0.00219;
-      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
-      return resultRow("CEI CANON (<30k kWh)", costo, qf);
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
+      return resultRow("CEI CANON (<30k kWh)", costo, qf, sa);
     }
-
-    function calcolaVision(consumo, pun, t) {
+    function calcolaVision(consumo, pun, t, sa) {
       const spread = 0.012, qf = 16.0;
       const varKwh = 0.002 + 0.0035;
-      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
-      return resultRow("CEI VISION (<30k kWh)", costo, qf);
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
+      return resultRow("CEI VISION (<30k kWh)", costo, qf, sa);
     }
 
-    /***************************************************************
-     * CEI > 30.000 kWh/mese
-     ***************************************************************/
-    function calcolaCeiPartner(consumo, pun, t) {
+    // CEI > 30.000 kWh/mese
+    function calcolaCeiPartner(consumo, pun, t, sa) {
       const spread = 0.0130, qf = 15;
       const varKwh = 0.00185 + 0.0035;
-      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
-      return resultRow("CEI PARTNER (>30k kWh)", costo, qf);
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
+      return resultRow("CEI PARTNER (>30k kWh)", costo, qf, sa);
     }
-
-    function calcolaCeiFlex(consumo, pun, t) {
+    function calcolaCeiFlex(consumo, pun, t, sa) {
       const spread = 0.0090, qf = 15;
       const varKwh = 0.002 + 0.0035;
-      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
-      return resultRow("CEI FLEX (>30k kWh)", costo, qf);
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
+      return resultRow("CEI FLEX (>30k kWh)", costo, qf, sa);
     }
-
-    function calcolaCeiPro(consumo, pun, t) {
+    function calcolaCeiPro(consumo, pun, t, sa) {
       const spread = 0.0110, qf = 15;
       const varKwh = 0.002 + 0.0035;
-      const costo = consumo * (punEfficace(pun, t) + spread + varKwh + DISP[t] + CAPA[t]);
-      return resultRow("CEI PRO (>30k kWh)", costo, qf);
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
+      return resultRow("CEI PRO (>30k kWh)", costo, qf, sa);
     }
 
-    /***************************************************************
-     * ESTRA BUSINESS LUCE (invariato)
-     ***************************************************************/
-    function calcolaEstraTrend(consumo, pun, t) {
-      const spread = 0.0242;
-      const qf = 168.084 / 12;
-      const costo = consumo * (punEfficace(pun, t) + spread + ESTRA_GO + DISP[t] + CAPA[t]);
-      return resultRow("Estra TREND UNICA variabile", costo, qf);
+    // ESTRA
+    function calcolaEstraTrend(consumo, pun, t, sa) {
+      const spread = 0.0242, qf = 168.084 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + ESTRA_GO);
+      return resultRow("Estra TREND UNICA variabile", costo, qf, sa);
+    }
+    function calcolaEstraRelax(consumo, t, sa) {
+      const prezzoFisso = 0.143, qf = 168.084 / 12;
+      const costo = consumo * (prezzoFisso + ESTRA_GO + (DISP[t] + CAPA[t]) * LOSS[t]);
+      return resultRow("Estra RELAX UNICA fissa", costo, qf, sa);
     }
 
-    function calcolaEstraRelax(consumo, t) {
-      const prezzoFisso = 0.143;
-      const qf = 168.084 / 12;
-      const costo = consumo * (prezzoFisso + ESTRA_GO + DISP[t] + CAPA[t]);
-      return resultRow("Estra RELAX UNICA fissa", costo, qf);
+    // SINERGY
+    function calcolaSinergyBusinessLuce(consumo, pun, t, sa) {
+      const spread = 0.022, qf = (120 + 24) / 12;
+      const sbilanc = 0.005, disp = 0.013580;
+      const costo = consumo * ((pun + disp) * LOSS[t] + spread + sbilanc);
+      return resultRow("Sinergy Business Luce (PUN×1,10 + 0,022)", costo, qf, sa);
     }
 
-    /***************************************************************
-     * SINERGY BUSINESS LUCE
-     * CTE cod. 025867ESVFL03XX0000000325SHEBPUN — valida fino 31/03/2026
-     * Materia: PUN×1,10 + 0,022 €/kWh (spread F1/F2/F3 uguale)
-     * Quota fissa: 120+24 = 144 €/anno = 12 €/mese
-     * Sbilanciamento business: 0,005 €/kWh
-     * Dispacciamento: 0,013580 €/kWh (aggiornato 08/01/2026)
-     ***************************************************************/
-    function calcolaSinergyBusinessLuce(consumo, pun, t) {
-      const spread    = 0.022;
-      const qf        = (120 + 24) / 12;  // 12 €/mese
-      const sbilanc   = 0.005;            // sbilanciamento business
-      const disp      = 0.013580;         // dispacciamento Sinergy aggiornato
-
-      const costo = consumo * (punEfficace(pun, t) + spread + sbilanc + disp);
-      return resultRow("Sinergy Business Luce (PUN×1,10 + 0,022)", costo, qf);
-    }
-
-    /***************************************************************
-     * RENDER + MAIN
-     ***************************************************************/
     function renderTable(id, offerte) {
       const tbody = document.querySelector('#' + id + ' tbody');
       tbody.innerHTML = "";
+      const minTot = Math.min(...offerte.map(o => parseFloat(o.totMese)));
       offerte.forEach(o => {
+        const isBest = parseFloat(o.totMese) === minTot;
         const row = document.createElement('tr');
-        row.innerHTML = `<td>${o.nome}</td><td>€ ${o.costoMP}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totale}</td>`;
+        if (isBest) row.classList.add('best');
+        let rispHtml = '<td>—</td>';
+        if (o.risparmioMese !== null) {
+          const v = parseFloat(o.risparmioMese);
+          const p = parseFloat(o.risparmioPerc);
+          const cls = v >= 0 ? 'saving-pos' : 'saving-neg';
+          const sign = v >= 0 ? '▼ -' : '▲ +';
+          const absV = Math.abs(v).toFixed(2);
+          const absP = Math.abs(p).toFixed(1);
+          rispHtml = `<td class="${cls}">${sign}€${absV}/mese (${v >= 0 ? '-' : '+'}${absP}%)<br><small>${v >= 0 ? '▼ -' : '▲ +'}€${(Math.abs(v)*12).toFixed(2)}/anno</small></td>`;
+        }
+        row.innerHTML = `<td>${o.nome}${isBest ? ' ⭐' : ''}</td><td>€ ${o.costoEnergia}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totMese}</td><td>€ ${o.totAnno}</td>${rispHtml}`;
         tbody.appendChild(row);
       });
     }
@@ -263,29 +252,35 @@
       const consumo = parseFloat(document.getElementById('consumo').value);
       const pun     = parseFloat(document.getElementById('pun').value);
       const t       = getTensione();
+      const sa      = parseFloat(document.getElementById('spesaAttuale').value) || 0;
 
-      if (Number.isNaN(consumo) || consumo < 0) { alert("Inserisci un consumo valido."); return; }
-      if (Number.isNaN(pun) || pun < 0)         { alert("Inserisci un PUN valido."); return; }
+      if (isNaN(consumo) || consumo < 0) { alert("Inserisci un consumo valido."); return; }
+      if (isNaN(pun) || pun < 0)         { alert("Inserisci un PUN valido."); return; }
+
+      const refBox = document.getElementById('ref-attuale');
+      if (sa > 0) {
+        refBox.style.display = 'block';
+        refBox.innerHTML = `<strong>Spesa attuale mensile di riferimento:</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa * 12).toFixed(2)}`;
+      } else {
+        refBox.style.display = 'none';
+      }
 
       renderTable('tabella-cei-superiore', [
-        calcolaCeiPartner(consumo, pun, t),
-        calcolaCeiPro(consumo, pun, t),
-        calcolaCeiFlex(consumo, pun, t),
+        calcolaCeiPartner(consumo, pun, t, sa),
+        calcolaCeiPro(consumo, pun, t, sa),
+        calcolaCeiFlex(consumo, pun, t, sa),
       ]);
-
       renderTable('tabella-cei-inferiore', [
-        calcolaCeiReflex(consumo, pun, t),
-        calcolaCanon(consumo, pun, t),
-        calcolaVision(consumo, pun, t),
+        calcolaCeiReflex(consumo, pun, t, sa),
+        calcolaCanon(consumo, pun, t, sa),
+        calcolaVision(consumo, pun, t, sa),
       ]);
-
       renderTable('tabella-estra', [
-        calcolaEstraTrend(consumo, pun, t),
-        calcolaEstraRelax(consumo, t),
+        calcolaEstraTrend(consumo, pun, t, sa),
+        calcolaEstraRelax(consumo, t, sa),
       ]);
-
       renderTable('tabella-sinergy', [
-        calcolaSinergyBusinessLuce(consumo, pun, t),
+        calcolaSinergyBusinessLuce(consumo, pun, t, sa),
       ]);
     }
 
