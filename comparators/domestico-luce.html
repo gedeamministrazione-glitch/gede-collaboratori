@@ -10,7 +10,7 @@
     .input-section, .results-section { background-color: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; max-width: 1000px; margin-left: auto; margin-right: auto; }
     .input-group { margin-bottom: 18px; }
     .input-group label { display: block; margin-bottom: 8px; color: #555; font-weight: bold; }
-    .input-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+    .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
     button { display: block; width: 100%; background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; font-size: 1.1rem; margin-top: 20px; }
     button:hover { background-color: #0056b3; }
     table { width: 100%; border-collapse: collapse; margin-top: 15px; overflow-x: auto; }
@@ -29,6 +29,11 @@
     .validita { font-size: 0.82rem; color: #888; margin-left: 8px; }
     .ref-box { background:#fff8e1; border:1px solid #ffe082; border-radius:6px; padding:12px 18px; margin-bottom:18px; font-size:0.95rem; }
     .ref-box strong { color:#b45309; }
+    .periodo-badge { display:inline-block; padding:3px 12px; border-radius:999px; font-size:0.85rem; font-weight:700; margin-left:8px; }
+    .periodo-mensile { background:#dbeafe; color:#1e40af; }
+    .periodo-bimestrale { background:#fce7f3; color:#9d174d; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width:700px) { .grid2 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -36,36 +41,46 @@
 
   <div class="input-section">
     <h2>Inserisci i tuoi dati di consumo</h2>
-    <div class="input-group">
-      <label for="consumo">Consumo mensile (kWh):</label>
-      <input type="number" id="consumo" value="225" step="0.01" min="0">
+    <div class="grid2">
+      <div class="input-group">
+        <label for="periodo">Tipo di bolletta:</label>
+        <select id="periodo" onchange="aggiornaPeriodo()">
+          <option value="1">Mensile</option>
+          <option value="2">Bimestrale</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="pun">PUN (€/kWh) <span class="badge">puro</span>:</label>
+        <input type="number" id="pun" value="0.12" step="0.001" min="0">
+      </div>
     </div>
-    <div class="input-group">
-      <label for="pun">PUN (€/kWh) <span class="badge">puro</span>:</label>
-      <input type="number" id="pun" value="0.12" step="0.001" min="0">
-    </div>
-    <div class="input-group">
-      <label for="spesaAttuale">Spesa attuale mensile vendita (€) — opzionale, per confronto risparmio:</label>
-      <input type="number" id="spesaAttuale" value="" step="0.01" min="0" placeholder="es. 45.00">
+    <div class="grid2">
+      <div class="input-group">
+        <label for="consumo" id="consumo-label">Consumo mensile (kWh):</label>
+        <input type="number" id="consumo" value="225" step="0.01" min="0">
+      </div>
+      <div class="input-group">
+        <label for="spesaAttuale" id="spesa-label">Spesa attuale vendita (€/mese) — opzionale:</label>
+        <input type="number" id="spesaAttuale" value="" step="0.01" min="0" placeholder="es. 45.00">
+      </div>
     </div>
     <p class="note">
       Il PUN inserito è considerato <b>puro</b> (senza perdite).
-      Le offerte indicizzate applicano perdite <b>×1,10</b> (BT domestico) a PUN, dispacciamento e capacità,
-      in linea con la formula contrattuale reale. Valori <b>IVA e imposte escluse</b>.
-      PUN dicembre 2025 ≈ 0,1243 €/kWh monorario.
+      Le offerte indicizzate applicano perdite <b>×1,10</b> (BT domestico) a PUN, dispacciamento e capacità.
+      Valori <b>IVA e imposte escluse</b>. PUN dicembre 2025 ≈ 0,1243 €/kWh monorario.
     </p>
     <button onclick="calcolaTutteLeOfferteLuce()">Calcola Offerte</button>
   </div>
 
   <div class="results-section">
-    <h2 id="results-title">Risultati Comparazione</h2>
+    <h2 id="results-title">Risultati Comparazione <span id="badge-periodo" class="periodo-badge periodo-mensile">Mensile</span></h2>
     <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
     <div class="section-title">🔵 CEI – Compagnia Energetica Italiana <span class="validita">(valide fino 31/03/2026)</span></div>
     <table id="tabella-cei">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (€/mese)</th><th>Quota Fissa (€/mese)</th>
-        <th>Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-cei-periodo">Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -73,8 +88,8 @@
     <div class="section-title">🟠 Estra</div>
     <table id="tabella-estra">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (€/mese)</th><th>Quota Fissa (€/mese)</th>
-        <th>Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-estra-periodo">Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -82,8 +97,8 @@
     <div class="section-title">🟢 Sinergy Luce e Gas <span class="validita">(valide fino 31/03/2026)</span></div>
     <table id="tabella-sinergy">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (€/mese)</th><th>Quota Fissa (€/mese)</th>
-        <th>Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-sinergy-periodo">Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -93,7 +108,7 @@
       Dispacciamento e oneri capacità sono maggiorati delle perdite di rete (×1,10) come da formula contrattuale reale.
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
       Sinergy: il costo di 50€/POD per prestazioni di connessione non è incluso.
-      Il risparmio % è calcolato rispetto alla spesa attuale mensile inserita.
+      Il risparmio % è calcolato rispetto alla spesa attuale inserita.
     </div>
   </div>
 
@@ -101,72 +116,84 @@
 
   <script>
     const LOSS_BT = 1.10;
-    const CEI_DISP   = 0.010780;
-    const CEI_CAPA   = 0.008189;
-    const ESTRA_DISP = 0.01078;
-    const ESTRA_CAPA = 0.009008;
+    const CEI_DISP     = 0.010780;
+    const CEI_CAPA     = 0.008189;
+    const ESTRA_DISP   = 0.011725;  // Q1 2026
+    const ESTRA_CAPA   = 0.011641;  // feb 2026
     const SINERGY_DISP = 0.013580;
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-    function makeRow(nome, costoEnergia, quotaFissa, sa) {
-      const totMese = costoEnergia + quotaFissa;
-      const totAnno = totMese * 12;
+    function getPeriodo() { return parseInt(document.getElementById('periodo').value); }
+
+    function aggiornaPeriodo() {
+      const p = getPeriodo();
+      const isBim = p === 2;
+      const label = isBim ? 'bimestrale' : 'mensile';
+      document.getElementById('consumo-label').textContent = 'Consumo ' + label + ' (kWh):';
+      document.getElementById('spesa-label').textContent = 'Spesa attuale vendita (€/' + (isBim ? 'bimestre' : 'mese') + ') — opzionale:';
+      document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
+      document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
+      const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
+      ['th-cei-periodo','th-estra-periodo','th-sinergy-periodo'].forEach(id => {
+        document.getElementById(id).textContent = thLabel;
+      });
+    }
+
+    function makeRow(nome, costoEnergia, quotaFissaMensile, sa, periodoMesi) {
+      const qf = quotaFissaMensile * periodoMesi;
+      const totPeriodo = costoEnergia + qf;
+      const totAnno = totPeriodo * (12 / periodoMesi);
       let risparmioMese = null, risparmioPerc = null;
       if (sa > 0) {
-        risparmioMese = sa - totMese;
+        risparmioMese = sa - totPeriodo;
         risparmioPerc = (risparmioMese / sa) * 100;
       }
       return {
         nome,
         costoEnergia: round2(costoEnergia).toFixed(2),
-        quotaFissa:   round2(quotaFissa).toFixed(2),
-        totMese:      round2(totMese).toFixed(2),
+        quotaFissa:   round2(qf).toFixed(2),
+        totMese:      round2(totPeriodo).toFixed(2),
         totAnno:      round2(totAnno).toFixed(2),
         risparmioMese: risparmioMese !== null ? round2(risparmioMese).toFixed(2) : null,
         risparmioPerc: risparmioPerc !== null ? risparmioPerc.toFixed(1) : null
       };
     }
 
-    // CEI — spread=0, tutto (PUN+disp+capa)×1,10; variabili pure non soggette a perdite
-    function calcolaCeiGo(consumo, pun, sa) {
+    function calcolaCeiGo(consumo, pun, sa, p) {
       const costoEnergia = consumo * ((pun + CEI_DISP + CEI_CAPA) * LOSS_BT + 0.00145 + 0.00219 + 0.009);
-      return makeRow("CEI Go Luce", costoEnergia, 12.00, sa);
+      return makeRow("CEI Go Luce", costoEnergia, 12.00, sa, p);
     }
-    function calcolaCeiBoost(consumo, pun, sa) {
+    function calcolaCeiBoost(consumo, pun, sa, p) {
       const costoEnergia = consumo * ((pun + CEI_DISP + CEI_CAPA) * LOSS_BT + 0.00145 + 0.00219 + 0.009);
-      return makeRow("CEI Boost Luce", costoEnergia, 15.00, sa);
+      return makeRow("CEI Boost Luce", costoEnergia, 15.00, sa, p);
     }
-    function calcolaCeiTurbo(consumo, pun, sa) {
+    function calcolaCeiTurbo(consumo, pun, sa, p) {
       const costoEnergia = consumo * ((pun + CEI_DISP + CEI_CAPA) * LOSS_BT + 0.00145 + 0.00219 + 0.009);
-      return makeRow("CEI Turbo Luce", costoEnergia, 20.00, sa);
+      return makeRow("CEI Turbo Luce", costoEnergia, 20.00, sa, p);
     }
 
-    // ESTRA
-    function calcolaEstraFissa(consumo, pun, sa) {
-      // prezzo fisso già al lordo perdite energia, ma disp+capa ×1,10; sconto SDD dentro costo energia
-      const costoEnergia = consumo * (0.1507 + (ESTRA_DISP + ESTRA_CAPA) * LOSS_BT) - 2.00;
-      return makeRow("Estra Fissa Luce (sconto -2€/mese SDD)", costoEnergia, 132/12, sa);
+    function calcolaEstraFissa(consumo, pun, sa, p) {
+      const costoEnergia = consumo * (0.1507 + (ESTRA_DISP + ESTRA_CAPA) * LOSS_BT) - 2.00 * p;
+      return makeRow("Estra Fissa Luce (sconto -2€/mese SDD)", costoEnergia, 144/12, sa, p);
     }
-    function calcolaEstraNatura(consumo, pun, sa) {
-      const costoEnergia = consumo * (pun + 0.0319 + ESTRA_DISP + ESTRA_CAPA) * LOSS_BT - 2.00;
-      return makeRow("Estra Natura Luce (sconto -2€/mese SDD)", costoEnergia, 132/12, sa);
+    function calcolaEstraNatura(consumo, pun, sa, p) {
+      const costoEnergia = consumo * (pun + 0.0275 + ESTRA_DISP + ESTRA_CAPA) * LOSS_BT - 2.00 * p;
+      return makeRow("Estra Natura Luce (sconto -2€/mese SDD)", costoEnergia, 144/12, sa, p);
     }
 
-    // SINERGY
-    function calcolaSinergyFamilyLuceVariabile(consumo, pun, sa) {
-      // (PUN + spread + disp) ×1,10; sbilanciamento non soggetto a perdite
+    function calcolaSinergyFamilyLuceVariabile(consumo, pun, sa, p) {
       const costoEnergia = consumo * ((pun + 0.022 + SINERGY_DISP) * LOSS_BT + 0.005);
-      return makeRow("Sinergy Family Luce Variabile (PUN×1,10 + 0,022)", costoEnergia, (96+24)/12, sa);
+      return makeRow("Sinergy Family Luce Variabile (PUN×1,10 + 0,022)", costoEnergia, (96+24)/12, sa, p);
     }
-    function calcolaSinergyFamilyLuceFissa(consumo, sa) {
-      // prezzo già al lordo perdite; disp fixed ×1,10
+    function calcolaSinergyFamilyLuceFissa(consumo, sa, p) {
       const costoEnergia = consumo * (0.1419 + 0.011641 * LOSS_BT);
-      return makeRow("Sinergy Family Luce Fisso (0,1419 €/kWh) ⚠️ scade 28/02/2026", costoEnergia, (156+36)/12, sa);
+      return makeRow("Sinergy Family Luce Fisso (0,1419 €/kWh) ⚠️ scade 28/02/2026", costoEnergia, (156+36)/12, sa, p);
     }
 
     function renderTabella(id, righe) {
       const tbody = document.querySelector('#' + id + ' tbody');
       tbody.innerHTML = '';
+      const pp = getPeriodo();
       const minTot = Math.min(...righe.map(o => parseFloat(o.totMese)));
       righe.forEach(o => {
         const isBest = parseFloat(o.totMese) === minTot;
@@ -175,11 +202,11 @@
         let rispHtml = '<td>—</td>';
         if (o.risparmioMese !== null) {
           const v = parseFloat(o.risparmioMese);
-          const p = parseFloat(o.risparmioPerc);
+          const p2 = parseFloat(o.risparmioPerc);
           const cls = v >= 0 ? 'saving-pos' : 'saving-neg';
           const absV = Math.abs(v).toFixed(2);
-          const absP = Math.abs(p).toFixed(1);
-          rispHtml = `<td class="${cls}">${v >= 0 ? '▼ -' : '▲ +'}€${absV}/mese (${v >= 0 ? '-' : '+'}${absP}%)<br><small>${v >= 0 ? '▼ -' : '▲ +'}€${(Math.abs(v)*12).toFixed(2)}/anno</small></td>`;
+          const absP = Math.abs(p2).toFixed(1);
+          rispHtml = `<td class="${cls}">${v >= 0 ? '▼ -' : '▲ +'}€${absV}/periodo (${v >= 0 ? '-' : '+'}${absP}%)<br><small>${v >= 0 ? '▼ -' : '▲ +'}€${(Math.abs(v)*(12/pp)).toFixed(2)}/anno</small></td>`;
         }
         tr.innerHTML = `<td>${o.nome}${isBest ? ' ⭐' : ''}</td><td>€ ${o.costoEnergia}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totMese}</td><td>€ ${o.totAnno}</td>${rispHtml}`;
       });
@@ -189,28 +216,30 @@
       const consumo = parseFloat(document.getElementById('consumo').value) || 0;
       const pun     = parseFloat(document.getElementById('pun').value) || 0;
       const sa      = parseFloat(document.getElementById('spesaAttuale').value) || 0;
+      const p       = getPeriodo();
 
       if (isNaN(consumo) || consumo < 0) { alert("Inserisci un consumo valido."); return; }
       if (isNaN(pun) || pun < 0)         { alert("Inserisci un PUN valido."); return; }
 
       const refBox = document.getElementById('ref-attuale');
       if (sa > 0) {
+        const periodoLabel = p === 2 ? 'bimestrale' : 'mensile';
         refBox.style.display = 'block';
-        refBox.innerHTML = `<strong>Spesa attuale mensile di riferimento:</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*12).toFixed(2)}`;
+        refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*(12/p)).toFixed(2)}`;
       } else { refBox.style.display = 'none'; }
 
       renderTabella('tabella-cei', [
-        calcolaCeiGo(consumo, pun, sa),
-        calcolaCeiBoost(consumo, pun, sa),
-        calcolaCeiTurbo(consumo, pun, sa),
+        calcolaCeiTurbo(consumo, pun, sa, p),
+        calcolaCeiBoost(consumo, pun, sa, p),
+        calcolaCeiGo(consumo, pun, sa, p),
       ]);
       renderTabella('tabella-estra', [
-        calcolaEstraFissa(consumo, pun, sa),
-        calcolaEstraNatura(consumo, pun, sa),
+        calcolaEstraFissa(consumo, pun, sa, p),
+        calcolaEstraNatura(consumo, pun, sa, p),
       ]);
       renderTabella('tabella-sinergy', [
-        calcolaSinergyFamilyLuceVariabile(consumo, pun, sa),
-        calcolaSinergyFamilyLuceFissa(consumo, sa),
+        calcolaSinergyFamilyLuceVariabile(consumo, pun, sa, p),
+        calcolaSinergyFamilyLuceFissa(consumo, sa, p),
       ]);
     }
 
