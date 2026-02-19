@@ -10,7 +10,7 @@
     .input-section, .results-section { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.08); margin-bottom: 20px; max-width: 1000px; margin-left: auto; margin-right: auto; }
     .input-group { margin-bottom: 12px; }
     .input-group label { display: block; margin-bottom: 6px; color: #555; font-weight: 600; }
-    .input-group input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+    .input-group input[type="number"], .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
     button.primary { display: inline-block; background-color: #007bff; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
     button.primary:hover { background-color: #0056b3; }
     .section-title { text-align: center; color: #007bff; margin-top: 18px; margin-bottom: 8px; font-weight: 700; }
@@ -30,6 +30,9 @@
     .validita { font-size: 0.82rem; color: #888; margin-left: 8px; font-weight: normal; }
     .ref-box { background:#fff8e1; border:1px solid #ffe082; border-radius:6px; padding:12px 18px; margin-bottom:18px; font-size:0.95rem; }
     .ref-box strong { color:#b45309; }
+    .periodo-badge { display:inline-block; padding:3px 12px; border-radius:999px; font-size:0.85rem; font-weight:700; margin-left:8px; }
+    .periodo-mensile { background:#dbeafe; color:#1e40af; }
+    .periodo-bimestrale { background:#fce7f3; color:#9d174d; }
     @media (max-width:700px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -40,17 +43,26 @@
     <h2 style="margin-top:0">Inserisci i tuoi dati di consumo</h2>
     <div class="grid">
       <div class="input-group">
-        <label for="consumo">Consumo mensile (Smc)</label>
-        <input type="number" id="consumo" value="416.67" step="0.01" min="0" />
+        <label for="periodo">Tipo di bolletta:</label>
+        <select id="periodo" onchange="aggiornaPeriodo()">
+          <option value="1">Mensile</option>
+          <option value="2">Bimestrale</option>
+        </select>
       </div>
       <div class="input-group">
         <label for="psv">Indice Gas (€/Smc) <span class="badge">PSV</span></label>
         <input type="number" id="psv" value="0.33" step="0.0001" min="0" />
       </div>
     </div>
-    <div class="input-group">
-      <label for="spesaAttuale">Spesa attuale mensile vendita (€) — opzionale, per confronto risparmio:</label>
-      <input type="number" id="spesaAttuale" value="" step="0.01" min="0" placeholder="es. 180.00" />
+    <div class="grid">
+      <div class="input-group">
+        <label for="consumo" id="consumo-label">Consumo mensile (Smc)</label>
+        <input type="number" id="consumo" value="416.67" step="0.01" min="0" />
+      </div>
+      <div class="input-group">
+        <label for="spesaAttuale" id="spesa-label">Spesa attuale vendita (€/mese) — opzionale:</label>
+        <input type="number" id="spesaAttuale" value="" step="0.01" min="0" placeholder="es. 180.00" />
+      </div>
     </div>
 
     <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
@@ -59,20 +71,20 @@
     </div>
 
     <p class="small-note">
-      PSV dicembre 2025 = 0,33 €/Smc. Calcoli su base mensile e annuale, solo componente vendita.
+      PSV dicembre 2025 = 0,33 €/Smc. Calcoli su base <span id="nota-periodo">mensile</span>, solo componente vendita.
       Valori <b>IVA e imposte escluse</b>. Non comprende trasporto, distribuzione e oneri di sistema ARERA.
     </p>
   </div>
 
   <div class="results-section">
-    <h2>Risultati comparazione</h2>
+    <h2>Risultati comparazione <span id="badge-periodo" class="periodo-badge periodo-mensile">Mensile</span></h2>
     <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
     <h3 class="section-title">🔵 CEI &gt; 10.000 Smc/anno</h3>
     <table id="tabella-cei-superiore">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (€/mese)</th><th>Quota Fissa (€/mese)</th>
-        <th>Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-sup-periodo">Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -80,8 +92,8 @@
     <h3 class="section-title">🔵 CEI &lt; 10.000 Smc/anno</h3>
     <table id="tabella-cei-inferiore">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (€/mese)</th><th>Quota Fissa (€/mese)</th>
-        <th>Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-inf-periodo">Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -89,8 +101,8 @@
     <h3 class="section-title">🟠 Estra Business Gas</h3>
     <table id="tabella-estra">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (€/mese)</th><th>Quota Fissa (€/mese)</th>
-        <th>Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-estra-periodo">Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -98,14 +110,14 @@
     <h3 class="section-title">🟢 Sinergy Business Gas <span class="validita">(valida fino 31/03/2026 — cod. 025867GSVML03XX00000325SHGBPSVDA)</span></h3>
     <table id="tabella-sinergy">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (€/mese)</th><th>Quota Fissa (€/mese)</th>
-        <th>Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-sinergy-periodo">Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
 
     <p class="small-note">
-      Il risparmio % è calcolato rispetto alla spesa attuale mensile inserita.
+      Il risparmio % è calcolato rispetto alla spesa attuale inserita.
       Non include trasporto, distribuzione, oneri di sistema ARERA. IVA e imposte escluse.
     </p>
   </div>
@@ -115,19 +127,37 @@
   <script>
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-    function makeOffer(nome, costoEnergia, quotaFissa, sa) {
-      const totMese = costoEnergia + quotaFissa;
-      const totAnno = totMese * 12;
+    function getPeriodo() { return parseInt(document.getElementById('periodo').value); }
+
+    function aggiornaPeriodo() {
+      const p = getPeriodo();
+      const isBim = p === 2;
+      const label = isBim ? 'bimestrale' : 'mensile';
+      document.getElementById('consumo-label').textContent = 'Consumo ' + label + ' (Smc)';
+      document.getElementById('spesa-label').textContent = 'Spesa attuale vendita (€/' + (isBim ? 'bimestre' : 'mese') + ') — opzionale:';
+      document.getElementById('nota-periodo').textContent = label;
+      document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
+      document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
+      const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
+      ['th-sup-periodo','th-inf-periodo','th-estra-periodo','th-sinergy-periodo'].forEach(id => {
+        document.getElementById(id).textContent = thLabel;
+      });
+    }
+
+    function makeOffer(nome, costoEnergia, quotaFissaMensile, sa, periodoMesi) {
+      const qf = quotaFissaMensile * periodoMesi;
+      const totPeriodo = costoEnergia + qf;
+      const totAnno = totPeriodo * (12 / periodoMesi);
       let risparmioMese = null, risparmioPerc = null;
       if (sa > 0) {
-        risparmioMese = sa - totMese;
+        risparmioMese = sa - totPeriodo;
         risparmioPerc = (risparmioMese / sa) * 100;
       }
       return {
         nome,
         costoEnergia: round2(costoEnergia).toFixed(2),
-        quotaFissa:   round2(quotaFissa).toFixed(2),
-        totMese:      round2(totMese).toFixed(2),
+        quotaFissa:   round2(qf).toFixed(2),
+        totMese:      round2(totPeriodo).toFixed(2),
         totAnno:      round2(totAnno).toFixed(2),
         risparmioMese: risparmioMese !== null ? round2(risparmioMese).toFixed(2) : null,
         risparmioPerc: risparmioPerc !== null ? risparmioPerc.toFixed(1) : null
@@ -141,25 +171,27 @@
       VISION: { spread: 0.09, quotaFissa: 15.00, varUnit: 0.02 + 0.0219 + 0.0145 }
     };
 
-    function ceiGT(consumo, psv, nome, spread, sa) {
+    function ceiGT(consumo, psv, nome, spread, sa, p) {
       const costoEnergia = consumo * (psv + spread + CEI_GT.varUnit);
-      return makeOffer("CEI " + nome + " (>10k Smc)", costoEnergia, CEI_GT.quotaFissa, sa);
+      return makeOffer("CEI " + nome + " (>10k Smc)", costoEnergia, CEI_GT.quotaFissa, sa, p);
     }
-    function ceiLT(consumo, psv, nome, cfg, sa) {
+    function ceiLT(consumo, psv, nome, cfg, sa, p) {
       const costoEnergia = consumo * (psv + cfg.spread + cfg.varUnit);
-      return makeOffer("CEI " + nome + " (<10k Smc)", costoEnergia, cfg.quotaFissa, sa);
+      return makeOffer("CEI " + nome + " (<10k Smc)", costoEnergia, cfg.quotaFissa, sa, p);
     }
-    function calcolaEstraTrend(consumo, psv, sa) {
-      const costoEnergia = consumo * (psv + 0.08);
-      return makeOffer("Estra TREND Gas (variabile)", costoEnergia, 168/12, sa);
+    function calcolaEstraTrend(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + 0.075);
+      return makeOffer("Estra TREND Gas (variabile)", costoEnergia, 184.8/12, sa, p);
     }
-    function calcolaEstraRelax(consumo, sa) {
+    function calcolaEstraRelax(consumo, sa, p) {
       const costoEnergia = consumo * 0.409;
-      return makeOffer("Estra RELAX Gas (fissa 0,409 €/Smc)", costoEnergia, 168/12, sa);
+      return makeOffer("Estra RELAX Gas (fissa 0,409 €/Smc)", costoEnergia, 184.8/12, sa, p);
     }
-    function calcolaSinergyBusinessGas(consumo, psv, sa) {
-      const costoEnergia = consumo * (psv + 0.120 + 0.020);
-      return makeOffer("Sinergy Business Gas (PSV + 0,12)", costoEnergia, (120+24)/12, sa);
+    function calcolaSinergyBusinessGas(consumo, psv, sa, p) {
+      // Allineato alla Scheda Sintetica Sinergy BUSINESS GAS (variabile):
+      // Totale = PSV + 0,170892 €/Smc
+      const costoEnergia = consumo * (psv + 0.170892);
+      return makeOffer("Sinergy Business Gas (PSV + 0,170892)", costoEnergia, (120+24)/12, sa, p);
     }
 
     function renderTable(id, rows) {
@@ -173,11 +205,11 @@
         let rispHtml = '<td>—</td>';
         if (o.risparmioMese !== null) {
           const v = parseFloat(o.risparmioMese);
-          const p = parseFloat(o.risparmioPerc);
+          const p2 = parseFloat(o.risparmioPerc);
           const cls = v >= 0 ? 'saving-pos' : 'saving-neg';
           const absV = Math.abs(v).toFixed(2);
-          const absP = Math.abs(p).toFixed(1);
-          rispHtml = `<td class="${cls}">${v >= 0 ? '▼ -' : '▲ +'}€${absV}/mese (${v >= 0 ? '-' : '+'}${absP}%)<br><small>${v >= 0 ? '▼ -' : '▲ +'}€${(Math.abs(v)*12).toFixed(2)}/anno</small></td>`;
+          const absP = Math.abs(p2).toFixed(1);
+          rispHtml = `<td class="${cls}">${v >= 0 ? '▼ -' : '▲ +'}€${absV}/periodo (${v >= 0 ? '-' : '+'}${absP}%)<br><small>${v >= 0 ? '▼ -' : '▲ +'}€${(Math.abs(v)*(12/getPeriodo())).toFixed(2)}/anno</small></td>`;
         }
         row.innerHTML = `<td>${o.nome}${isBest ? ' ⭐' : ''}</td><td>€ ${o.costoEnergia}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totMese}</td><td>€ ${o.totAnno}</td>${rispHtml}`;
         tbody.appendChild(row);
@@ -188,29 +220,31 @@
       const consumo = parseFloat(document.getElementById('consumo').value) || 0;
       const psv     = parseFloat(document.getElementById('psv').value) || 0;
       const sa      = parseFloat(document.getElementById('spesaAttuale').value) || 0;
+      const p       = getPeriodo();
 
       const refBox = document.getElementById('ref-attuale');
       if (sa > 0) {
+        const periodoLabel = p === 2 ? 'bimestrale' : 'mensile';
         refBox.style.display = 'block';
-        refBox.innerHTML = `<strong>Spesa attuale mensile di riferimento:</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*12).toFixed(2)}`;
+        refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*(12/p)).toFixed(2)}`;
       } else { refBox.style.display = 'none'; }
 
       renderTable('tabella-cei-superiore', [
-        ceiGT(consumo, psv, "Partner", CEI_GT.spreads.PARTNER, sa),
-        ceiGT(consumo, psv, "Pro",     CEI_GT.spreads.PRO, sa),
-        ceiGT(consumo, psv, "Flex",    CEI_GT.spreads.FLEX, sa),
+        ceiGT(consumo, psv, "Partner", CEI_GT.spreads.PARTNER, sa, p),
+        ceiGT(consumo, psv, "Pro",     CEI_GT.spreads.PRO, sa, p),
+        ceiGT(consumo, psv, "Flex",    CEI_GT.spreads.FLEX, sa, p),
       ]);
       renderTable('tabella-cei-inferiore', [
-        ceiLT(consumo, psv, "Reflex", CEI_LT.REFLEX, sa),
-        ceiLT(consumo, psv, "Canon",  CEI_LT.CANON, sa),
-        ceiLT(consumo, psv, "Vision", CEI_LT.VISION, sa),
+        ceiLT(consumo, psv, "Reflex", CEI_LT.REFLEX, sa, p),
+        ceiLT(consumo, psv, "Canon",  CEI_LT.CANON, sa, p),
+        ceiLT(consumo, psv, "Vision", CEI_LT.VISION, sa, p),
       ]);
       renderTable('tabella-estra', [
-        calcolaEstraTrend(consumo, psv, sa),
-        calcolaEstraRelax(consumo, sa),
+        calcolaEstraTrend(consumo, psv, sa, p),
+        calcolaEstraRelax(consumo, sa, p),
       ]);
       renderTable('tabella-sinergy', [
-        calcolaSinergyBusinessGas(consumo, psv, sa),
+        calcolaSinergyBusinessGas(consumo, psv, sa, p),
       ]);
     }
 
