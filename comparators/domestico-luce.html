@@ -121,11 +121,11 @@
     // ======= COSTANTI =======
     const LOSS_BT = 1.10;
 
-    // CEI (come nel tuo file originale)
+    // CEI
     const CEI_DISP     = 0.010780;
     const CEI_CAPA     = 0.008189;
 
-    // Extra componenti "storiche" del tuo calcolo CEI Go/Boost/Turbo (lasciate identiche)
+    // Extra componenti "storiche" (lasciate, anche se non più usate)
     const CEI_EXTRA_A = 0.00145;
     const CEI_EXTRA_B = 0.00219;
     const CEI_EXTRA_C = 0.009;
@@ -190,20 +190,6 @@
         risparmioMese: risparmioMese !== null ? round2(risparmioMese).toFixed(2) : null,
         risparmioPerc: risparmioPerc !== null ? risparmioPerc.toFixed(1) : null
       };
-    }
-
-    // ======= CEI "storiche" (Spread 0) =======
-    function calcolaCeiTurbo(consumo, pun, sa, p) {
-      const costoEnergia = consumo * ((pun + CEI_DISP + CEI_CAPA) * LOSS_BT + CEI_EXTRA_A + CEI_EXTRA_B + CEI_EXTRA_C);
-      return makeRow("CEI Turbo Luce (Spread 0)", costoEnergia, 20.00, sa, p);
-    }
-    function calcolaCeiBoost(consumo, pun, sa, p) {
-      const costoEnergia = consumo * ((pun + CEI_DISP + CEI_CAPA) * LOSS_BT + CEI_EXTRA_A + CEI_EXTRA_B + CEI_EXTRA_C);
-      return makeRow("CEI Boost Luce (Spread 0)", costoEnergia, 15.00, sa, p);
-    }
-    function calcolaCeiGo(consumo, pun, sa, p) {
-      const costoEnergia = consumo * ((pun + CEI_DISP + CEI_CAPA) * LOSS_BT + CEI_EXTRA_A + CEI_EXTRA_B + CEI_EXTRA_C);
-      return makeRow("CEI Go Luce (Spread 0)", costoEnergia, 12.00, sa, p);
     }
 
     // ======= CEI nuove CTE =======
@@ -294,12 +280,8 @@
         refBox.style.display = 'none';
       }
 
-      // CEI: prima Turbo/Boost/Go, poi COMFORT/FOREVER/SMART/F&F (come richiesto)
+      // CEI: solo nuove CTE (COMFORT/FOREVER/SMART/F&F)
       renderTabella('tabella-cei', [
-        calcolaCeiTurbo(consumo, pun, sa, p),
-        calcolaCeiBoost(consumo, pun, sa, p),
-        calcolaCeiGo(consumo, pun, sa, p),
-
         calcolaCeiComfort(consumo, pun, sa, p),
         calcolaCeiForever(consumo, pun, sa, p),
         calcolaCeiSmart(consumo, pun, sa, p),
