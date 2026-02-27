@@ -151,19 +151,33 @@
       };
     }
 
-    function calcolaCeiGo(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + 0.0145 + 0.0219);
-      return makeRow("CEI Go Gas", costoEnergia, 12.00, sa, p);
-    }
-    function calcolaCeiBoost(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + 0.0145 + 0.0219);
-      return makeRow("CEI Boost Gas", costoEnergia, 15.00, sa, p);
-    }
-    function calcolaCeiTurbo(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + 0.0145 + 0.0219);
-      return makeRow("CEI Turbo Gas", costoEnergia, 20.00, sa, p);
+    // ======= CEI (nuove CTE) =======
+    // Comfort: PSV + spread + quota variabile + CrA + CcP, + quota fissa mensile
+    function calcolaCeiComfort(consumo, psv, sa, p) {
+      const SPREAD = 0.17;
+      const QUOTA_VAR_CV = 0.03;     // €/Smc
+      const CCP = 0.0219;            // €/Smc
+      const CRA = 0.0145;            // €/Smc
+      const costoEnergia = consumo * (psv + SPREAD + QUOTA_VAR_CV + CCP + CRA);
+      return makeRow("CEI COMFORT (PSV + 0,17) + CV/CcP/CrA", costoEnergia, 20.00, sa, p);
     }
 
+    function calcolaCeiForever(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + 0.15);
+      return makeRow("CEI FOREVER (PSV + 0,15)", costoEnergia, 14.5, sa, p);
+    }
+
+    function calcolaCeiSmart(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + 0.11);
+      return makeRow("CEI SMART (PSV + 0,11)", costoEnergia, 12.5, sa, p);
+    }
+
+    function calcolaCeiFamilyFriends(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + 0.08);
+      return makeRow("CEI F&F (PSV + 0,08)", costoEnergia, 8.5, sa, p);
+    }
+
+    // ======= ESTRA =======
     function calcolaEstraFissa(consumo, sa, p) {
       const costoEnergia = consumo * 0.429 - 2.00 * p;
       return makeRow("Estra Fissa Gas (sconto -2€/mese SDD)", costoEnergia, 144/12, sa, p);
@@ -173,6 +187,7 @@
       return makeRow("Estra Natura Gas (sconto -2€/mese SDD)", costoEnergia, 144/12, sa, p);
     }
 
+    // ======= SINERGY =======
     function calcolaSinergyFamilyGasVariabile(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + 0.120 + 0.020 + 0.026733);
       return makeRow("Sinergy Family Gas Variabile (PSV+0,12)", costoEnergia, (96+24)/12, sa, p);
@@ -217,15 +232,19 @@
         refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*(12/p)).toFixed(2)}`;
       } else { refBox.style.display = 'none'; }
 
+      // CEI: sostituite Turbo/Boost/Go con Comfort/Forever/Smart/F&F
       renderTabella('tabella-cei', [
-        calcolaCeiTurbo(consumo, psv, sa, p),
-        calcolaCeiBoost(consumo, psv, sa, p),
-        calcolaCeiGo(consumo, psv, sa, p),
+        calcolaCeiComfort(consumo, psv, sa, p),
+        calcolaCeiForever(consumo, psv, sa, p),
+        calcolaCeiSmart(consumo, psv, sa, p),
+        calcolaCeiFamilyFriends(consumo, psv, sa, p),
       ]);
+
       renderTabella('tabella-estra', [
         calcolaEstraFissa(consumo, sa, p),
         calcolaEstraNatura(consumo, psv, sa, p),
       ]);
+
       renderTabella('tabella-sinergy', [
         calcolaSinergyFamilyGasVariabile(consumo, psv, sa, p),
         calcolaSinergyFamilyGasFissa(consumo, sa, p),
