@@ -214,6 +214,26 @@
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
       return resultRow("CEI PRO (>30k kWh)", costo, qf, sa, p);
     }
+
+    // ======= CEI SMART / SPECIAL (aggiunte) =======
+    // SMART: spread 0,006 €/kWh; sbilanciamento+programmazione 0,0035 €/kWh; QF 10,45 €/mese
+    function calcolaCeiSmart(consumo, pun, t, sa, p) {
+      const spread = 0.006;
+      const sbilancProg = 0.0035;
+      const qf = 10.45;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + sbilancProg);
+      return resultRow("CEI SMART (>30k kWh)", costo, qf, sa, p);
+    }
+
+    // SPECIAL: spread 0,008 €/kWh; sbilanciamento+programmazione 0,0035 €/kWh; QF 13 €/mese
+    function calcolaCeiSpecial(consumo, pun, t, sa, p) {
+      const spread = 0.008;
+      const sbilancProg = 0.0035;
+      const qf = 13.0;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + sbilancProg);
+      return resultRow("CEI SPECIAL (>30k kWh)", costo, qf, sa, p);
+    }
+
     function calcolaEstraTrend(consumo, pun, t, sa, p) {
       const spread = 0.02035, qf = 184.8 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + ESTRA_GO);
@@ -225,11 +245,6 @@
       return resultRow("Estra RELAX UNICA fissa", costo, qf, sa, p);
     }
     function calcolaSinergyBusinessLuce(consumo, pun, t, sa, p) {
-      // Da CTE Sinergy BUSINESS LUCE:
-      // - PUN Index GME * maggiorato perdite 10% (quindi pun * 1,10)
-      // - Spread: +0,022 €/kWh
-      // - Dispacciamento: +0,013580 €/kWh (già "al lordo delle perdite di rete", quindi NON moltiplicare per 1,10)
-      // - Sbilanciamento business: +0,005 €/kWh
       const spread = 0.022, qf = (120 + 24) / 12;
       const sbilanc = 0.005, disp = 0.013580;
       const costo = consumo * (pun * LOSS[t] + spread + disp + sbilanc);
@@ -279,20 +294,26 @@
         refBox.style.display = 'none';
       }
 
+      // CEI >30k: ordine richiesto: PARTNER, PRO, FLEX, SMART, SPECIAL
       renderTable('tabella-cei-superiore', [
         calcolaCeiPartner(consumo, pun, t, sa, p),
         calcolaCeiPro(consumo, pun, t, sa, p),
         calcolaCeiFlex(consumo, pun, t, sa, p),
+        calcolaCeiSmart(consumo, pun, t, sa, p),
+        calcolaCeiSpecial(consumo, pun, t, sa, p),
       ]);
+
       renderTable('tabella-cei-inferiore', [
         calcolaCeiReflex(consumo, pun, t, sa, p),
         calcolaCanon(consumo, pun, t, sa, p),
         calcolaVision(consumo, pun, t, sa, p),
       ]);
+
       renderTable('tabella-estra', [
         calcolaEstraTrend(consumo, pun, t, sa, p),
         calcolaEstraRelax(consumo, t, sa, p),
       ]);
+
       renderTable('tabella-sinergy', [
         calcolaSinergyBusinessLuce(consumo, pun, t, sa, p),
       ]);
