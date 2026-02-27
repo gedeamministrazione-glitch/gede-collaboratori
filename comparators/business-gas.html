@@ -165,6 +165,10 @@
     }
 
     const CEI_GT = { quotaFissa: 14.00, varUnit: 0.02 + 0.0219 + 0.0145, spreads: { PARTNER: 0.12, PRO: 0.10, FLEX: 0.08 } };
+
+    // CEI SMART (da CTE): spread 0,055 €/Smc; QF 4,9 €/mese; varUnit = CV 0,02 + CcP 0,0219 + CrA 0,0145
+    const CEI_GT_SMART = { spread: 0.055, quotaFissa: 4.90, varUnit: 0.02 + 0.0219 + 0.0145 };
+
     const CEI_LT = {
       REFLEX: { spread: 0.08, quotaFissa: 26.00, varUnit: 0.05 + 0.02 + 0.0219 + 0.0145 },
       CANON:  { spread: 0.08, quotaFissa: 19.50, varUnit: 0.02 + 0.0219 + 0.0145 + 0.03 },
@@ -175,10 +179,17 @@
       const costoEnergia = consumo * (psv + spread + CEI_GT.varUnit);
       return makeOffer("CEI " + nome + " (>10k Smc)", costoEnergia, CEI_GT.quotaFissa, sa, p);
     }
+
+    function ceiGTSmart(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + CEI_GT_SMART.spread + CEI_GT_SMART.varUnit);
+      return makeOffer("CEI Smart (>10k Smc)", costoEnergia, CEI_GT_SMART.quotaFissa, sa, p);
+    }
+
     function ceiLT(consumo, psv, nome, cfg, sa, p) {
       const costoEnergia = consumo * (psv + cfg.spread + cfg.varUnit);
       return makeOffer("CEI " + nome + " (<10k Smc)", costoEnergia, cfg.quotaFissa, sa, p);
     }
+
     function calcolaEstraTrend(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + 0.075);
       return makeOffer("Estra TREND Gas (variabile)", costoEnergia, 184.8/12, sa, p);
@@ -188,8 +199,6 @@
       return makeOffer("Estra RELAX Gas (fissa 0,409 €/Smc)", costoEnergia, 184.8/12, sa, p);
     }
     function calcolaSinergyBusinessGas(consumo, psv, sa, p) {
-      // Allineato alla Scheda Sintetica Sinergy BUSINESS GAS (variabile):
-      // Totale = PSV + 0,170892 €/Smc
       const costoEnergia = consumo * (psv + 0.170892);
       return makeOffer("Sinergy Business Gas (PSV + 0,170892)", costoEnergia, (120+24)/12, sa, p);
     }
@@ -229,20 +238,25 @@
         refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*(12/p)).toFixed(2)}`;
       } else { refBox.style.display = 'none'; }
 
+      // CEI >10k: ordine richiesto: PARTNER, PRO, FLEX, SMART
       renderTable('tabella-cei-superiore', [
         ceiGT(consumo, psv, "Partner", CEI_GT.spreads.PARTNER, sa, p),
         ceiGT(consumo, psv, "Pro",     CEI_GT.spreads.PRO, sa, p),
         ceiGT(consumo, psv, "Flex",    CEI_GT.spreads.FLEX, sa, p),
+        ceiGTSmart(consumo, psv, sa, p),
       ]);
+
       renderTable('tabella-cei-inferiore', [
         ceiLT(consumo, psv, "Reflex", CEI_LT.REFLEX, sa, p),
         ceiLT(consumo, psv, "Canon",  CEI_LT.CANON, sa, p),
         ceiLT(consumo, psv, "Vision", CEI_LT.VISION, sa, p),
       ]);
+
       renderTable('tabella-estra', [
         calcolaEstraTrend(consumo, psv, sa, p),
         calcolaEstraRelax(consumo, sa, p),
       ]);
+
       renderTable('tabella-sinergy', [
         calcolaSinergyBusinessGas(consumo, psv, sa, p),
       ]);
