@@ -65,9 +65,11 @@
       </div>
     </div>
     <p class="note">
-      Il PUN inserito è considerato <b>puro</b> (senza perdite).
-      Le offerte indicizzate applicano perdite <b>×1,10</b> (BT domestico) a PUN, dispacciamento e capacità.
-      Valori <b>IVA e imposte escluse</b>. PUN dicembre 2025 ≈ 0,1243 €/kWh monorario.
+      Il PUN inserito è considerato <b>puro</b> (senza perdite).<br>
+      <b>CEI</b>: dalle CTE, le perdite si applicano al <b>PUN</b>; l’onere di dispacciamento indicato è <b>già comprensivo delle perdite</b> ⇒ NON applichiamo ulteriori ×1,10 su DISP/CAPA/Spread/CsP/CrA/CcP.<br>
+      <b>Estra</b>: nelle CTE risulta “tutti i corrispettivi… <b>al lordo delle perdite</b>” ⇒ applichiamo <b>×1,10</b> all’intera quota energia (prezzo/spread/dispacciamento/capacità).<br>
+      <b>Sinergy</b>: nelle CTE alcune voci sono indicate <b>“già maggiorate / al lordo delle perdite”</b> ⇒ non applichiamo ulteriori ×1,10 a quelle voci.<br>
+      Valori <b>IVA e imposte escluse</b>.
     </p>
     <button onclick="calcolaTutteLeOfferteLuce()">Calcola Offerte</button>
   </div>
@@ -77,9 +79,6 @@
     <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
     <div class="section-title">🔵 CEI – Compagnia Energetica Italiana <span class="validita">(valide fino 31/03/2026)</span></div>
-    <div class="note" style="margin-top:6px;">
-      Opzione <b>G.O. domestico</b> (Garanzie di Origine) <b>non inclusa</b> nei calcoli: +3€/mese (se attivata).
-    </div>
     <table id="tabella-cei">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -97,7 +96,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟢 Sinergy Luce e Gas <span class="validita">(valide fino 31/03/2026)</span></div>
+    <div class="section-title">🟢 Sinergy Luce e Gas <span class="validita">(valide fino 31/03/2026 / 28/02/2026)</span></div>
     <table id="tabella-sinergy">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -108,9 +107,7 @@
 
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
-      Dispacciamento e oneri capacità sono maggiorati delle perdite di rete (×1,10) come da formula contrattuale reale.
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
-      Sinergy: il costo di 50€/POD per prestazioni di connessione non è incluso.
       Il risparmio % è calcolato rispetto alla spesa attuale inserita.
     </div>
   </div>
@@ -121,16 +118,11 @@
     // ======= COSTANTI =======
     const LOSS_BT = 1.10;
 
-    // CEI
+    // CEI (da CTE: DISP indicato "comprensivo delle perdite")
     const CEI_DISP     = 0.010780;
     const CEI_CAPA     = 0.008189;
 
-    // Extra componenti "storiche" (lasciate, anche se non più usate)
-    const CEI_EXTRA_A = 0.00145;
-    const CEI_EXTRA_B = 0.00219;
-    const CEI_EXTRA_C = 0.009;
-
-    // CEI - nuove CTE (valide fino 31/03/2026)
+    // CEI - CTE (valide fino 31/03/2026)
     const CEI_SPREAD_FOREVER = 0.018;
     const CEI_QF_FOREVER = 14.5;
 
@@ -147,12 +139,16 @@
     const CEI_CRA_COMFORT = 0.00235;
     const CEI_CCP_COMFORT = 0.00219;
 
-    // ESTRA
+    // ESTRA (TIDE/capacità come da documenti)
     const ESTRA_DISP   = 0.011725;  // Q1 2026
     const ESTRA_CAPA   = 0.011641;  // feb 2026
 
-    // SINERGY
-    const SINERGY_DISP = 0.013580;
+    // SINERGY (CTE Family Luce)
+    const SINERGY_DISP_VAR = 0.013580; // variabile: "al lordo delle perdite"
+    const SINERGY_SBIL_VAR = 0.005000;
+
+    const SINERGY_PRICE_FIXED = 0.141900; // fisso: "prezzo già maggiorato delle perdite"
+    const SINERGY_DISP_FIXED  = 0.011641; // fisso: "al lordo delle perdite"
 
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
@@ -176,10 +172,10 @@
       const qf = quotaFissaMensile * periodoMesi;
       const totPeriodo = costoEnergia + qf;
       const totAnno = totPeriodo * (12 / periodoMesi);
-      let risparmioMese = null, risparmioPerc = null;
+      let risparmioPeriodo = null, risparmioPerc = null;
       if (sa > 0) {
-        risparmioMese = sa - totPeriodo;
-        risparmioPerc = (risparmioMese / sa) * 100;
+        risparmioPeriodo = sa - totPeriodo;
+        risparmioPerc = (risparmioPeriodo / sa) * 100;
       }
       return {
         nome,
@@ -187,55 +183,87 @@
         quotaFissa:   round2(qf).toFixed(2),
         totMese:      round2(totPeriodo).toFixed(2),
         totAnno:      round2(totAnno).toFixed(2),
-        risparmioMese: risparmioMese !== null ? round2(risparmioMese).toFixed(2) : null,
+        risparmioMese: risparmioPeriodo !== null ? round2(risparmioPeriodo).toFixed(2) : null,
         risparmioPerc: risparmioPerc !== null ? risparmioPerc.toFixed(1) : null
       };
     }
 
-    // ======= CEI nuove CTE =======
+    // ======= CEI (ALLINEATE ALLE CTE INCOLLATE) =======
+    // - Perdite: applicate al SOLO PUN (PUN puro in input -> PUN×1,10)
+    // - DISP: indicato in CTE come "comprensivo delle perdite" -> NON moltiplicare ulteriormente
+    // - Spread e (Comfort) CsP/CrA/CcP: in CTE risultano corrispettivi aggiuntivi -> NON moltiplicare ×1,10
+
     function calcolaCeiComfort(consumo, pun, sa, p) {
       const costoEnergia = consumo * (
-        ((pun + CEI_DISP + CEI_CAPA + CEI_SPREAD_COMFORT) * LOSS_BT)
+        (pun * LOSS_BT)
+        + CEI_SPREAD_COMFORT
+        + CEI_DISP
+        + CEI_CAPA
         + CEI_CSP_COMFORT
         + CEI_CRA_COMFORT
         + CEI_CCP_COMFORT
       );
-      return makeRow("CEI COMFORT (PUN×1,10 + 0,020) + CsP/CrA/CcP", costoEnergia, CEI_QF_COMFORT, sa, p);
+      return makeRow("CEI COMFORT (PUN×1,10 + 0,020) + disp + capa + CsP/CrA/CcP", costoEnergia, CEI_QF_COMFORT, sa, p);
     }
 
     function calcolaCeiForever(consumo, pun, sa, p) {
-      const costoEnergia = consumo * ((pun + CEI_DISP + CEI_CAPA + CEI_SPREAD_FOREVER) * LOSS_BT);
-      return makeRow("CEI FOREVER (PUN×1,10 + 0,018)", costoEnergia, CEI_QF_FOREVER, sa, p);
+      const costoEnergia = consumo * (
+        (pun * LOSS_BT)
+        + CEI_SPREAD_FOREVER
+        + CEI_DISP
+        + CEI_CAPA
+      );
+      return makeRow("CEI FOREVER (PUN×1,10 + 0,018) + disp + capa", costoEnergia, CEI_QF_FOREVER, sa, p);
     }
 
     function calcolaCeiSmart(consumo, pun, sa, p) {
-      const costoEnergia = consumo * ((pun + CEI_DISP + CEI_CAPA + CEI_SPREAD_SMART) * LOSS_BT);
-      return makeRow("CEI SMART (PUN×1,10 + 0,015)", costoEnergia, CEI_QF_SMART, sa, p);
+      const costoEnergia = consumo * (
+        (pun * LOSS_BT)
+        + CEI_SPREAD_SMART
+        + CEI_DISP
+        + CEI_CAPA
+      );
+      return makeRow("CEI SMART (PUN×1,10 + 0,015) + disp + capa", costoEnergia, CEI_QF_SMART, sa, p);
     }
 
     function calcolaCeiFamilyFriends(consumo, pun, sa, p) {
-      const costoEnergia = consumo * ((pun + CEI_DISP + CEI_CAPA + CEI_SPREAD_FF) * LOSS_BT);
-      return makeRow("CEI F&F (PUN×1,10 + 0,010)", costoEnergia, CEI_QF_FF, sa, p);
+      const costoEnergia = consumo * (
+        (pun * LOSS_BT)
+        + CEI_SPREAD_FF
+        + CEI_DISP
+        + CEI_CAPA
+      );
+      return makeRow("CEI F&F (PUN×1,10 + 0,010) + disp + capa", costoEnergia, CEI_QF_FF, sa, p);
     }
 
     // ======= ESTRA =======
+    // CTE: "tutti i corrispettivi... al lordo delle perdite" -> perdite su tutta la quota energia
     function calcolaEstraFissa(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (0.1507 + (ESTRA_DISP + ESTRA_CAPA) * LOSS_BT) - 2.00 * p;
+      const costoEnergia = consumo * ((0.1507 + ESTRA_DISP + ESTRA_CAPA) * LOSS_BT) - 2.00 * p;
       return makeRow("Estra Fissa Luce (sconto -2€/mese SDD)", costoEnergia, 144/12, sa, p);
     }
     function calcolaEstraNatura(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun + 0.0275 + ESTRA_DISP + ESTRA_CAPA) * LOSS_BT - 2.00 * p;
+      const costoEnergia = consumo * ((pun + 0.0275 + ESTRA_DISP + ESTRA_CAPA) * LOSS_BT) - 2.00 * p;
       return makeRow("Estra Natura Luce (sconto -2€/mese SDD)", costoEnergia, 144/12, sa, p);
     }
 
     // ======= SINERGY =======
+    // VARIABILE CTE: PUN* + 0,022 con * = PUN maggiorato perdite 10%; disp "al lordo perdite"; sbil 0,005
+    // Input pun = PUN puro -> applichiamo ×1,10 SOLO al PUN; disp NON va moltiplicato.
     function calcolaSinergyFamilyLuceVariabile(consumo, pun, sa, p) {
-      const costoEnergia = consumo * ((pun + 0.022 + SINERGY_DISP) * LOSS_BT + 0.005);
-      return makeRow("Sinergy Family Luce Variabile (PUN×1,10 + 0,022)", costoEnergia, (96+24)/12, sa, p);
+      const costoEnergia = consumo * (
+        (pun * LOSS_BT)     // perdite solo sul PUN
+        + 0.022             // spread
+        + SINERGY_DISP_VAR  // già al lordo perdite
+        + SINERGY_SBIL_VAR  // sbilanciamento
+      );
+      return makeRow("Sinergy Family Luce Variabile (PUN×1,10 + 0,022) + disp + sbil", costoEnergia, (96+24)/12, sa, p);
     }
+
+    // FISSO CTE: 0,141900 già maggiorato perdite; disp 0,011641 "al lordo perdite"
     function calcolaSinergyFamilyLuceFissa(consumo, sa, p) {
-      const costoEnergia = consumo * (0.1419 + 0.011641 * LOSS_BT);
-      return makeRow("Sinergy Family Luce Fisso (0,1419 €/kWh) ⚠️ scade 28/02/2026", costoEnergia, (156+36)/12, sa, p);
+      const costoEnergia = consumo * (SINERGY_PRICE_FIXED + SINERGY_DISP_FIXED);
+      return makeRow("Sinergy Family Luce Fisso (0,1419 €/kWh) ⚠️ richieste entro 28/02/2026", costoEnergia, (156+36)/12, sa, p);
     }
 
     function renderTabella(id, righe) {
@@ -280,7 +308,6 @@
         refBox.style.display = 'none';
       }
 
-      // CEI: solo nuove CTE (COMFORT/FOREVER/SMART/F&F)
       renderTabella('tabella-cei', [
         calcolaCeiComfort(consumo, pun, sa, p),
         calcolaCeiForever(consumo, pun, sa, p),
