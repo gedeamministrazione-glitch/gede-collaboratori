@@ -114,7 +114,8 @@
       Il risparmio % è calcolato rispetto alla spesa attuale inserita.<br>
       Sconto SDD Estra (−2 €/mese) applicato solo ai primi 12 mesi; incluso nel calcolo.
       Sinergy: contributo 50 €/PDR per voltura/subentro non incluso nel calcolo.
-      Il CCR (0,030892 €/Smc, ARERA) è escluso per tutti i fornitori: da bollette reali CEI ed Estra è classificato nella spesa rete. Per omogeneità è rimosso anche da Sinergy.
+      Il CCR (0,030892 €/Smc, ARERA) è escluso per tutti i fornitori: da bollette reali CEI ed Estra è classificato nella spesa rete. Per omogeneità è rimosso anche da Sinergy.<br>
+      <b>Correzione PCS +3%</b> applicata su tutta la componente energia (media rilevata da bollette reali Veneto: +3,0%; Lombardia/Italgas: +3,9%).
     </div>
   </div>
 
@@ -173,6 +174,16 @@
     const SIN_FIX_QF     = 16.0;      // €/mese (156+36 €/anno)
 
     // ============================================================
+    // CORREZIONE PCS — rete Veneto/Lombardia
+    // PCS convenzionale contratti: 38,52 MJ/Smc
+    // PCS reale medio rilevato da bollette reali (Verona, Brescia): ~39,7 MJ/Smc
+    // Scostamento medio Veneto: +3,0% | Lombardia/Italgas: +3,9%
+    // Applicato a tutti i fornitori su tutta la componente energia
+    // (variabile e fissa: le CTE prevedono adeguamento al PCS reale in fatturazione)
+    // ============================================================
+    const PCS_CORR = 1.03;
+
+    // ============================================================
     // UTILITY
     // ============================================================
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -218,7 +229,7 @@
     // ============================================================
 
     function calcolaCeiComfort(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_CMF_SPREAD + CEI_CMF_QUOTAVAR + CEI_CMF_CCP + CEI_CMF_CRA);
+      const costoEnergia = consumo * (psv + CEI_CMF_SPREAD + CEI_CMF_QUOTAVAR + CEI_CMF_CCP + CEI_CMF_CRA) * PCS_CORR;
       return makeRow(
         "CEI Comfort — PSV + 0,17 + quot.var. + CcP + CrA",
         costoEnergia, CEI_CMF_QF, sa, p
@@ -226,7 +237,7 @@
     }
 
     function calcolaCeiForever(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_EV_SPREAD);
+      const costoEnergia = consumo * (psv + CEI_EV_SPREAD) * PCS_CORR;
       return makeRow(
         "CEI Forever — PSV + 0,15 €/Smc",
         costoEnergia, CEI_EV_QF, sa, p
@@ -234,7 +245,7 @@
     }
 
     function calcolaCeiSmart(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_SMR_SPREAD);
+      const costoEnergia = consumo * (psv + CEI_SMR_SPREAD) * PCS_CORR;
       return makeRow(
         "CEI Smart — PSV + 0,11 €/Smc",
         costoEnergia, CEI_SMR_QF, sa, p
@@ -242,7 +253,7 @@
     }
 
     function calcolaCeiFamilyFriends(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_FF_SPREAD);
+      const costoEnergia = consumo * (psv + CEI_FF_SPREAD) * PCS_CORR;
       return makeRow(
         "CEI Family&Friends — PSV + 0,08 €/Smc",
         costoEnergia, CEI_FF_QF, sa, p
@@ -256,7 +267,7 @@
     // ============================================================
 
     function calcolaEstraFissa(consumo, sa, p) {
-      const costoEnergia = consumo * ESTRA_FISSA_PREZZO;
+      const costoEnergia = consumo * ESTRA_FISSA_PREZZO * PCS_CORR;
       const qfNetta = ESTRA_FISSA_QF - ESTRA_FISSA_SDD; // 14 - 2 = 12 €/mese netti
       return makeRow(
         "Estra Fissa Gas — 0,58 €/Smc fisso (CO₂ neutro, sconto SDD incluso)",
@@ -265,7 +276,7 @@
     }
 
     function calcolaEstraNatura(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + ESTRA_NATURA_SPREAD);
+      const costoEnergia = consumo * (psv + ESTRA_NATURA_SPREAD) * PCS_CORR;
       const qfNetta = ESTRA_NATURA_QF - ESTRA_NATURA_SDD; // 12 - 2 = 10 €/mese netti
       return makeRow(
         "Estra Natura Gas — PSV + 0,07 €/Smc (CO₂ neutro, sconto SDD incluso)",
@@ -280,7 +291,7 @@
     // ============================================================
 
     function calcolaSinergyVariabile(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + SIN_VAR_SPREAD + SIN_VAR_SBIL);
+      const costoEnergia = consumo * (psv + SIN_VAR_SPREAD + SIN_VAR_SBIL) * PCS_CORR;
       return makeRow(
         "Sinergy Family Gas Variabile — PSV + 0,120 + Sbil(0,020)",
         costoEnergia, SIN_VAR_QF, sa, p
@@ -288,7 +299,7 @@
     }
 
     function calcolaSinergyFisso(consumo, sa, p) {
-      const costoEnergia = consumo * SIN_FIX_PREZZO;
+      const costoEnergia = consumo * SIN_FIX_PREZZO * PCS_CORR;
       return makeRow(
         "Sinergy Family Gas Fisso — 0,5900 €/Smc fisso (bloccato 12 mesi)",
         costoEnergia, SIN_FIX_QF, sa, p
