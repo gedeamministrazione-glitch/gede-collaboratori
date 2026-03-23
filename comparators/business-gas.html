@@ -117,7 +117,9 @@
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
-      Il risparmio % è calcolato rispetto alla spesa attuale inserita.
+      Il risparmio % è calcolato rispetto alla spesa attuale inserita.<br>
+      <strong>Nota PCS:</strong> i costi energia includono la correzione PCS +3% (PCS_CORR = 1,03) applicata da tutti i fornitori in fatturazione
+      sulla componente energia, in conformità a ARERA delibera 229/2012/R/gas. Fonte: analisi bollette reali.
     </div>
   </div>
 
@@ -125,6 +127,13 @@
 
   <script>
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+
+    // PCS_CORR: fattore di correzione Potere Calorifico Superiore = 1,03 (+3%)
+    // Fonte: analisi bollette reali — ARERA delibera 229/2012/R/gas.
+    // Il distributore converte i Smc misurati in energia applicando il PCS della zona;
+    // il valore medio nazionale produce sistematicamente ~3% in più rispetto al Smc nominale.
+    // Si applica a TUTTI i fornitori su componente energia (variabile), sia offerte > 10.000 sia < 10.000 Smc/anno.
+    const PCS_CORR = 1.03;
 
     function getPeriodo() { return parseInt(document.getElementById('periodo').value); }
 
@@ -172,28 +181,28 @@
 
     function calcolaCeiPartner(consumo, psv, sa, p) {
       const spread = 0.12, qf = 14.00;
-      const costo = consumo * (psv + spread + CEI_GT_VAR);
+      const costo = consumo * (psv + spread + CEI_GT_VAR) * PCS_CORR;
       return resultRow(
         `CEI PARTNER — PSV + 0,12 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 14 €/mese`,
         costo, qf, sa, p);
     }
     function calcolaCeiPro(consumo, psv, sa, p) {
       const spread = 0.10, qf = 14.00;
-      const costo = consumo * (psv + spread + CEI_GT_VAR);
+      const costo = consumo * (psv + spread + CEI_GT_VAR) * PCS_CORR;
       return resultRow(
         `CEI PRO — PSV + 0,10 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 14 €/mese`,
         costo, qf, sa, p);
     }
     function calcolaCeiFlex(consumo, psv, sa, p) {
       const spread = 0.08, qf = 14.00;
-      const costo = consumo * (psv + spread + CEI_GT_VAR);
+      const costo = consumo * (psv + spread + CEI_GT_VAR) * PCS_CORR;
       return resultRow(
         `CEI FLEX — PSV + 0,08 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 14 €/mese`,
         costo, qf, sa, p);
     }
     function calcolaCeiSmart(consumo, psv, sa, p) {
       const spread = 0.055, qf = 4.90;
-      const costo = consumo * (psv + spread + CEI_GT_VAR);
+      const costo = consumo * (psv + spread + CEI_GT_VAR) * PCS_CORR;
       return resultRow(
         `CEI SMART — PSV + 0,055 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 4,90 €/mese`,
         costo, qf, sa, p);
@@ -207,7 +216,7 @@
       // QF: riconsegna 7 + CGA 10 + comm.fissa 9 = 26 €/mese
       const spread = 0.08, qf = 26.00;
       const varUnit = 0.05 + 0.02 + 0.0219 + 0.0145;
-      const costo = consumo * (psv + spread + varUnit);
+      const costo = consumo * (psv + spread + varUnit) * PCS_CORR;
       return resultRow(
         `CEI REFLEX — PSV + 0,08 + sbil 0,05 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 26 €/mese (7+10+9)`,
         costo, qf, sa, p);
@@ -217,7 +226,7 @@
       // QF: riconsegna 9,5 + comm.fissa 10 = 19,5 €/mese
       const spread = 0.08, qf = 19.50;
       const varUnit = 0.02 + 0.0219 + 0.0145 + 0.03;
-      const costo = consumo * (psv + spread + varUnit);
+      const costo = consumo * (psv + spread + varUnit) * PCS_CORR;
       return resultRow(
         `CEI CANON — PSV + 0,08 + CV 0,02 + CcP 0,0219 + CrA 0,0145 + sbil 0,03 | QF 19,5 €/mese (9,5+10)`,
         costo, qf, sa, p);
@@ -227,7 +236,7 @@
       // QF: comm.fissa 15 €/mese
       const spread = 0.09, qf = 15.00;
       const varUnit = 0.02 + 0.0219 + 0.0145;
-      const costo = consumo * (psv + spread + varUnit);
+      const costo = consumo * (psv + spread + varUnit) * PCS_CORR;
       return resultRow(
         `CEI VISION — PSV + 0,09 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 15 €/mese`,
         costo, qf, sa, p);
@@ -238,7 +247,7 @@
     // ============================================================
     function calcolaEstraTrend(consumo, psv, sa, p) {
       const spread = 0.075, qf = 184.8 / 12;
-      const costo = consumo * (psv + spread);
+      const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
         `Estra TREND Gas — PSV + 0,075 | QF 15,40 €/mese`,
         costo, qf, sa, p);
@@ -249,7 +258,7 @@
     function calcolaSinergyBusinessGas(consumo, psv, sa, p) {
       const spread = 0.170892, qf = (120 + 24) / 12;
       const bilancio = 0.02;
-      const costo = consumo * (psv + spread + bilancio);
+      const costo = consumo * (psv + spread + bilancio) * PCS_CORR;
       return resultRow(
         `Sinergy Business Gas — PSV + 0,170892 + bilancio 0,02 | QF 12 €/mese (10+2)`,
         costo, qf, sa, p);
