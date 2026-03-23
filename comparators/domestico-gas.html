@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Comparatore Offerte Gas Domestico</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f8f8; color: #333; line-height: 1.6; }
@@ -13,8 +13,8 @@
     .input-group input, .input-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
     button { display: block; width: 100%; background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; font-size: 1.1rem; margin-top: 20px; }
     button:hover { background-color: #0056b3; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; vertical-align: top; font-size: 0.93rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; overflow-x: auto; }
+    th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; font-size: 0.93rem; }
     th { background-color: #f2f2f2; font-weight: bold; color: #333; }
     tr:nth-child(even) { background-color: #f9f9f9; }
     tr:hover { background-color: #e9e9e9; }
@@ -24,7 +24,7 @@
     .print-button { display: block; width: auto; margin: 20px auto; padding: 10px 15px; background-color: #6c757d; border: none; color: white; border-radius: 5px; cursor: pointer; font-size: 1rem; text-align: center; }
     #footer { text-align: center; padding-top: 20px; margin-top: 30px; border-top: 1px solid #ccc; color: #777; font-size: 0.9rem; }
     .note { font-size: 0.88rem; color: #666; margin-top: 10px; }
-    .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef3ff; color:#2d4bff; font-size:0.85rem; margin-left:6px; }
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; font-size:0.85rem; margin-left:6px; }
     .section-title { text-align: center; color: #007bff; margin-top: 24px; margin-bottom: 6px; font-weight: 700; font-size: 1.05rem; }
     .validita { font-size: 0.82rem; color: #888; margin-left: 8px; }
     .ref-box { background:#fff8e1; border:1px solid #ffe082; border-radius:6px; padding:12px 18px; margin-bottom:18px; font-size:0.95rem; }
@@ -37,7 +37,7 @@
   </style>
 </head>
 <body>
-  <div id="header"><h1>GEDE SERVIZI - Offerte Gas Domestico</h1></div>
+  <div id="header"><h1>GEDE SERVIZI — Offerte Gas Domestico</h1></div>
 
   <div class="input-section">
     <h2>Inserisci i tuoi dati di consumo</h2>
@@ -50,69 +50,131 @@
         </select>
       </div>
       <div class="input-group">
-        <label for="psv">Indice Gas (€/Smc) <span class="badge">PSV</span>:</label>
-        <input type="number" id="psv" value="0.33" step="0.0001" />
+        <label for="psv">PSV (€/Smc) <span class="badge">valore medio mensile</span>:</label>
+        <input type="number" id="psv" value="0.33" step="0.0001" min="0">
       </div>
     </div>
     <div class="grid2">
       <div class="input-group">
         <label for="consumo" id="consumo-label">Consumo mensile (Smc):</label>
-        <input type="number" id="consumo" value="100" step="0.01" />
+        <input type="number" id="consumo" value="100" step="0.01" min="0">
       </div>
       <div class="input-group">
         <label for="spesaAttuale" id="spesa-label">Spesa attuale vendita (€/mese) — opzionale:</label>
         <input type="number" id="spesaAttuale" value="" step="0.01" min="0" placeholder="es. 55.00">
       </div>
     </div>
-    <div class="note">
-      Inserisci il valore PSV mensile corrente (es. 0,33 €/Smc = dicembre 2025).
-      Stima della sola componente vendita. Valori <b>IVA e imposte escluse</b>.
-    </div>
+    <p class="note">
+      Il PSV inserito è il valore medio mensile del mercato PSV.<br>
+      <b>CEI</b>: Formula energia = consumo × (PSV + Spread). Comfort aggiunge quota var. comm. (0,03 €/Smc) + CcP (0,0219 €/Smc) + CrA (0,0145 €/Smc). Il CCR non è indicato nelle CTE CEI → <b>non incluso</b>.<br>
+      <b>Estra Fissa</b>: prezzo fisso 0,58 €/Smc. Sconto SDD −2 €/mese (primi 12 mesi) incluso.<br>
+      <b>Estra Natura</b>: PSV + 0,07 €/Smc. Sconto SDD −2 €/mese incluso.<br>
+      <b>Sinergy Variabile</b>: PSV + 0,120 (spread) + 0,020 (bilanciamento) €/Smc.<br>
+      <b>Sinergy Fisso</b>: 0,590000 €/Smc (fisso 12 mesi).<br>
+      Il CCR (0,030892 €/Smc, ARERA) è escluso per tutti: da bollette reali CEI ed Estra risulta classificato nella spesa rete, non in vendita.<br>
+      Valori <b>IVA e imposte escluse</b>.
+    </p>
     <button onclick="calcolaTutteLeOfferteGas()">Calcola Offerte</button>
   </div>
 
   <div class="results-section">
-    <h2>Risultati Comparazione <span id="badge-periodo" class="periodo-badge periodo-mensile">Mensile</span></h2>
+    <h2 id="results-title">Risultati Comparazione <span id="badge-periodo" class="periodo-badge periodo-mensile">Mensile</span></h2>
     <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
-    <div class="section-title">🔵 CEI – Compagnia Energetica Italiana <span class="validita">(valide fino 31/03/2026)</span></div>
+    <div class="section-title">🔵 CEI – Compagnia Energetica Italiana <span class="validita">(valide fino al 31/03/2026)</span></div>
     <table id="tabella-cei">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
-        <th id="th-cei-periodo">Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
+        <th id="th-cei-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟠 Estra</div>
+    <div class="section-title">🟠 Estra Energie <span class="validita">(Fissa valida fino 17/03/2026 | Natura valida fino 13/04/2026)</span></div>
     <table id="tabella-estra">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
-        <th id="th-estra-periodo">Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
+        <th id="th-estra-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟢 Sinergy Luce e Gas <span class="validita">(valide fino 31/03/2026)</span></div>
+    <div class="section-title">🟢 Sinergy Luce e Gas (Olimpia S.r.l.) <span class="validita">(valide fino al 31/03/2026)</span></div>
     <table id="tabella-sinergy">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
-        <th id="th-sinergy-periodo">Totale Mese (€)</th><th>Totale Anno (€)</th><th>Risparmio vs attuale</th>
+        <th id="th-sinergy-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
 
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
-      Non include trasporto, distribuzione, misura, oneri di sistema ARERA.
-      Sinergy: il costo fisso di 50€/POD per prestazioni di connessione non è incluso.
-      Il risparmio % è calcolato rispetto alla spesa attuale inserita.
+      Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
+      Il risparmio % è calcolato rispetto alla spesa attuale inserita.<br>
+      Sconto SDD Estra (−2 €/mese) applicato solo ai primi 12 mesi; incluso nel calcolo.
+      Sinergy: contributo 50 €/PDR per voltura/subentro non incluso nel calcolo.
+      Il CCR (0,030892 €/Smc, ARERA) è escluso per tutti i fornitori: da bollette reali CEI ed Estra è classificato nella spesa rete. Per omogeneità è rimosso anche da Sinergy.
     </div>
   </div>
 
   <div id="footer"><p>&copy; 2025 GEDE SERVIZI. Tutti i diritti riservati.</p></div>
 
   <script>
+    // ============================================================
+    // COSTANTI — estratte dalle CTE ufficiali (valide fino 31/03/2026)
+    // ============================================================
+
+    // ---- CEI – Compagnia Energetica Italiana ----
+    // Formula: consumo × (PSV + Spread [+ extra Comfort])
+    // CCR non indicato nelle CTE CEI → non incluso
+
+    // Forever (cod. 014850GNVML01XX0000CECDIGA2507EV)
+    const CEI_EV_SPREAD = 0.15;
+    const CEI_EV_QF     = 14.5;  // €/mese (174 €/anno)
+
+    // Family & Friends (cod. 014850GNVML01XX0000CECDIGA2507FF)
+    const CEI_FF_SPREAD = 0.08;
+    const CEI_FF_QF     = 8.5;   // €/mese (102 €/anno)
+
+    // Smart (cod. 014850GNVML01XX000CECDIGA2507SMR)
+    const CEI_SMR_SPREAD = 0.11;
+    const CEI_SMR_QF     = 12.5; // €/mese (150 €/anno)
+
+    // Comfort (cod. 014850GNVML01XX000CECDIGA2507CMF)
+    const CEI_CMF_SPREAD   = 0.17;
+    const CEI_CMF_QUOTAVAR = 0.03;    // quota variabile commercializzazione
+    const CEI_CMF_CCP      = 0.0219;  // corrispettivo corretta programmazione
+    const CEI_CMF_CRA      = 0.0145;  // corrispettivo rischio approvvigionamento
+    const CEI_CMF_QF       = 20.0;    // €/mese (240 €/anno)
+
+    // ---- ESTRA ----
+    // Fissa (cod. 001231GSFML01XXF48XX11032603GYFX, valida fino 17/03/2026)
+    const ESTRA_FISSA_PREZZO = 0.58;
+    const ESTRA_FISSA_QF     = 14.0; // €/mese lordo
+    const ESTRA_FISSA_SDD    = 2.0;  // €/mese sconto SDD (primi 12 mesi)
+
+    // Natura (cod. 001231GSVML01XXF46XX11032606GYNG, valida fino 13/04/2026)
+    const ESTRA_NATURA_SPREAD = 0.07;
+    const ESTRA_NATURA_QF     = 12.0; // €/mese lordo
+    const ESTRA_NATURA_SDD    = 2.0;  // €/mese sconto SDD (primi 12 mesi)
+
+    // ---- SINERGY (Olimpia S.r.l.) ----
+    // Variabile (cod. 025867GSVML03XX00000325SHGDPSVDA)
+    const SIN_VAR_SPREAD = 0.120;
+    const SIN_VAR_SBIL   = 0.020;     // bilanciamento domestici
+    // CCR (0,030892 €/Smc) rimosso: come da bollette reali CEI ed Estra,
+    // il CCR è classificato nella spesa rete → escluso per omogeneità comparazione
+    const SIN_VAR_QF     = 10.0;      // €/mese (96+24 €/anno)
+
+    // Fisso (cod. 025867GSFML03XX000000000326FIXGD)
+    const SIN_FIX_PREZZO = 0.590000;  // prezzo fisso 12 mesi
+    // CCR (0,030892 €/Smc) rimosso: come sopra
+    const SIN_FIX_QF     = 16.0;      // €/mese (156+36 €/anno)
+
+    // ============================================================
+    // UTILITY
+    // ============================================================
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
     function getPeriodo() { return parseInt(document.getElementById('periodo').value); }
@@ -135,10 +197,10 @@
       const qf = quotaFissaMensile * periodoMesi;
       const totPeriodo = costoEnergia + qf;
       const totAnno = totPeriodo * (12 / periodoMesi);
-      let risparmioMese = null, risparmioPerc = null;
+      let risparmioPeriodo = null, risparmioPerc = null;
       if (sa > 0) {
-        risparmioMese = sa - totPeriodo;
-        risparmioPerc = (risparmioMese / sa) * 100;
+        risparmioPeriodo = sa - totPeriodo;
+        risparmioPerc = (risparmioPeriodo / sa) * 100;
       }
       return {
         nome,
@@ -146,66 +208,107 @@
         quotaFissa:   round2(qf).toFixed(2),
         totMese:      round2(totPeriodo).toFixed(2),
         totAnno:      round2(totAnno).toFixed(2),
-        risparmioMese: risparmioMese !== null ? round2(risparmioMese).toFixed(2) : null,
+        risparmioMese: risparmioPeriodo !== null ? round2(risparmioPeriodo).toFixed(2) : null,
         risparmioPerc: risparmioPerc !== null ? risparmioPerc.toFixed(1) : null
       };
     }
 
-    // ======= CEI (nuove CTE) =======
-    // Comfort: PSV + spread + quota variabile + CrA + CcP, + quota fissa mensile
+    // ============================================================
+    // CEI – FUNZIONI DI CALCOLO
+    // ============================================================
+
     function calcolaCeiComfort(consumo, psv, sa, p) {
-      const SPREAD = 0.17;
-      const QUOTA_VAR_CV = 0.03;     // €/Smc
-      const CCP = 0.0219;            // €/Smc
-      const CRA = 0.0145;            // €/Smc
-      const costoEnergia = consumo * (psv + SPREAD + QUOTA_VAR_CV + CCP + CRA);
-      return makeRow("CEI COMFORT (PSV + 0,17) + CV/CcP/CrA", costoEnergia, 20.00, sa, p);
+      const costoEnergia = consumo * (psv + CEI_CMF_SPREAD + CEI_CMF_QUOTAVAR + CEI_CMF_CCP + CEI_CMF_CRA);
+      return makeRow(
+        "CEI Comfort — PSV + 0,17 + quot.var. + CcP + CrA",
+        costoEnergia, CEI_CMF_QF, sa, p
+      );
     }
 
     function calcolaCeiForever(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + 0.15);
-      return makeRow("CEI FOREVER (PSV + 0,15)", costoEnergia, 14.5, sa, p);
+      const costoEnergia = consumo * (psv + CEI_EV_SPREAD);
+      return makeRow(
+        "CEI Forever — PSV + 0,15 €/Smc",
+        costoEnergia, CEI_EV_QF, sa, p
+      );
     }
 
     function calcolaCeiSmart(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + 0.11);
-      return makeRow("CEI SMART (PSV + 0,11)", costoEnergia, 12.5, sa, p);
+      const costoEnergia = consumo * (psv + CEI_SMR_SPREAD);
+      return makeRow(
+        "CEI Smart — PSV + 0,11 €/Smc",
+        costoEnergia, CEI_SMR_QF, sa, p
+      );
     }
 
     function calcolaCeiFamilyFriends(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + 0.08);
-      return makeRow("CEI F&F (PSV + 0,08)", costoEnergia, 8.5, sa, p);
+      const costoEnergia = consumo * (psv + CEI_FF_SPREAD);
+      return makeRow(
+        "CEI Family&Friends — PSV + 0,08 €/Smc",
+        costoEnergia, CEI_FF_QF, sa, p
+      );
     }
 
-    // ======= ESTRA =======
+    // ============================================================
+    // ESTRA – FUNZIONI DI CALCOLO
+    // Fissa:  consumo × 0,58 (prezzo fisso) – sconto SDD
+    // Natura: consumo × (PSV + 0,07) – sconto SDD
+    // ============================================================
+
     function calcolaEstraFissa(consumo, sa, p) {
-      const costoEnergia = consumo * 0.429 - 2.00 * p;
-      return makeRow("Estra Fissa Gas (sconto -2€/mese SDD)", costoEnergia, 144/12, sa, p);
-    }
-    function calcolaEstraNatura(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + 0.07) - 2.00 * p;
-      return makeRow("Estra Natura Gas (sconto -2€/mese SDD)", costoEnergia, 144/12, sa, p);
+      const costoEnergia = consumo * ESTRA_FISSA_PREZZO;
+      const qfNetta = ESTRA_FISSA_QF - ESTRA_FISSA_SDD; // 14 - 2 = 12 €/mese netti
+      return makeRow(
+        "Estra Fissa Gas — 0,58 €/Smc fisso (CO₂ neutro, sconto SDD incluso)",
+        costoEnergia, qfNetta, sa, p
+      );
     }
 
-    // ======= SINERGY =======
-    function calcolaSinergyFamilyGasVariabile(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + 0.120 + 0.020 + 0.026733);
-      return makeRow("Sinergy Family Gas Variabile (PSV+0,12)", costoEnergia, (96+24)/12, sa, p);
+    function calcolaEstraNatura(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + ESTRA_NATURA_SPREAD);
+      const qfNetta = ESTRA_NATURA_QF - ESTRA_NATURA_SDD; // 12 - 2 = 10 €/mese netti
+      return makeRow(
+        "Estra Natura Gas — PSV + 0,07 €/Smc (CO₂ neutro, sconto SDD incluso)",
+        costoEnergia, qfNetta, sa, p
+      );
     }
-    function calcolaSinergyFamilyGasFissa(consumo, sa, p) {
-      const costoEnergia = consumo * (0.485 + 0.026733);
-      return makeRow("Sinergy Family Gas Fisso (0,485 €/Smc) ⚠️ scade 28/02/2026", costoEnergia, (156+36)/12, sa, p);
+
+    // ============================================================
+    // SINERGY – FUNZIONI DI CALCOLO
+    // Variabile: consumo × (PSV + spread + sbil + CCR)
+    // Fisso:     consumo × (0,5900 + CCR)
+    // ============================================================
+
+    function calcolaSinergyVariabile(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + SIN_VAR_SPREAD + SIN_VAR_SBIL);
+      return makeRow(
+        "Sinergy Family Gas Variabile — PSV + 0,120 + Sbil(0,020)",
+        costoEnergia, SIN_VAR_QF, sa, p
+      );
     }
+
+    function calcolaSinergyFisso(consumo, sa, p) {
+      const costoEnergia = consumo * SIN_FIX_PREZZO;
+      return makeRow(
+        "Sinergy Family Gas Fisso — 0,5900 €/Smc fisso (bloccato 12 mesi)",
+        costoEnergia, SIN_FIX_QF, sa, p
+      );
+    }
+
+    // ============================================================
+    // RENDER TABELLA
+    // ============================================================
 
     function renderTabella(id, righe) {
       const tbody = document.querySelector('#' + id + ' tbody');
       tbody.innerHTML = '';
-      const minTot = Math.min(...righe.map(o => parseFloat(o.totMese)));
       const pp = getPeriodo();
+      const minTot = Math.min(...righe.map(o => parseFloat(o.totMese)));
       righe.forEach(o => {
         const isBest = parseFloat(o.totMese) === minTot;
         const tr = tbody.insertRow();
         if (isBest) tr.classList.add('best');
+
         let rispHtml = '<td>—</td>';
         if (o.risparmioMese !== null) {
           const v = parseFloat(o.risparmioMese);
@@ -213,11 +316,16 @@
           const cls = v >= 0 ? 'saving-pos' : 'saving-neg';
           const absV = Math.abs(v).toFixed(2);
           const absP = Math.abs(p2).toFixed(1);
-          rispHtml = `<td class="${cls}">${v >= 0 ? '▼ -' : '▲ +'}€${absV}/periodo (${v >= 0 ? '-' : '+'}${absP}%)<br><small>${v >= 0 ? '▼ -' : '▲ +'}€${(Math.abs(v)*(12/pp)).toFixed(2)}/anno</small></td>`;
+          rispHtml = `<td class="${cls}">${v >= 0 ? '▼ −' : '▲ +'}€${absV}/periodo (${v >= 0 ? '−' : '+'}${absP}%)<br><small>${v >= 0 ? '▼ −' : '▲ +'}€${(Math.abs(v)*(12/pp)).toFixed(2)}/anno</small></td>`;
         }
-        tr.innerHTML = `<td>${o.nome}${isBest ? ' ⭐' : ''}</td><td>€ ${o.costoEnergia}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totMese}</td><td>€ ${o.totAnno}</td>${rispHtml}`;
+
+        tr.innerHTML = `<td>${o.nome}${isBest ? ' ⭐' : ''}</td><td>€ ${o.costoEnergia}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totMese}</td>${rispHtml}`;
       });
     }
+
+    // ============================================================
+    // CALCOLO PRINCIPALE
+    // ============================================================
 
     function calcolaTutteLeOfferteGas() {
       const consumo = parseFloat(document.getElementById('consumo').value) || 0;
@@ -225,14 +333,18 @@
       const sa      = parseFloat(document.getElementById('spesaAttuale').value) || 0;
       const p       = getPeriodo();
 
+      if (isNaN(consumo) || consumo < 0) { alert("Inserisci un consumo valido."); return; }
+      if (isNaN(psv) || psv < 0)         { alert("Inserisci un valore PSV valido."); return; }
+
       const refBox = document.getElementById('ref-attuale');
       if (sa > 0) {
         const periodoLabel = p === 2 ? 'bimestrale' : 'mensile';
         refBox.style.display = 'block';
         refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*(12/p)).toFixed(2)}`;
-      } else { refBox.style.display = 'none'; }
+      } else {
+        refBox.style.display = 'none';
+      }
 
-      // CEI: sostituite Turbo/Boost/Go con Comfort/Forever/Smart/F&F
       renderTabella('tabella-cei', [
         calcolaCeiComfort(consumo, psv, sa, p),
         calcolaCeiForever(consumo, psv, sa, p),
@@ -246,12 +358,15 @@
       ]);
 
       renderTabella('tabella-sinergy', [
-        calcolaSinergyFamilyGasVariabile(consumo, psv, sa, p),
-        calcolaSinergyFamilyGasFissa(consumo, sa, p),
+        calcolaSinergyVariabile(consumo, psv, sa, p),
+        calcolaSinergyFisso(consumo, sa, p),
       ]);
     }
 
-    window.onload = calcolaTutteLeOfferteGas;
+    window.onload = () => {
+      aggiornaPeriodo();
+      calcolaTutteLeOfferteGas();
+    };
   </script>
 </body>
 </html>
