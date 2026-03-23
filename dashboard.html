@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Dashboard Collaboratori</title>
     <link rel="stylesheet" href="styles.css">
-
     <style>
         body {
             margin: 0;
@@ -12,8 +11,6 @@
             background-color: #f5f5f5;
             font-family: Arial, sans-serif;
         }
-
-        /* MENU LATERALE */
         .sidebar {
             width: 230px;
             background-color: #003366;
@@ -25,13 +22,11 @@
             top: 0;
             left: 0;
         }
-
         .sidebar h2 {
             margin-top: 0;
             margin-bottom: 25px;
             font-size: 22px;
         }
-
         .sidebar a {
             display: block;
             color: white;
@@ -41,18 +36,14 @@
             font-size: 16px;
             border-radius: 4px;
         }
-
         .sidebar a:hover {
             background-color: #0055A5;
         }
-
-        /* AREA CONTENUTO CON IFRAME */
         .content-area {
             margin-left: 260px;
             padding: 20px;
             width: calc(100% - 260px);
         }
-
         iframe {
             width: 100%;
             height: 90vh;
@@ -60,20 +51,70 @@
             background: white;
             border-radius: 6px;
         }
-
         .welcome {
             font-size: 25px;
             font-weight: bold;
         }
+
+        /* SCHERMATA DI LOGIN */
+        #loginScreen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: #003366;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        #loginScreen h2 {
+            color: white;
+            font-size: 26px;
+            margin-bottom: 20px;
+        }
+        #loginScreen input {
+            padding: 12px 20px;
+            font-size: 18px;
+            border-radius: 6px;
+            border: none;
+            margin-bottom: 15px;
+            width: 280px;
+            text-align: center;
+        }
+        #loginScreen button {
+            padding: 12px 30px;
+            font-size: 16px;
+            background-color: #0055A5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #loginScreen button:hover {
+            background-color: #0077CC;
+        }
+        #loginError {
+            color: #ff6666;
+            margin-top: 12px;
+            font-size: 15px;
+            display: none;
+        }
     </style>
 </head>
-
 <body>
+
+    <!-- SCHERMATA LOGIN -->
+    <div id="loginScreen">
+        <h2>🔐 GEDE Servizi — Accesso Collaboratori</h2>
+        <input type="password" id="passwordInput" placeholder="Inserisci la password" onkeydown="if(event.key==='Enter') checkPassword()" />
+        <button onclick="checkPassword()">Entra</button>
+        <p id="loginError">❌ Password errata. Riprova.</p>
+    </div>
 
     <!-- MENU A SINISTRA -->
     <div class="sidebar">
         <h2>GEDE Servizi</h2>
-
         <a href="#" onclick="loadPage('comparators/business-gas.html')">Business Gas</a>
         <a href="#" onclick="loadPage('comparators/business-luce.html')">Business Luce</a>
         <a href="#" onclick="loadPage('comparators/domestico-gas.html')">Domestico Gas</a>
@@ -86,17 +127,26 @@
             <h1 class="welcome">Benvenuto nella Dashboard Collaboratori</h1>
             <p>Seleziona un comparatore dal menu laterale.</p>
         </div>
-
         <iframe id="contentFrame"></iframe>
     </div>
 
-    <!-- SCRIPT PER CAMBIO PAGINA -->
     <script>
+        const PASSWORD_CORRETTA = "gede2025"; // ← CAMBIA QUI LA TUA PASSWORD
+
+        function checkPassword() {
+            const inserita = document.getElementById('passwordInput').value;
+            if (inserita === PASSWORD_CORRETTA) {
+                document.getElementById('loginScreen').style.display = 'none';
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
         function loadPage(url) {
             document.getElementById('contentFrame').src = url;
             document.getElementById('welcomeBox').style.display = 'none';
         }
     </script>
-
 </body>
 </html>
