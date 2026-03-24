@@ -34,6 +34,13 @@
     .periodo-bimestrale { background:#fce7f3; color:#9d174d; }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width:700px) { .grid2 { grid-template-columns: 1fr; } }
+    .arera-box { background:#e8f4fd; border:1px solid #90caf9; border-radius:6px; padding:12px 18px; margin-top:16px; font-size:0.92rem; color:#1a3a5c; }
+    .arera-box .arera-title { font-weight:700; color:#1565c0; margin-bottom:6px; font-size:0.95rem; }
+    .arera-box .arera-params { display:flex; flex-wrap:wrap; gap:10px 24px; margin-top:4px; }
+    .arera-box .arera-param { display:flex; align-items:center; gap:6px; }
+    .arera-box .arera-label { color:#555; }
+    .arera-box .arera-value { font-weight:700; color:#1565c0; font-family:monospace; font-size:1rem; }
+    .arera-box .arera-note { font-size:0.81rem; color:#666; margin-top:6px; }
   </style>
 </head>
 <body>
@@ -80,6 +87,17 @@
       Valori <b>IVA e imposte escluse</b>.
     </p>
     <button onclick="calcolaTutteLeOfferte()">Calcola Offerte</button>
+
+    <div class="arera-box" id="arera-box">
+      <div class="arera-title">📋 Parametri ARERA applicati nel calcolo</div>
+      <div class="arera-params">
+        <div class="arera-param"><span class="arera-label">DISP (Dispacciamento):</span><span class="arera-value" id="disp-val"></span></div>
+        <div class="arera-param"><span class="arera-label">CAPA (Mercato Capacità):</span><span class="arera-value" id="capa-val"></span></div>
+        <div class="arera-param"><span class="arera-label">Perdite BT:</span><span class="arera-value">×1,10</span></div>
+        <div class="arera-param"><span class="arera-label">Perdite MT:</span><span class="arera-value">×1,038</span></div>
+      </div>
+      <div class="arera-note">Corrispettivi regolati ARERA — uguali per tutti i fornitori. Valori Q1 2026. Aggiornati ogni trimestre su <a href="https://www.arera.it" target="_blank">arera.it</a>.</div>
+    </div>
   </div>
 
   <div class="results-section">
@@ -133,8 +151,8 @@
 
   <script>
     const LOSS = { BT: 1.10, MT: 1.038 };
-    const DISP = { BT: 0.01078, MT: 0.01078 };
-    const CAPA = { BT: 0.009008, MT: 0.009008 };
+    const DISP = { BT: 0.011725, MT: 0.011725 };
+    const CAPA = { BT: 0.013580, MT: 0.013580 };
     const ESTRA_GO = 0.011;
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
@@ -293,6 +311,10 @@
       if (isNaN(consumo) || consumo < 0) { alert("Inserisci un consumo valido."); return; }
       if (isNaN(pun) || pun < 0)         { alert("Inserisci un PUN valido."); return; }
 
+      // Aggiorna riquadro ARERA con tensione corrente
+      document.getElementById('disp-val').textContent = DISP[t].toFixed(6) + ' €/kWh';
+      document.getElementById('capa-val').textContent = CAPA[t].toFixed(6) + ' €/kWh';
+
       const refBox = document.getElementById('ref-attuale');
       if (sa > 0) {
         const periodoLabel = p === 2 ? 'bimestrale' : 'mensile';
@@ -328,6 +350,10 @@
 
     window.onload = () => {
       aggiornaPeriodo();
+      // Popola i valori ARERA nel riquadro
+      const t = getTensione();
+      document.getElementById('disp-val').textContent = DISP[t].toFixed(5) + ' €/kWh';
+      document.getElementById('capa-val').textContent = CAPA[t].toFixed(6) + ' €/kWh';
       calcolaTutteLeOfferte();
     };
   </script>
