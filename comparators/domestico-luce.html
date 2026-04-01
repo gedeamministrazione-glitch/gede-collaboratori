@@ -66,7 +66,7 @@
     </div>
     <p class="note">
       Il PUN inserito è considerato <b>puro</b> (senza perdite).<br>
-      <b>CEI</b>: perdite applicate al solo PUN (×1,10); DISP e CAPA indicati in CTE già comprensivi delle perdite → NON si moltiplica ulteriormente.<br>
+      <b>CEI</b>: perdite applicate al solo PUN (×1,10); DISP (0,011725 €/kWh) e CAPA (0,004349 €/kWh) indicati in CTE già comprensivi delle perdite → NON si moltiplica ulteriormente.<br>
       <b>Estra</b>: perdite applicate al solo PUN (×1,10) per Natura; prezzo fisso per Fissa. CDISPD ricavato dalla scheda sintetica CTE (0,021726 €/kWh).<br>
       <b>Sinergy</b>: perdite applicate al solo PUN (×1,10); DISP indicato "al lordo delle perdite" in CTE.<br>
       Valori <b>IVA e imposte escluse</b>.
@@ -78,7 +78,7 @@
     <h2 id="results-title">Risultati Comparazione <span id="badge-periodo" class="periodo-badge periodo-mensile">Mensile</span></h2>
     <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
-    <div class="section-title">🔵 CEI – Compagnia Energetica Italiana <span class="validita">(valide fino 31/03/2026)</span></div>
+    <div class="section-title">🔵 CEI – Compagnia Energetica Italiana <span class="validita">(valide fino 31/12/2026)</span></div>
     <table id="tabella-cei">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -122,33 +122,34 @@
 
     // ============================================================
     // CEI – Compagnia Energetica Italiana
-    // Fonte: CTE allegate (valide fino 31/03/2026)
+    // Fonte: CTE allegate (valide fino 31/12/2026)
     // Perdite: applicate al SOLO PUN (PUN puro × 1,10)
     // DISP e CAPA: indicati in CTE "comprensivi delle perdite" → NON moltiplicare
     // ============================================================
 
-    // Corrispettivi trimestrali ARERA (aggiornati da CTE)
-    const CEI_DISP = 0.010780;   // €/kWh – TIDE art.24.2, comprensivo perdite (da CTE)
-    const CEI_CAPA = 0.008189;   // €/kWh – capacità dic 2025 (da CTE)
+    // Corrispettivi trimestrali ARERA (aggiornati da CTE mar 2026)
+    const CEI_DISP = 0.011725;   // €/kWh – TIDE art.24.2, comprensivo perdite (da CTE)
+    const CEI_CAPA = 0.004349;   // €/kWh – capacità mar 2026 (da CTE)
 
-    // CEI Forever (spread + quota fissa da CTE 014850ENVFL01XX0000CECDILA2507EV)
-    const CEI_SPREAD_FOREVER = 0.018;
-    const CEI_QF_FOREVER     = 14.5;  // €/mese (174 €/anno)
+    // CEI Granito (ex Comfort) – CTE 014850ENVOL01XX000CECDILA2604GRT
+    const CEI_SPREAD_GRANITO = 0.030;
+    const CEI_QF_GRANITO     = 168 / 12; // 14,00 €/mese
 
-    // CEI Family&Friends (spread + quota fissa da CTE 014850ENVFL01XX0000CECDILA2507FF)
-    const CEI_SPREAD_FF = 0.010;
-    const CEI_QF_FF     = 8.5;   // €/mese (102 €/anno)
+    // CEI Marmo (ex Forever) – CTE 014850ENVOL01XX000CECDILA2604MRM
+    const CEI_SPREAD_MARMO = 0.025;
+    const CEI_QF_MARMO     = 156 / 12; // 13,00 €/mese
 
-    // CEI Smart (spread + quota fissa da CTE 014850ENVFL01XX000CECDILA2507SMR)
-    const CEI_SPREAD_SMART = 0.015;
-    const CEI_QF_SMART     = 12.5; // €/mese (150 €/anno)
+    // CEI Basalto (ex Smart) – CTE 014850ENVOL01XX000CECDILA2604BST
+    const CEI_SPREAD_BASALTO = 0.025;
+    const CEI_QF_BASALTO     = 144 / 12; // 12,00 €/mese
 
-    // CEI Comfort (spread + quota fissa + CsP/CrA/CcP da CTE 014850ENVFL01XX000CECDILA2507CMF)
-    const CEI_SPREAD_COMFORT = 0.020;
-    const CEI_QF_COMFORT     = 20.0;  // €/mese (240 €/anno)
-    const CEI_CSP_COMFORT    = 0.0095;
-    const CEI_CRA_COMFORT    = 0.00235;
-    const CEI_CCP_COMFORT    = 0.00219;
+    // CEI Ardesia (ex Family&Friends) – CTE 014850ENVOL01XX000CECDILA2604ARD
+    const CEI_SPREAD_ARDESIA = 0.025;
+    const CEI_QF_ARDESIA     = 120 / 12; // 10,00 €/mese
+
+    // CEI Family&Friends (nuova) – CTE 014850ENVOL01XX0000CECDILA2604FF
+    const CEI_SPREAD_FF = 0.018;
+    const CEI_QF_FF     = 96 / 12; // 8,00 €/mese
 
     // ============================================================
     // ESTRA
@@ -222,48 +223,58 @@
 
     // ============================================================
     // CEI – FUNZIONI DI CALCOLO
-    // Formula: consumo × (PUN×1,10 + spread + DISP + CAPA [+ CsP + CrA + CcP])
+    // Formula: consumo × (PUN×1,10 + spread + DISP + CAPA)
     // ============================================================
 
-    function calcolaCeiComfort(consumo, pun, sa, p) {
+    function calcolaCeiGranito(consumo, pun, sa, p) {
       const costoEnergia = consumo * (
         (pun * LOSS_BT)
-        + CEI_SPREAD_COMFORT
+        + CEI_SPREAD_GRANITO
         + CEI_DISP
         + CEI_CAPA
-        + CEI_CSP_COMFORT
-        + CEI_CRA_COMFORT
-        + CEI_CCP_COMFORT
       );
       return makeRow(
-        "CEI Comfort — PUN×1,10 + 0,020 + DISP + CAPA + CsP + CrA + CcP",
-        costoEnergia, CEI_QF_COMFORT, sa, p
+        "CEI Granito — PUN×1,10 + 0,030 + DISP + CAPA",
+        costoEnergia, CEI_QF_GRANITO, sa, p
       );
     }
 
-    function calcolaCeiForever(consumo, pun, sa, p) {
+    function calcolaCeiMarmo(consumo, pun, sa, p) {
       const costoEnergia = consumo * (
         (pun * LOSS_BT)
-        + CEI_SPREAD_FOREVER
+        + CEI_SPREAD_MARMO
         + CEI_DISP
         + CEI_CAPA
       );
       return makeRow(
-        "CEI Forever — PUN×1,10 + 0,018 + DISP + CAPA",
-        costoEnergia, CEI_QF_FOREVER, sa, p
+        "CEI Marmo — PUN×1,10 + 0,025 + DISP + CAPA",
+        costoEnergia, CEI_QF_MARMO, sa, p
       );
     }
 
-    function calcolaCeiSmart(consumo, pun, sa, p) {
+    function calcolaCeiBasalto(consumo, pun, sa, p) {
       const costoEnergia = consumo * (
         (pun * LOSS_BT)
-        + CEI_SPREAD_SMART
+        + CEI_SPREAD_BASALTO
         + CEI_DISP
         + CEI_CAPA
       );
       return makeRow(
-        "CEI Smart — PUN×1,10 + 0,015 + DISP + CAPA",
-        costoEnergia, CEI_QF_SMART, sa, p
+        "CEI Basalto — PUN×1,10 + 0,025 + DISP + CAPA",
+        costoEnergia, CEI_QF_BASALTO, sa, p
+      );
+    }
+
+    function calcolaCeiArdesia(consumo, pun, sa, p) {
+      const costoEnergia = consumo * (
+        (pun * LOSS_BT)
+        + CEI_SPREAD_ARDESIA
+        + CEI_DISP
+        + CEI_CAPA
+      );
+      return makeRow(
+        "CEI Ardesia — PUN×1,10 + 0,025 + DISP + CAPA",
+        costoEnergia, CEI_QF_ARDESIA, sa, p
       );
     }
 
@@ -275,7 +286,7 @@
         + CEI_CAPA
       );
       return makeRow(
-        "CEI Family&Friends — PUN×1,10 + 0,010 + DISP + CAPA",
+        "CEI Family&Friends — PUN×1,10 + 0,018 + DISP + CAPA",
         costoEnergia, CEI_QF_FF, sa, p
       );
     }
@@ -382,9 +393,10 @@
       }
 
       renderTabella('tabella-cei', [
-        calcolaCeiComfort(consumo, pun, sa, p),
-        calcolaCeiForever(consumo, pun, sa, p),
-        calcolaCeiSmart(consumo, pun, sa, p),
+        calcolaCeiGranito(consumo, pun, sa, p),
+        calcolaCeiMarmo(consumo, pun, sa, p),
+        calcolaCeiBasalto(consumo, pun, sa, p),
+        calcolaCeiArdesia(consumo, pun, sa, p),
         calcolaCeiFamilyFriends(consumo, pun, sa, p),
       ]);
 
