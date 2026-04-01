@@ -66,7 +66,7 @@
     </div>
     <p class="note">
       Il PSV inserito è il valore medio mensile del mercato PSV.<br>
-      <b>CEI</b>: Formula energia = consumo × (PSV + Spread). Comfort aggiunge quota var. comm. (0,03 €/Smc) + CcP (0,0219 €/Smc) + CrA (0,0145 €/Smc). Il CCR non è indicato nelle CTE CEI → <b>non incluso</b>.<br>
+      <b>CEI</b>: Formula energia = consumo × (PSV + Spread). Granito: PSV +0,15; Marmo: PSV +0,14; Basalto: PSV +0,135; Ardesia: PSV +0,13; Family&amp;Friends: PSV +0,10. Il CCR non è indicato nelle CTE CEI → <b>non incluso</b>.<br>
       <b>Estra Fissa</b>: prezzo fisso 0,58 €/Smc. Sconto SDD −2 €/mese (primi 12 mesi) incluso.<br>
       <b>Estra Natura</b>: PSV + 0,07 €/Smc. Sconto SDD −2 €/mese incluso.<br>
       <b>Sinergy Variabile</b>: PSV + 0,120 (spread) + 0,020 (bilanciamento) €/Smc.<br>
@@ -81,7 +81,7 @@
     <h2 id="results-title">Risultati Comparazione <span id="badge-periodo" class="periodo-badge periodo-mensile">Mensile</span></h2>
     <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
-    <div class="section-title">🔵 CEI – Compagnia Energetica Italiana <span class="validita">(valide fino al 31/03/2026)</span></div>
+    <div class="section-title">🔵 CEI – Compagnia Energetica Italiana <span class="validita">(valide fino al 31/12/2026)</span></div>
     <table id="tabella-cei">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -127,27 +127,28 @@
     // ============================================================
 
     // ---- CEI – Compagnia Energetica Italiana ----
-    // Formula: consumo × (PSV + Spread [+ extra Comfort])
+    // Formula: consumo × (PSV + Spread)
     // CCR non indicato nelle CTE CEI → non incluso
 
-    // Forever (cod. 014850GNVML01XX0000CECDIGA2507EV)
-    const CEI_EV_SPREAD = 0.15;
-    const CEI_EV_QF     = 14.5;  // €/mese (174 €/anno)
+    // Granito (cod. 014850GNVML01XX000CECDIGA2604GRT)
+    const CEI_GRT_SPREAD = 0.15;
+    const CEI_GRT_QF     = 14.0;  // €/mese (168 €/anno)
 
-    // Family & Friends (cod. 014850GNVML01XX0000CECDIGA2507FF)
-    const CEI_FF_SPREAD = 0.08;
-    const CEI_FF_QF     = 8.5;   // €/mese (102 €/anno)
+    // Marmo (cod. 014850GNVML01XX000CECDIGA2604MRM)
+    const CEI_MRM_SPREAD = 0.14;
+    const CEI_MRM_QF     = 13.0;  // €/mese (156 €/anno)
 
-    // Smart (cod. 014850GNVML01XX000CECDIGA2507SMR)
-    const CEI_SMR_SPREAD = 0.11;
-    const CEI_SMR_QF     = 12.5; // €/mese (150 €/anno)
+    // Basalto (cod. 014850GNVML01XX000CECDIGA2604BST)
+    const CEI_BST_SPREAD = 0.135;
+    const CEI_BST_QF     = 12.0;  // €/mese (144 €/anno)
 
-    // Comfort (cod. 014850GNVML01XX000CECDIGA2507CMF)
-    const CEI_CMF_SPREAD   = 0.17;
-    const CEI_CMF_QUOTAVAR = 0.03;    // quota variabile commercializzazione
-    const CEI_CMF_CCP      = 0.0219;  // corrispettivo corretta programmazione
-    const CEI_CMF_CRA      = 0.0145;  // corrispettivo rischio approvvigionamento
-    const CEI_CMF_QF       = 20.0;    // €/mese (240 €/anno)
+    // Ardesia (cod. 014850GNVML01XX000CECDIGA2604ARD)
+    const CEI_ARD_SPREAD = 0.13;
+    const CEI_ARD_QF     = 10.0;  // €/mese (120 €/anno)
+
+    // Family&Friends (cod. 014850GNVML01XX0000CECDIGA2604FF)
+    const CEI_FF_SPREAD = 0.10;
+    const CEI_FF_QF     = 8.0;   // €/mese (96 €/anno)
 
     // ---- ESTRA ----
     // Fissa (cod. 001231GSFML01XXF48XX11032603GYFX, valida fino 17/03/2026)
@@ -228,34 +229,42 @@
     // CEI – FUNZIONI DI CALCOLO
     // ============================================================
 
-    function calcolaCeiComfort(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_CMF_SPREAD + CEI_CMF_QUOTAVAR + CEI_CMF_CCP + CEI_CMF_CRA) * PCS_CORR;
+    function calcolaCeiGranito(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + CEI_GRT_SPREAD) * PCS_CORR;
       return makeRow(
-        "CEI Comfort — PSV + 0,17 + quot.var. + CcP + CrA",
-        costoEnergia, CEI_CMF_QF, sa, p
+        "CEI Granito — (PSV + 0,15) × PCS +3%",
+        costoEnergia, CEI_GRT_QF, sa, p
       );
     }
 
-    function calcolaCeiForever(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_EV_SPREAD) * PCS_CORR;
+    function calcolaCeiMarmo(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + CEI_MRM_SPREAD) * PCS_CORR;
       return makeRow(
-        "CEI Forever — PSV + 0,15 €/Smc",
-        costoEnergia, CEI_EV_QF, sa, p
+        "CEI Marmo — (PSV + 0,14) × PCS +3%",
+        costoEnergia, CEI_MRM_QF, sa, p
       );
     }
 
-    function calcolaCeiSmart(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_SMR_SPREAD) * PCS_CORR;
+    function calcolaCeiBasalto(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + CEI_BST_SPREAD) * PCS_CORR;
       return makeRow(
-        "CEI Smart — PSV + 0,11 €/Smc",
-        costoEnergia, CEI_SMR_QF, sa, p
+        "CEI Basalto — (PSV + 0,135) × PCS +3%",
+        costoEnergia, CEI_BST_QF, sa, p
+      );
+    }
+
+    function calcolaCeiArdesia(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + CEI_ARD_SPREAD) * PCS_CORR;
+      return makeRow(
+        "CEI Ardesia — (PSV + 0,13) × PCS +3%",
+        costoEnergia, CEI_ARD_QF, sa, p
       );
     }
 
     function calcolaCeiFamilyFriends(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + CEI_FF_SPREAD) * PCS_CORR;
       return makeRow(
-        "CEI Family&Friends — PSV + 0,08 €/Smc",
+        "CEI Family&amp;Friends — (PSV + 0,10) × PCS +3%",
         costoEnergia, CEI_FF_QF, sa, p
       );
     }
@@ -357,9 +366,10 @@
       }
 
       renderTabella('tabella-cei', [
-        calcolaCeiComfort(consumo, psv, sa, p),
-        calcolaCeiForever(consumo, psv, sa, p),
-        calcolaCeiSmart(consumo, psv, sa, p),
+        calcolaCeiGranito(consumo, psv, sa, p),
+        calcolaCeiMarmo(consumo, psv, sa, p),
+        calcolaCeiBasalto(consumo, psv, sa, p),
+        calcolaCeiArdesia(consumo, psv, sa, p),
         calcolaCeiFamilyFriends(consumo, psv, sa, p),
       ]);
 
