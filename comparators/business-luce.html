@@ -104,7 +104,7 @@
     <h2 id="results-title">Risultati Comparazione <span id="badge-periodo" class="periodo-badge periodo-mensile">Mensile</span></h2>
     <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
-    <div class="section-title">🔵 CEI – &gt; 30.000 kWh/mese <span class="validita">(valide fino 31/03/2026)</span></div>
+    <div class="section-title">🔵 CEI – &gt; 30.000 kWh/anno <span class="validita">(valide fino 31/12/2026)</span></div>
     <table id="tabella-cei-superiore">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -113,7 +113,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🔵 CEI – &lt; 30.000 kWh/mese <span class="validita">(valide fino 31/03/2026)</span></div>
+    <div class="section-title">🔵 CEI – &lt; 30.000 kWh/anno <span class="validita">(valide fino 31/12/2026)</span></div>
     <table id="tabella-cei-inferiore">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -153,7 +153,8 @@
     const LOSS = { BT: 1.10, MT: 1.038 };
     const DISP = { BT: 0.011725, MT: 0.011725 };
     const CAPA = { BT: 0.013580, MT: 0.013580 };
-    const ESTRA_GO = 0.011;
+    const ESTRA_GO = 0;
+    const CEI_GO   = 0;   // GO rimosso
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
     function getPeriodo() { return parseInt(document.getElementById('periodo').value); }
@@ -194,57 +195,100 @@
     }
 
     // ============================================================
-    // CEI < 30.000 kWh/mese
+    // CEI > 30.000 kWh/anno
+    // Formula: (PUN+DISP+CAPA)×LOSS + Spread + CrA(0,00280) + CcP(0,00255) + VarComm(0,00255) + GO(0,005)
     // ============================================================
-    function calcolaCeiReflex(consumo, pun, t, sa, p) {
-      const spread = 0.014, qf = 26.5;
-      const varKwh = 0.002 + 0.0035 + 0.00219;
+
+    function calcolaRaffaello(consumo, pun, t, sa, p) {
+      const spread = 0.013, qf = 180 / 12;
+      const varKwh = 0.00280 + 0.00255 + 0.00255 + CEI_GO;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(`CEI REFLEX — (PUN+DISP+CAPA)×${LOSS[t]} + 0,014 + 0,002 + sbil 0,0035 + CcP 0,00219 | QF 26,5 €/mese (13,5+8+5)`, costo, qf, sa, p);
+      return resultRow(
+        `CEI RAFFAELLO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,013 + CrA 0,00280 + CcP 0,00255 + VarComm 0,00255 | QF 15 €/mese`,
+        costo, qf, sa, p
+      );
     }
-    function calcolaCanon(consumo, pun, t, sa, p) {
-      const spread = 0.012, qf = 19.5;
-      const varKwh = 0.002 + 0.0035 + 0.00219;
+
+    function calcolaMichelangelo(consumo, pun, t, sa, p) {
+      const spread = 0.011, qf = 180 / 12;
+      const varKwh = 0.00280 + 0.00255 + 0.00255 + CEI_GO;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(`CEI CANON — (PUN+DISP+CAPA)×${LOSS[t]} + 0,012 + 0,002 + sbil 0,0035 + CcP 0,00219 | QF 19,5 €/mese (10+4,5+5)`, costo, qf, sa, p);
+      return resultRow(
+        `CEI MICHELANGELO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,011 + CrA 0,00280 + CcP 0,00255 + VarComm 0,00255 | QF 15 €/mese`,
+        costo, qf, sa, p
+      );
     }
-    function calcolaVision(consumo, pun, t, sa, p) {
-      const spread = 0.012, qf = 16.0;
-      const varKwh = 0.002 + 0.0035;
+
+    function calcolaLeonardoSup(consumo, pun, t, sa, p) {
+      const spread = 0.009, qf = 180 / 12;
+      const varKwh = 0.00280 + 0.00255 + 0.00255 + CEI_GO;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(`CEI VISION — (PUN+DISP+CAPA)×${LOSS[t]} + 0,012 + 0,002 + sbil 0,0035 | QF 16 €/mese (10+6)`, costo, qf, sa, p);
+      return resultRow(
+        `CEI LEONARDO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,009 + CrA 0,00280 + CcP 0,00255 + VarComm 0,00255 | QF 15 €/mese`,
+        costo, qf, sa, p
+      );
+    }
+
+    function calcolaDonatello(consumo, pun, t, sa, p) {
+      const spread = 0.0055, qf = 156 / 12;
+      const varKwh = 0.00280 + 0.00255 + 0.00255 + CEI_GO;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
+      return resultRow(
+        `CEI DONATELLO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0055 + CrA 0,00280 + CcP 0,00255 + VarComm 0,00255 | QF 13 €/mese`,
+        costo, qf, sa, p
+      );
     }
 
     // ============================================================
-    // CEI > 30.000 kWh/mese
+    // CEI < 30.000 kWh/anno
+    // QUERCIA, SALICE, BETULLA, PARTNER&FRIENDS: (PUN+DISP+CAPA)×LOSS + Spread + GO(0,005)
+    // LEONARDO: come nel gruppo superiore (stessa CTE)
     // ============================================================
-    function calcolaCeiPartner(consumo, pun, t, sa, p) {
-      const spread = 0.0130, qf = 15;
-      const varKwh = 0.00185 + 0.0035;
+
+    function calcolaQuercia(consumo, pun, t, sa, p) {
+      const spread = 0.028, qf = 216 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + CEI_GO);
+      return resultRow(
+        `CEI QUERCIA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,028 | QF 18 €/mese`,
+        costo, qf, sa, p
+      );
+    }
+
+    function calcolaSalice(consumo, pun, t, sa, p) {
+      const spread = 0.026, qf = 180 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + CEI_GO);
+      return resultRow(
+        `CEI SALICE — (PUN+DISP+CAPA)×${LOSS[t]} + 0,026 | QF 15 €/mese`,
+        costo, qf, sa, p
+      );
+    }
+
+    function calcolaBetulla(consumo, pun, t, sa, p) {
+      const spread = 0.025, qf = 156 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + CEI_GO);
+      return resultRow(
+        `CEI BETULLA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,025 | QF 13 €/mese`,
+        costo, qf, sa, p
+      );
+    }
+
+    function calcolaLeonardoInf(consumo, pun, t, sa, p) {
+      const spread = 0.009, qf = 180 / 12;
+      const varKwh = 0.00280 + 0.00255 + 0.00255 + CEI_GO;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(`CEI PARTNER — (PUN+DISP+CAPA)×${LOSS[t]} + 0,013 + 0,00185 + sbil 0,0035 | QF 15 €/mese`, costo, qf, sa, p);
+      return resultRow(
+        `CEI LEONARDO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,009 + CrA 0,00280 + CcP 0,00255 + VarComm 0,00255 | QF 15 €/mese`,
+        costo, qf, sa, p
+      );
     }
-    function calcolaCeiFlex(consumo, pun, t, sa, p) {
-      const spread = 0.0090, qf = 15;
-      const varKwh = 0.002 + 0.0035;
-      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(`CEI FLEX — (PUN+DISP+CAPA)×${LOSS[t]} + 0,009 + 0,002 + sbil 0,0035 | QF 15 €/mese`, costo, qf, sa, p);
-    }
-    function calcolaCeiPro(consumo, pun, t, sa, p) {
-      const spread = 0.0110, qf = 15;
-      const varKwh = 0.002 + 0.0035;
-      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(`CEI PRO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,011 + 0,002 + sbil 0,0035 | QF 15 €/mese`, costo, qf, sa, p);
-    }
-    function calcolaCeiSmart(consumo, pun, t, sa, p) {
-      const spread = 0.006, sbilancProg = 0.0035, qf = 10.45;
-      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + sbilancProg);
-      return resultRow(`CEI SMART — (PUN+DISP+CAPA)×${LOSS[t]} + 0,006 + sbil 0,0035 | QF 10,45 €/mese`, costo, qf, sa, p);
-    }
-    function calcolaCeiSpecial(consumo, pun, t, sa, p) {
-      const spread = 0.008, sbilancProg = 0.0035, qf = 13.0;
-      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + sbilancProg);
-      return resultRow(`CEI SPECIAL — (PUN+DISP+CAPA)×${LOSS[t]} + 0,008 + sbil 0,0035 | QF 13 €/mese`, costo, qf, sa, p);
+
+    function calcolaPartnerFriends(consumo, pun, t, sa, p) {
+      const spread = 0.020, qf = 120 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + CEI_GO);
+      return resultRow(
+        `CEI PARTNER&FRIENDS — (PUN+DISP+CAPA)×${LOSS[t]} + 0,020 | QF 10 €/mese`,
+        costo, qf, sa, p
+      );
     }
 
     // ============================================================
@@ -253,14 +297,13 @@
     function calcolaEstraTrend(consumo, pun, t, sa, p) {
       const spread = 0.02035, qf = 184.8 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + ESTRA_GO);
-      return resultRow(`Estra TREND UNICA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,02035 + GO 0,011 | QF 15,40 €/mese`, costo, qf, sa, p);
+      return resultRow(`Estra TREND UNICA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,02035 | QF 15,40 €/mese`, costo, qf, sa, p);
     }
     function calcolaEstraTrendPiu(consumo, pun, t, sa, p) {
       const spread = 0.01705, qf = 184.8 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + ESTRA_GO);
-      return resultRow(`Estra TREND PIÙ — (PUN+DISP+CAPA)×${LOSS[t]} + 0,01705 + GO 0,011 | QF 15,40 €/mese`, costo, qf, sa, p);
+      return resultRow(`Estra TREND PIÙ — (PUN+DISP+CAPA)×${LOSS[t]} + 0,01705 | QF 15,40 €/mese`, costo, qf, sa, p);
     }
-
 
     // ============================================================
     // SINERGY Business
@@ -311,7 +354,6 @@
       if (isNaN(consumo) || consumo < 0) { alert("Inserisci un consumo valido."); return; }
       if (isNaN(pun) || pun < 0)         { alert("Inserisci un PUN valido."); return; }
 
-      // Aggiorna riquadro ARERA con tensione corrente
       document.getElementById('disp-val').textContent = DISP[t].toFixed(6) + ' €/kWh';
       document.getElementById('capa-val').textContent = CAPA[t].toFixed(6) + ' €/kWh';
 
@@ -324,18 +366,21 @@
         refBox.style.display = 'none';
       }
 
+      // CEI > 30.000 kWh/anno: RAFFAELLO, MICHELANGELO, LEONARDO, DONATELLO
       renderTable('tabella-cei-superiore', [
-        calcolaCeiPartner(consumo, pun, t, sa, p),
-        calcolaCeiPro(consumo, pun, t, sa, p),
-        calcolaCeiFlex(consumo, pun, t, sa, p),
-        calcolaCeiSmart(consumo, pun, t, sa, p),
-        calcolaCeiSpecial(consumo, pun, t, sa, p),
+        calcolaRaffaello(consumo, pun, t, sa, p),
+        calcolaMichelangelo(consumo, pun, t, sa, p),
+        calcolaLeonardoSup(consumo, pun, t, sa, p),
+        calcolaDonatello(consumo, pun, t, sa, p),
       ]);
 
+      // CEI < 30.000 kWh/anno: QUERCIA, SALICE, BETULLA, LEONARDO, PARTNER&FRIENDS
       renderTable('tabella-cei-inferiore', [
-        calcolaCeiReflex(consumo, pun, t, sa, p),
-        calcolaCanon(consumo, pun, t, sa, p),
-        calcolaVision(consumo, pun, t, sa, p),
+        calcolaQuercia(consumo, pun, t, sa, p),
+        calcolaSalice(consumo, pun, t, sa, p),
+        calcolaBetulla(consumo, pun, t, sa, p),
+        calcolaLeonardoInf(consumo, pun, t, sa, p),
+        calcolaPartnerFriends(consumo, pun, t, sa, p),
       ]);
 
       renderTable('tabella-estra', [
@@ -350,7 +395,6 @@
 
     window.onload = () => {
       aggiornaPeriodo();
-      // Popola i valori ARERA nel riquadro
       const t = getTensione();
       document.getElementById('disp-val').textContent = DISP[t].toFixed(5) + ' €/kWh';
       document.getElementById('capa-val').textContent = CAPA[t].toFixed(6) + ' €/kWh';
