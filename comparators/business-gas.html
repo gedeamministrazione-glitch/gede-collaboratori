@@ -78,7 +78,7 @@
     <h2 id="results-title">Risultati Comparazione <span id="badge-periodo" class="periodo-badge periodo-mensile">Mensile</span></h2>
     <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
-    <div class="section-title">🔵 CEI – &gt; 10.000 Smc/anno <span class="validita">(valide fino 31/03/2026)</span></div>
+    <div class="section-title">🔵 CEI – &gt; 10.000 Smc/anno <span class="validita">(valide fino 31/12/2026)</span></div>
     <table id="tabella-cei-superiore">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -87,7 +87,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🔵 CEI – &lt; 10.000 Smc/anno <span class="validita">(valide fino 31/03/2026)</span></div>
+    <div class="section-title">🔵 CEI – &lt; 10.000 Smc/anno <span class="validita">(valide fino 31/12/2026)</span></div>
     <table id="tabella-cei-inferiore">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -130,9 +130,6 @@
 
     // PCS_CORR: fattore di correzione Potere Calorifico Superiore = 1,03 (+3%)
     // Fonte: analisi bollette reali — ARERA delibera 229/2012/R/gas.
-    // Il distributore converte i Smc misurati in energia applicando il PCS della zona;
-    // il valore medio nazionale produce sistematicamente ~3% in più rispetto al Smc nominale.
-    // Si applica a TUTTI i fornitori su componente energia (variabile), sia offerte > 10.000 sia < 10.000 Smc/anno.
     const PCS_CORR = 1.03;
 
     function getPeriodo() { return parseInt(document.getElementById('periodo').value); }
@@ -175,70 +172,102 @@
     }
 
     // ============================================================
-    // CEI > 10.000 Smc/anno — varUnit comune: CV 0,02 + CcP 0,0219 + CrA 0,0145
+    // CEI > 10.000 Smc/anno
+    // Componenti variabili comuni: CrA 0,0028 + CcP 0,0255 + CV 0,02 = 0,0483 €/Smc
+    // Quota fissa: 120 €/anno = 10 €/mese
+    // Valide fino al 31/12/2026
     // ============================================================
-    const CEI_GT_VAR = 0.02 + 0.0219 + 0.0145; // = 0,0564 €/Smc
+    const CEI_GT_CRA  = 0.00280;
+    const CEI_GT_CCP  = 0.02550;
+    const CEI_GT_CV   = 0.02000;
+    const CEI_GT_VAR  = CEI_GT_CRA + CEI_GT_CCP + CEI_GT_CV; // = 0,04830 €/Smc
+    const CEI_GT_QF   = 120.00 / 12; // = 10 €/mese
 
-    function calcolaCeiPartner(consumo, psv, sa, p) {
-      const spread = 0.12, qf = 14.00;
+    // RAFFAELLO — spread 0,12 | CrA + CcP + CV | QF 10 €/mese
+    // Codice offerta: 014850GNVML01XX000CEBPMGA2603RFF
+    function calcolaCeiRaffaello(consumo, psv, sa, p) {
+      const spread = 0.12;
       const costo = consumo * (psv + spread + CEI_GT_VAR) * PCS_CORR;
       return resultRow(
-        `CEI PARTNER — PSV + 0,12 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 14 €/mese`,
-        costo, qf, sa, p);
+        `CEI RAFFAELLO — (PSV + 0,12 + CrA 0,0028 + CcP 0,0255 + CV 0,02) × 1,03 (PCS) | QF 10 €/mese`,
+        costo, CEI_GT_QF, sa, p);
     }
-    function calcolaCeiPro(consumo, psv, sa, p) {
-      const spread = 0.10, qf = 14.00;
+
+    // MICHELANGELO — spread 0,10 | CrA + CcP + CV | QF 10 €/mese
+    // Codice offerta: 014850GNVML01XX000CEBPMGA2603MCH
+    function calcolaCeiMichelangelo(consumo, psv, sa, p) {
+      const spread = 0.10;
       const costo = consumo * (psv + spread + CEI_GT_VAR) * PCS_CORR;
       return resultRow(
-        `CEI PRO — PSV + 0,10 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 14 €/mese`,
-        costo, qf, sa, p);
+        `CEI MICHELANGELO — (PSV + 0,10 + CrA 0,0028 + CcP 0,0255 + CV 0,02) × 1,03 (PCS) | QF 10 €/mese`,
+        costo, CEI_GT_QF, sa, p);
     }
-    function calcolaCeiFlex(consumo, psv, sa, p) {
-      const spread = 0.08, qf = 14.00;
+
+    // LEONARDO — spread 0,08 | CrA + CcP + CV | QF 10 €/mese
+    // Codice offerta: 014850GNVML01XX000CEBPMGA2603LNR
+    function calcolaCeiLeonardo(consumo, psv, sa, p) {
+      const spread = 0.08;
       const costo = consumo * (psv + spread + CEI_GT_VAR) * PCS_CORR;
       return resultRow(
-        `CEI FLEX — PSV + 0,08 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 14 €/mese`,
-        costo, qf, sa, p);
+        `CEI LEONARDO — (PSV + 0,08 + CrA 0,0028 + CcP 0,0255 + CV 0,02) × 1,03 (PCS) | QF 10 €/mese`,
+        costo, CEI_GT_QF, sa, p);
     }
-    function calcolaCeiSmart(consumo, psv, sa, p) {
-      const spread = 0.055, qf = 4.90;
-      const costo = consumo * (psv + spread + CEI_GT_VAR) * PCS_CORR;
+
+    // DONATELLO — spread 0,07 | CrA + CcP (no CV) | QF 10 €/mese
+    // Codice offerta: 014850GNVML01XX000CEBPMGA2603DNT
+    function calcolaCeiDonatello(consumo, psv, sa, p) {
+      const spread = 0.07;
+      const varUnit = CEI_GT_CRA + CEI_GT_CCP; // no CV per questa offerta
+      const costo = consumo * (psv + spread + varUnit) * PCS_CORR;
       return resultRow(
-        `CEI SMART — PSV + 0,055 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 4,90 €/mese`,
-        costo, qf, sa, p);
+        `CEI DONATELLO — (PSV + 0,07 + CrA 0,0028 + CcP 0,0255) × 1,03 (PCS) | QF 10 €/mese`,
+        costo, CEI_GT_QF, sa, p);
     }
 
     // ============================================================
     // CEI < 10.000 Smc/anno
+    // Struttura semplificata: PSV + spread, corrispettivo per PDR come QF annuale
+    // Nessun CrA/CcP/CV separato
+    // Valide fino al 31/12/2026
     // ============================================================
-    function calcolaCeiReflex(consumo, psv, sa, p) {
-      // varUnit: sbil 0,05 + CV 0,02 + CcP 0,0219 + CrA 0,0145 = 0,1064
-      // QF: riconsegna 7 + CGA 10 + comm.fissa 9 = 26 €/mese
-      const spread = 0.08, qf = 26.00;
-      const varUnit = 0.05 + 0.02 + 0.0219 + 0.0145;
-      const costo = consumo * (psv + spread + varUnit) * PCS_CORR;
+
+    // QUERCIA — spread 0,18 | PDR 216 €/anno = 18 €/mese
+    // Codice offerta: 014850GNVML01XX000CEBPMGA2604QRC
+    function calcolaCeiQuercia(consumo, psv, sa, p) {
+      const spread = 0.18, qf = 216.00 / 12; // 18 €/mese
+      const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `CEI REFLEX — PSV + 0,08 + sbil 0,05 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 26 €/mese (7+10+9)`,
+        `CEI QUERCIA — (PSV + 0,18) × 1,03 (PCS) | QF 18 €/mese (PDR 216 €/anno)`,
         costo, qf, sa, p);
     }
-    function calcolaCeiCanon(consumo, psv, sa, p) {
-      // varUnit: CV 0,02 + CcP 0,0219 + CrA 0,0145 + sbil 0,03 = 0,0864
-      // QF: riconsegna 9,5 + comm.fissa 10 = 19,5 €/mese
-      const spread = 0.08, qf = 19.50;
-      const varUnit = 0.02 + 0.0219 + 0.0145 + 0.03;
-      const costo = consumo * (psv + spread + varUnit) * PCS_CORR;
+
+    // SALICE — spread 0,16 | PDR 180 €/anno = 15 €/mese
+    // Codice offerta: 014850GNVML01XX000CEBPMGA2604SLC
+    function calcolaCeiSalice(consumo, psv, sa, p) {
+      const spread = 0.16, qf = 180.00 / 12; // 15 €/mese
+      const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `CEI CANON — PSV + 0,08 + CV 0,02 + CcP 0,0219 + CrA 0,0145 + sbil 0,03 | QF 19,5 €/mese (9,5+10)`,
+        `CEI SALICE — (PSV + 0,16) × 1,03 (PCS) | QF 15 €/mese (PDR 180 €/anno)`,
         costo, qf, sa, p);
     }
-    function calcolaCeiVision(consumo, psv, sa, p) {
-      // varUnit: CV 0,02 + CcP 0,0219 + CrA 0,0145 = 0,0564
-      // QF: comm.fissa 15 €/mese
-      const spread = 0.09, qf = 15.00;
-      const varUnit = 0.02 + 0.0219 + 0.0145;
-      const costo = consumo * (psv + spread + varUnit) * PCS_CORR;
+
+    // BETULLA — spread 0,15 | PDR 156 €/anno = 13 €/mese
+    // Codice offerta: 014850GNVML01XX000CEBPMGA2604BTL
+    function calcolaCeiBetulla(consumo, psv, sa, p) {
+      const spread = 0.15, qf = 156.00 / 12; // 13 €/mese
+      const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `CEI VISION — PSV + 0,09 + CV 0,02 + CcP 0,0219 + CrA 0,0145 | QF 15 €/mese`,
+        `CEI BETULLA — (PSV + 0,15) × 1,03 (PCS) | QF 13 €/mese (PDR 156 €/anno)`,
+        costo, qf, sa, p);
+    }
+
+    // PARTNER&FRIENDS — spread 0,10 | PDR 120 €/anno = 10 €/mese
+    // Codice offerta: 014850GNVML01XX000CEBPMGA2604PEF
+    function calcolaCeiPartnerFriends(consumo, psv, sa, p) {
+      const spread = 0.10, qf = 120.00 / 12; // 10 €/mese
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `CEI PARTNER&FRIENDS — (PSV + 0,10) × 1,03 (PCS) | QF 10 €/mese (PDR 120 €/anno)`,
         costo, qf, sa, p);
     }
 
@@ -249,9 +278,10 @@
       const spread = 0.075, qf = 184.8 / 12;
       const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `Estra TREND Gas — PSV + 0,075 | QF 15,40 €/mese`,
+        `Estra TREND Gas — (PSV + 0,075) × 1,03 (PCS) | QF 15,40 €/mese`,
         costo, qf, sa, p);
     }
+
     // ============================================================
     // SINERGY Business Gas
     // ============================================================
@@ -260,7 +290,7 @@
       const bilancio = 0.02;
       const costo = consumo * (psv + spread + bilancio) * PCS_CORR;
       return resultRow(
-        `Sinergy Business Gas — PSV + 0,170892 + bilancio 0,02 | QF 12 €/mese (10+2)`,
+        `Sinergy Business Gas — (PSV + 0,170892 + bilancio 0,02) × 1,03 (PCS) | QF 12 €/mese (10+2)`,
         costo, qf, sa, p);
     }
 
@@ -312,16 +342,17 @@
       }
 
       renderTable('tabella-cei-superiore', [
-        calcolaCeiPartner(consumo, psv, sa, p),
-        calcolaCeiPro(consumo, psv, sa, p),
-        calcolaCeiFlex(consumo, psv, sa, p),
-        calcolaCeiSmart(consumo, psv, sa, p),
+        calcolaCeiRaffaello(consumo, psv, sa, p),
+        calcolaCeiMichelangelo(consumo, psv, sa, p),
+        calcolaCeiLeonardo(consumo, psv, sa, p),
+        calcolaCeiDonatello(consumo, psv, sa, p),
       ]);
 
       renderTable('tabella-cei-inferiore', [
-        calcolaCeiReflex(consumo, psv, sa, p),
-        calcolaCeiCanon(consumo, psv, sa, p),
-        calcolaCeiVision(consumo, psv, sa, p),
+        calcolaCeiQuercia(consumo, psv, sa, p),
+        calcolaCeiSalice(consumo, psv, sa, p),
+        calcolaCeiBetulla(consumo, psv, sa, p),
+        calcolaCeiPartnerFriends(consumo, psv, sa, p),
       ]);
 
       renderTable('tabella-estra', [
