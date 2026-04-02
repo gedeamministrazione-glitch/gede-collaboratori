@@ -67,7 +67,7 @@
     <p class="note">
       Il PSV inserito è il valore medio mensile del mercato PSV.<br>
       <b>CEI</b>: Formula energia = consumo × (PSV + Spread). Granito: PSV +0,15; Marmo: PSV +0,14; Basalto: PSV +0,135; Ardesia: PSV +0,13; Family&amp;Friends: PSV +0,10. Il CCR non è indicato nelle CTE CEI → <b>non incluso</b>.<br>
-      <b>Estra Fissa</b>: prezzo fisso 0,58 €/Smc. Sconto SDD −2 €/mese (primi 12 mesi) incluso.<br>
+      <b>Estra Fissa</b>: prezzo fisso 0,67 €/Smc. Sconto SDD −2 €/mese (primi 12 mesi) incluso.<br>
       <b>Estra Natura</b>: PSV + 0,07 €/Smc. Sconto SDD −2 €/mese incluso.<br>
       <b>Sinergy Variabile</b>: PSV + 0,120 (spread) + 0,020 (bilanciamento) €/Smc.<br>
       <b>Sinergy Fisso</b>: 0,590000 €/Smc (fisso 12 mesi).<br>
@@ -90,7 +90,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟠 Estra Energie <span class="validita">(Fissa valida fino 17/03/2026 | Natura valida fino 13/04/2026)</span></div>
+    <div class="section-title">🟠 Estra Energie <span class="validita">(Fissa valida fino 07/04/2026 | Natura valida fino 13/04/2026)</span></div>
     <table id="tabella-estra">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -151,8 +151,8 @@
     const CEI_FF_QF     = 8.0;   // €/mese (96 €/anno)
 
     // ---- ESTRA ----
-    // Fissa (cod. 001231GSFML01XXF48XX11032603GYFX, valida fino 17/03/2026)
-    const ESTRA_FISSA_PREZZO = 0.58;
+    // Fissa (cod. 001231GSFML01XXF48XX01042603GYFX, valida fino 07/04/2026)
+    const ESTRA_FISSA_PREZZO = 0.67;
     const ESTRA_FISSA_QF     = 14.0; // €/mese lordo
     const ESTRA_FISSA_SDD    = 2.0;  // €/mese sconto SDD (primi 12 mesi)
 
@@ -279,7 +279,7 @@
       const costoEnergia = consumo * ESTRA_FISSA_PREZZO * PCS_CORR;
       const qfNetta = ESTRA_FISSA_QF - ESTRA_FISSA_SDD; // 14 - 2 = 12 €/mese netti
       return makeRow(
-        "Estra Fissa Gas — 0,58 €/Smc fisso (CO₂ neutro, sconto SDD incluso)",
+        "Estra Fissa Gas — 0,67 €/Smc fisso (CO₂ neutro, sconto SDD incluso)",
         costoEnergia, qfNetta, sa, p
       );
     }
