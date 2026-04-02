@@ -87,7 +87,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟠 Estra <span class="validita">(Fissa valida fino 17/03/2026 | Natura valida fino 13/04/2026)</span></div>
+    <div class="section-title">🟠 Estra <span class="validita">(Fissa valida fino 07/04/2026 | Natura valida fino 13/04/2026)</span></div>
     <table id="tabella-estra">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -158,7 +158,7 @@
     // CDISPD: ricavato da scheda sintetica CTE (non quantificato nel testo CTE)
     // ============================================================
     const ESTRA_CDISPD         = 0.021726; // €/kWh – da scheda sintetica (0,049226 - 0,0275)
-    const ESTRA_FISSA_PREZZO   = 0.185295; // €/kWh fisso – da CTE
+    const ESTRA_FISSA_PREZZO   = 0.1991;   // €/kWh fisso – da CTE (aggiornato 01/04/2026)
     const ESTRA_NATURA_SPREAD  = 0.0275;   // €/kWh – da CTE
     const ESTRA_QF_FISSA       = 168 / 12; // 14,00 €/mese
     const ESTRA_QF_NATURA      = 144 / 12; // 12,00 €/mese
@@ -293,7 +293,7 @@
 
     // ============================================================
     // ESTRA – FUNZIONI DI CALCOLO
-    // Fissa:  consumo × (0,185295 + CDISPD) – sconto SDD
+    // Fissa:  consumo × (0,1991 + CDISPD) – sconto SDD
     // Natura: consumo × (PUN×1,10 + 0,0275 + CDISPD) – sconto SDD
     // ============================================================
 
@@ -301,7 +301,7 @@
       const costoEnergia = consumo * (ESTRA_FISSA_PREZZO + ESTRA_CDISPD)
                            - (ESTRA_SCONTO_SDD * p);
       return makeRow(
-        "Estra Fissa Luce — 0,185295 + CDISPD (sconto -2€/mese SDD)",
+        "Estra Fissa Luce — 0,1991 + CDISPD (sconto -2€/mese SDD)",
         costoEnergia, ESTRA_QF_FISSA, sa, p
       );
     }
