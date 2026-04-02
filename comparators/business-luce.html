@@ -153,7 +153,7 @@
     const LOSS = { BT: 1.10, MT: 1.038 };
     const DISP = { BT: 0.011725, MT: 0.011725 };
     const CAPA = { BT: 0.013580, MT: 0.013580 };
-    const ESTRA_GO = 0;
+    const ESTRA_GO = 0.011; // €/kWh – GO_EE da CTE (Garanzia d'Origine rinnovabili)
     const CEI_GO   = 0;   // GO rimosso
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
@@ -297,12 +297,12 @@
     function calcolaEstraTrend(consumo, pun, t, sa, p) {
       const spread = 0.02035, qf = 184.8 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + ESTRA_GO);
-      return resultRow(`Estra TREND UNICA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,02035 | QF 15,40 €/mese`, costo, qf, sa, p);
+      return resultRow(`Estra TREND UNICA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,02035 + GO_EE 0,011 | QF 15,40 €/mese`, costo, qf, sa, p);
     }
     function calcolaEstraTrendPiu(consumo, pun, t, sa, p) {
       const spread = 0.01705, qf = 184.8 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + ESTRA_GO);
-      return resultRow(`Estra TREND PIÙ — (PUN+DISP+CAPA)×${LOSS[t]} + 0,01705 | QF 15,40 €/mese`, costo, qf, sa, p);
+      return resultRow(`Estra TREND PIÙ — (PUN+DISP+CAPA)×${LOSS[t]} + 0,01705 + GO_EE 0,011 | QF 15,40 €/mese`, costo, qf, sa, p);
     }
 
     // ============================================================
