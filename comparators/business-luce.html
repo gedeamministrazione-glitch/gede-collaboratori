@@ -272,16 +272,6 @@
       );
     }
 
-    function calcolaLeonardoInf(consumo, pun, t, sa, p) {
-      const spread = 0.009, qf = 180 / 12;
-      const varKwh = 0.00280 + 0.00255 + 0.00255 + CEI_GO;
-      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(
-        `CEI LEONARDO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,009 + CrA 0,00280 + CcP 0,00255 + VarComm 0,00255 | QF 15 €/mese`,
-        costo, qf, sa, p
-      );
-    }
-
     function calcolaPartnerFriends(consumo, pun, t, sa, p) {
       const spread = 0.020, qf = 120 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + CEI_GO);
@@ -374,12 +364,11 @@
         calcolaDonatello(consumo, pun, t, sa, p),
       ]);
 
-      // CEI < 30.000 kWh/anno: QUERCIA, SALICE, BETULLA, LEONARDO, PARTNER&FRIENDS
+      // CEI < 30.000 kWh/anno: QUERCIA, SALICE, BETULLA, PARTNER&FRIENDS
       renderTable('tabella-cei-inferiore', [
         calcolaQuercia(consumo, pun, t, sa, p),
         calcolaSalice(consumo, pun, t, sa, p),
         calcolaBetulla(consumo, pun, t, sa, p),
-        calcolaLeonardoInf(consumo, pun, t, sa, p),
         calcolaPartnerFriends(consumo, pun, t, sa, p),
       ]);
 
