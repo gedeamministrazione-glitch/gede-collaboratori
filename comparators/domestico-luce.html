@@ -96,7 +96,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟢 Sinergy Luce e Gas <span class="validita">(valide fino 31/03/2026)</span></div>
+    <div class="section-title">🟢 Sinergy Luce e Gas <span class="validita">(Variabile valida fino 30/06/2026 | Fisso S05 valido fino 31/05/2026)</span></div>
     <table id="tabella-sinergy">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -166,19 +166,19 @@
 
     // ============================================================
     // SINERGY – Family Luce
-    // Fonte: CTE allegate (valide fino 31/03/2026)
+    // Fonte: CTE allegate (Variabile fino 30/06/2026 | Fisso S05 fino 31/05/2026)
     // ============================================================
 
-    // Variabile (CTE 025867ESVFL03XX0000000325SHEDPUN)
-    const SINERGY_DISP_VAR  = 0.013580; // €/kWh – "al lordo delle perdite" (da CTE)
+    // Variabile (CTE 025867ESVFL04XX0000000426SHEDPUN)
+    const SINERGY_DISP_VAR  = 0.016509; // €/kWh – CdispD (da CTE, al lordo perdite)
     const SINERGY_SBIL_VAR  = 0.005000; // €/kWh – sbilanciamento (da CTE)
-    const SINERGY_SPREAD_VAR = 0.022;   // €/kWh – spread (da CTE)
+    const SINERGY_SPREAD_VAR = 0.027500; // €/kWh – spread (da CTE)
     const SINERGY_QF_VAR    = (96 + 24) / 12; // 10,00 €/mese (120 €/anno)
 
-    // Fisso (CTE 025867ESFFL03XX000000000326FIXED)
-    const SINERGY_PRICE_FIXED = 0.163900; // €/kWh – "già maggiorato delle perdite" (da CTE)
-    const SINERGY_DISP_FIXED  = 0.004784; // €/kWh – "al lordo delle perdite" (da CTE)
-    const SINERGY_QF_FIXED    = (156 + 36) / 12; // 16,00 €/mese (192 €/anno)
+    // Fisso S05 (CTE 025867ESFFL05XX000000426FIXEDS05)
+    const SINERGY_PRICE_FIXED = 0.129800; // €/kWh – "perdite di rete incluse" (da CTE)
+    const SINERGY_DISP_FIXED  = 0.016509; // €/kWh – CdispD (da CTE, al lordo perdite)
+    const SINERGY_QF_FIXED    = 159.60 / 12; // 13,30 €/mese (159,60 €/anno)
 
     // ============================================================
     // UTILITY
@@ -318,7 +318,7 @@
     // ============================================================
     // SINERGY – FUNZIONI DI CALCOLO
     // Variabile: consumo × (PUN×1,10 + spread + DISP + sbil)
-    // Fisso:     consumo × (0,163900 + DISP)  — prezzi già al lordo perdite
+    // Fisso:     consumo × (0,129800 + DISP)  — prezzi già al lordo perdite
     // ============================================================
 
     function calcolaSinergyFamilyLuceVariabile(consumo, pun, sa, p) {
@@ -329,7 +329,7 @@
         + SINERGY_SBIL_VAR
       );
       return makeRow(
-        "Sinergy Family Luce Variabile — PUN×1,10 + 0,022 + DISP + sbil",
+        "Sinergy Family Luce Variabile — PUN×1,10 + 0,0275 + DISP + sbil",
         costoEnergia, SINERGY_QF_VAR, sa, p
       );
     }
@@ -337,7 +337,7 @@
     function calcolaSinergyFamilyLuceFissa(consumo, sa, p) {
       const costoEnergia = consumo * (SINERGY_PRICE_FIXED + SINERGY_DISP_FIXED);
       return makeRow(
-        "Sinergy Family Luce Fisso — 0,1639 + DISP (prezzi al lordo perdite)",
+        "Sinergy Family Luce Fisso S05 — 0,1298 + DISP (prezzi al lordo perdite)",
         costoEnergia, SINERGY_QF_FIXED, sa, p
       );
     }
