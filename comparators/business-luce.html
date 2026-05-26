@@ -131,7 +131,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟢 Sinergy Business Luce <span class="validita">(valida fino 31/03/2026)</span></div>
+    <div class="section-title">🟢 Sinergy Business Luce <span class="validita">(valida fino 30/06/2026)</span></div>
     <table id="tabella-sinergy">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -300,9 +300,9 @@
     // ============================================================
     function calcolaSinergyBusinessLuce(consumo, pun, t, sa, p) {
       const spread = 0.022, qf = (120 + 24) / 12;
-      const sbilanc = 0.005, disp = 0.013580;
+      const sbilanc = 0.005, disp = 0.010142;
       const costo = consumo * (pun * LOSS[t] + spread + disp + sbilanc);
-      return resultRow(`Sinergy Business Luce — PUN×${LOSS[t]} + 0,022 + DISP 0,01358 + sbil 0,005 | QF 12 €/mese (10+2)`, costo, qf, sa, p);
+      return resultRow(`Sinergy Business Luce — PUN×${LOSS[t]} + 0,022 + DISP 0,010142 + sbil 0,005 | QF 12 €/mese (10+2)`, costo, qf, sa, p);
     }
 
     // ============================================================
