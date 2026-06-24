@@ -284,13 +284,15 @@
 
     // ============================================================
     // SINERGY Business Gas
+    // Aggiornato da CTE 025867GSVML04XX00000426SHGBPSVDA (valida fino 30/06/2026):
+    // materia prima PSV + 0,12 + CCR 0,031510 = spread 0,151510; bilanciamento business 0,02
     // ============================================================
     function calcolaSinergyBusinessGas(consumo, psv, sa, p) {
-      const spread = 0.170892, qf = (120 + 24) / 12;
+      const spread = 0.151510, qf = (120 + 24) / 12;
       const bilancio = 0.02;
       const costo = consumo * (psv + spread + bilancio) * PCS_CORR;
       return resultRow(
-        `Sinergy Business Gas — (PSV + 0,170892 + bilancio 0,02) × 1,03 (PCS) | QF 12 €/mese (10+2)`,
+        `Sinergy Business Gas — (PSV + 0,12 + CCR 0,031510 + bilancio 0,02) × 1,03 (PCS) | QF 12 €/mese (10+2)`,
         costo, qf, sa, p);
     }
 
