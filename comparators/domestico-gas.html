@@ -70,7 +70,7 @@
       <b>Estra Fissa</b>: prezzo fisso 0,67 €/Smc. Sconto SDD −2 €/mese (primi 12 mesi) incluso.<br>
       <b>Estra Natura</b>: PSV + 0,07 €/Smc. Sconto SDD −2 €/mese incluso.<br>
       <b>Sinergy Variabile</b>: PSV + 0,120 (spread) + 0,020 (bilanciamento) €/Smc.<br>
-      <b>Sinergy Fisso S06</b>: 0,630892 €/Smc (fisso 12 mesi).<br>
+      <b>Sinergy Fisso S06</b>: 0,600000 €/Smc (fisso 12 mesi).<br>
       Il CCR (0,030892 €/Smc, ARERA) è escluso per tutti: da bollette reali CEI ed Estra risulta classificato nella spesa rete, non in vendita.<br>
       Valori <b>IVA e imposte escluse</b>.
     </p>
@@ -170,8 +170,8 @@
     const SIN_VAR_QF     = 10.0;      // €/mese (96+24 €/anno)
 
     // Fisso S06 (cod. 025867GSFML06XX000000626FIXGDS06, valido fino 30/06/2026)
-    const SIN_FIX_PREZZO = 0.630892;  // prezzo fisso 12 mesi (S06, da scheda sintetica CTE)
-    // CCR (0,030892 €/Smc) rimosso: come sopra
+    const SIN_FIX_PREZZO = 0.600000;  // prezzo fisso 12 mesi (S06, CTE 025867GSFML06XX000000626FIXGDS06)
+    // CCR escluso per omogeneità (classificato spesa rete da bollette reali CEI/Estra)
     const SIN_FIX_QF     = 13.30;     // €/mese (159,60 €/anno)
 
     // ============================================================
@@ -310,7 +310,7 @@
     function calcolaSinergyFisso(consumo, sa, p) {
       const costoEnergia = consumo * SIN_FIX_PREZZO * PCS_CORR;
       return makeRow(
-        "Sinergy Family Gas Fisso S06 — 0,630892 €/Smc fisso (bloccato 12 mesi)",
+        "Sinergy Family Gas Fisso S06 — 0,600000 €/Smc fisso (bloccato 12 mesi)",
         costoEnergia, SIN_FIX_QF, sa, p
       );
     }
