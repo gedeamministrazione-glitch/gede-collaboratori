@@ -64,11 +64,33 @@
         <input type="number" id="spesaAttuale" value="" step="0.01" min="0" placeholder="es. 45.00">
       </div>
     </div>
+    <div class="grid2" style="margin-top:4px;">
+      <div class="input-group">
+        <label for="edi-luce-qf">E- di Energia Luce — Quota Fissa cliente:</label>
+        <select id="edi-luce-qf">
+          <option value="84">84 €/anno (7,00 €/mese) — gettone €14,25</option>
+          <option value="96" selected>96 €/anno (8,00 €/mese) — gettone €23,25</option>
+          <option value="108">108 €/anno (9,00 €/mese) — gettone €32,25</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="ge-luce-qf">Green Energy Luce — Quota Fissa cliente:</label>
+        <select id="ge-luce-qf">
+          <option value="120">120 €/anno (10,00 €/mese) — gettone €63,75</option>
+          <option value="144" selected>144 €/anno (12,00 €/mese) — gettone €71,25</option>
+          <option value="180">180 €/anno (15,00 €/mese) — gettone €82,50</option>
+          <option value="240">240 €/anno (20,00 €/mese) — gettone €105,00</option>
+        </select>
+      </div>
+    </div>
     <p class="note">
       Il PUN inserito è considerato <b>puro</b> (senza perdite).<br>
       <b>CEI</b>: perdite applicate al solo PUN (×1,10); DISP (0,011725 €/kWh) e CAPA (0,004349 €/kWh) indicati in CTE già comprensivi delle perdite → NON si moltiplica ulteriormente.<br>
       <b>Estra</b>: perdite applicate al solo PUN (×1,10) per Natura; prezzo fisso per Fissa. CDISPD ricavato dalla scheda sintetica CTE (0,021726 €/kWh).<br>
       <b>Sinergy</b>: perdite applicate al solo PUN (×1,10); DISP indicato "al lordo delle perdite" in CTE.<br>
+      <b>E- di Energia</b>: spread 0 — il cliente paga PUN×1,10 + DISP + CAPA (nessun markup venditore). DISP/CAPA stimati su valori ARERA 2026.<br>
+      <b>Green Energy</b>: PUN×1,10 + 0,022 €/kWh (spread) + DISP + CAPA. DISP/CAPA stimati su valori ARERA 2026.<br>
+      <b>ACEA Flex Casa</b>: PUN×1,10 + 0,030500 + CDISPD €/kWh (variabile, QF 108€/anno). <b>ACEA Fix Casa</b>: 0,115000 + CDISPD €/kWh fisso (QF 144€/anno, bloccato 12 mesi).<br>
       Valori <b>IVA e imposte escluse</b>.
     </p>
     <button onclick="calcolaTutteLeOfferteLuce()">Calcola Offerte</button>
@@ -101,6 +123,42 @@
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
         <th id="th-sinergy-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">⚫ E- di Energia <span class="validita">(spread 0 — PUN puro)</span></div>
+    <table id="tabella-edi-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-edi-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🌿 Green Energy <span class="validita">(spread 0,022 €/kWh su PUN)</span></div>
+    <table id="tabella-ge-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-ge-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔴 Duferco Energia <span class="validita">(Domestico Luce)</span></div>
+    <table id="tabella-duferco-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-duferco-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔵 ACEA Energia <span class="validita">(Flex Casa: variabile fino 30/09/2026 | Fix Casa: fisso 12 mesi dal 03/07/2026)</span></div>
+    <table id="tabella-acea-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-acea-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -181,10 +239,44 @@
     const SINERGY_QF_FIXED    = 159.60 / 12; // 13,30 €/mese (159,60 €/anno)
 
     // ============================================================
-    // UTILITY
-    // ============================================================
-    const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+    // DUFERCO ENERGIA — Luce Domestico
+    // Fonte: tabella provvigioni agenti Duferco
+    // Spread in €/MWh → convertito in €/kWh (÷1000)
+    // Formula: consumo × (PUN×1,10 + spread + DISP + CAPA)
+    // DISP e CAPA: stimati su valori ARERA 2026 (stessa base CEI)
+    const DUFERCO_LUCE_PRODOTTI = [
+      { nome: "Family Sempre Zero XS — PUN×1,10 + DISP + CAPA (spread 0)",     spread: 0.0000, qf: 10.0 },
+      { nome: "Family Sempre Zero S  — PUN×1,10 + DISP + CAPA (spread 0)",     spread: 0.0000, qf: 12.0 },
+      { nome: "Family Sempre Zero M  — PUN×1,10 + DISP + CAPA (spread 0)",     spread: 0.0000, qf: 15.0 },
+      { nome: "Family Sempre Zero L  — PUN×1,10 + DISP + CAPA (spread 0)",     spread: 0.0000, qf: 20.0 },
+      { nome: "Family New Age — PUN×1,10 + 0,025 + DISP + CAPA",               spread: 0.0250, qf:  8.0 },
+      { nome: "Family Pop      — PUN×1,10 + 0,025 + DISP + CAPA",               spread: 0.0250, qf:  9.5 },
+      { nome: "Family Country  — PUN×1,10 + 0,060 + DISP + CAPA",               spread: 0.0600, qf:  8.0 },
+      { nome: "Family Soul     — PUN×1,10 + 0,060 + DISP + CAPA",               spread: 0.0600, qf: 10.0 },
+      { nome: "Family Micro    — PUN×1,10 + 0,012 + DISP + CAPA",               spread: 0.0120, qf: 10.0 },
+      { nome: "Family Pianeta Blu — PUN×1,10 + 0,0044 + DISP + CAPA",          spread: 0.0044, qf:  7.0 },
+    ];
 
+    // ============================================================
+    // E- DI ENERGIA — Luce (spread=0, indicizzato PUN)
+    const EDI_DISP   = CEI_DISP;
+    const EDI_CAPA   = CEI_CAPA;
+    const EDI_SPREAD = 0.000;
+
+    // ============================================================
+    // GREEN ENERGY — Luce
+    const GE_LUCE_DISP   = CEI_DISP;
+    const GE_LUCE_CAPA   = CEI_CAPA;
+    const GE_LUCE_SPREAD = 0.022;
+
+    // ============================================================
+    // ACEA ENERGIA — Luce
+    const ACEA_FLEX_LUCE_SPREAD = 0.030500;
+    const ACEA_FLEX_LUCE_QF     = 108 / 12;
+    const ACEA_FIX_LUCE_PREZZO  = 0.115000;
+    const ACEA_FIX_LUCE_QF      = 144 / 12;
+
+    const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
     function getPeriodo() { return parseInt(document.getElementById('periodo').value); }
 
     function aggiornaPeriodo() {
@@ -196,7 +288,7 @@
       document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
-      ['th-cei-periodo','th-estra-periodo','th-sinergy-periodo'].forEach(id => {
+      ['th-cei-periodo','th-estra-periodo','th-sinergy-periodo','th-edi-luce-periodo','th-ge-luce-periodo','th-duferco-luce-periodo','th-acea-luce-periodo'].forEach(id => {
         document.getElementById(id).textContent = thLabel;
       });
     }
@@ -206,215 +298,75 @@
       const totPeriodo = costoEnergia + qf;
       const totAnno = totPeriodo * (12 / periodoMesi);
       let risparmioPeriodo = null, risparmioPerc = null;
-      if (sa > 0) {
-        risparmioPeriodo = sa - totPeriodo;
-        risparmioPerc = (risparmioPeriodo / sa) * 100;
-      }
-      return {
-        nome,
-        costoEnergia: round2(costoEnergia).toFixed(2),
-        quotaFissa:   round2(qf).toFixed(2),
-        totMese:      round2(totPeriodo).toFixed(2),
-        totAnno:      round2(totAnno).toFixed(2),
-        risparmioMese: risparmioPeriodo !== null ? round2(risparmioPeriodo).toFixed(2) : null,
-        risparmioPerc: risparmioPerc !== null ? risparmioPerc.toFixed(1) : null
-      };
+      if (sa > 0) { risparmioPeriodo = sa - totPeriodo; risparmioPerc = (risparmioPeriodo / sa) * 100; }
+      return { nome, costoEnergia: round2(costoEnergia).toFixed(2), quotaFissa: round2(qf).toFixed(2), totMese: round2(totPeriodo).toFixed(2), totAnno: round2(totAnno).toFixed(2), risparmioMese: risparmioPeriodo !== null ? round2(risparmioPeriodo).toFixed(2) : null, risparmioPerc: risparmioPerc !== null ? risparmioPerc.toFixed(1) : null };
     }
 
-    // ============================================================
-    // CEI – FUNZIONI DI CALCOLO
-    // Formula: consumo × (PUN×1,10 + spread + DISP + CAPA)
-    // ============================================================
+    function calcolaCeiGranito(c,p,sa,pp) { return makeRow("CEI Granito — PUN×1,10 + 0,030 + DISP + CAPA", c*(p*LOSS_BT+CEI_SPREAD_GRANITO+CEI_DISP*CEI_CAPA),CEI_QF_GRANITO,sa,pp); }
+    function calcolaCeiMarmo(c,p,sa,pp) { return makeRow("CEI Marmo — PUN×1,10 + 0,025 + DISP + CAPA", c*(p*LOSS_BT+CEI_SPREAD_MARMO+CEI_DISP*CEI_CAPA),CEI_QF_MARMO,sa,pp); }
+    function calcolaCeiBasalto(c,p,sa,pp) { return makeRow("CEI Basalto — PUN×1,10 + 0,025 + DISP + CAPA", c*(p*LOSS_BT+CEI_SPREAD_BASALTO+CEI_DISP+CEI_CAPA),CEI_QF_BASALTO,sa,pp); }
+    function calcolaCeiArdesia(c,p,sa,pp) { return makeRow("CEI Ardesia — PUN×1,10 + 0,025 + DISP + CAPA", c*(p*LOSS_BT+CEI_SPREAD_ARDESIA+CEI_DISP+CEI_CAPA),CEI_QF_ARDESIA,sa,pp); }
+    function calcolaCeiFamilyFriends(c,p,sa,pp) { return makeRow("CEI Family&Friends — PUN×1,10 + 0,018 + DISP + CAPA", c*(p*LOSS_BT+CEI_SPREAD_FF+CEI_DISP*CEI_CAPA),CEI_QF_FF,sa,pp); }
 
-    function calcolaCeiGranito(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (
-        (pun * LOSS_BT)
-        + CEI_SPREAD_GRANITO
-        + CEI_DISP
-        + CEI_CAPA
-      );
-      return makeRow(
-        "CEI Granito — PUN×1,10 + 0,030 + DISP + CAPA",
-        costoEnergia, CEI_QF_GRANITO, sa, p
-      );
+    function calcolaEstraFissa(c,pun,sa,p) {
+      return makeRow("Estra Fissa Luce — 0,1991 + CDISPD (sconto -2€/mese SDD)", c*(ESTRA_FISSA_PREZZO+ESTRA_CDISPD)-(ESTRA_SCONTO_SDD*p), ESTRA_QF_FISSA, sa, p);
+    }
+    function calcolaEstraNatura(c,pun,sa,p) {
+      return makeRow("Estra Natura Luce — PUN×1,10 + 0,0275 + CDISPD (sconto -2€/mese SDD)", c*((pun*LOSS_BT)+ESTRA_NATURA_SPREAD+ESTRA_CDISPD)-(ESTRA_SCONTO_SDD*p), ESTRA_QF_NATURA, sa, p);
     }
 
-    function calcolaCeiMarmo(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (
-        (pun * LOSS_BT)
-        + CEI_SPREAD_MARMO
-        + CEI_DISP
-        + CEI_CAPA
-      );
-      return makeRow(
-        "CEI Marmo — PUN×1,10 + 0,025 + DISP + CAPA",
-        costoEnergia, CEI_QF_MARMO, sa, p
-      );
+    function calcolaSinergyFamilyLuceVariabile(c,pun,sa,p) {
+      return makeRow("Sinergy Family Luce Variabile — PUN×1,10 + 0,0275 + DISP + sbil", c*(pun*LOSS_BT+SINERGY_SPREAD_VAR+SINERGY_DISP_VAR+SINERGY_SBIL_VAR), SINERGY_QF_VAR, sa, p);
+    }
+    function calcolaSinergyFamilyLuceFissa(c,sa,p) {
+      return makeRow("Sinergy Family Luce Fisso S06 — 0,1595 €/kWh (prezzo unico, al lordo perdite)", c*SINERGY_PRICE_FIXED, SINERGY_QF_FIXED, sa, p);
     }
 
-    function calcolaCeiBasalto(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (
-        (pun * LOSS_BT)
-        + CEI_SPREAD_BASALTO
-        + CEI_DISP
-        + CEI_CAPA
-      );
-      return makeRow(
-        "CEI Basalto — PUN×1,10 + 0,025 + DISP + CAPA",
-        costoEnergia, CEI_QF_BASALTO, sa, p
-      );
+    function calcolaTutteDufercoLuce(c,pun,sa,p) {
+      const base = pun*LOSS_BT+CEI_DISP*CEI_CAPA;return DUFERCO_LUCE_PRODOTTI.map(prod=>makeRow("Duferco "+prod.nome,c*(base+prod.spread),prod.qf,sa,p));
     }
 
-    function calcolaCeiArdesia(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (
-        (pun * LOSS_BT)
-        + CEI_SPREAD_ARDESIA
-        + CEI_DISP
-        + CEI_CAPA
-      );
-      return makeRow(
-        "CEI Ardesia — PUN×1,10 + 0,025 + DISP + CAPA",
-        costoEnergia, CEI_QF_ARDESIA, sa, p
-      );
+    function calcolaEdiEnergiaLuce(c,pun,sa,p) {
+      const qfAnno=parseFloat(document.getElementById('edi-luce-qf').value);
+      return makeRow(`E- di Energia Luce — PUN×1,10 + DISP + CAPA (spread 0, QF ${qfAnno}€/anno)`,c*(pun*LOSS_BT+EDI_DISP+EDI_CAPA),qfAnno/12,sa,p);
+    }
+    function calcolaGreenEnergyLuce(c,pun,sa,p) {
+      const qfAnno=parseFloat(document.getElementById('ge-luce-qf').value);
+      return makeRow(`Green Energy Luce — PUN×1,10 + 0,022 + DISP + CAPA (QF ${qfAnno}€/anno)`,c*(pun*LOSS_BT+GE_LUCE_SPREAD*GE_LUCE_DISP+GE_LUCE_CAPA),qfAnno/12,sa,p);
     }
 
-    function calcolaCeiFamilyFriends(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (
-        (pun * LOSS_BT)
-        + CEI_SPREAD_FF
-        + CEI_DISP
-        + CEI_CAPA
-      );
-      return makeRow(
-        "CEI Family&Friends — PUN×1,10 + 0,018 + DISP + CAPA",
-        costoEnergia, CEI_QF_FF, sa, p
-      );
+    function calcolaAceaFlexCasaLuce(c,pun,sa,p) {
+      return makeRow("ACEA Flex Casa Luce — PUN×1,10 + 0,030500 + CDISPD (variabile, QF 9€/mese)",c*(pun*LOSS_BT+ACEA_FLEX_LUCE_SPREAD+CEI_DISP+CEI_CAPA),ACEA_FLEX_LUCE_QF,sa,p);
+    }
+    function calcolaAceaFixCasaLuce(c,sa,p) {
+      return makeRow("ACEA Fix Casa Luce — 0,115000 + CDISPD €/kWh fisso (12 mesi, QF 12€/mese)",c*(ACEA_FIX_LUCE_PREZZO+CEI_DISP*CEI_CAPA),ACEA_FIX_LUCE_QF,sa,p);
     }
 
-    // ============================================================
-    // ESTRA – FUNZIONI DI CALCOLO
-    // Fissa:  consumo × (0,1991 + CDISPD) – sconto SDD
-    // Natura: consumo × (PUN×1,10 + 0,0275 + CDISPD) – sconto SDD
-    // ============================================================
-
-    function calcolaEstraFissa(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (ESTRA_FISSA_PREZZO + ESTRA_CDISPD)
-                           - (ESTRA_SCONTO_SDD * p);
-      return makeRow(
-        "Estra Fissa Luce — 0,1991 + CDISPD (sconto -2€/mese SDD)",
-        costoEnergia, ESTRA_QF_FISSA, sa, p
-      );
+    function renderTabella(id,righe) {
+      const tbody=document.querySelector('#'+id+' tbody');tbody.innerHTML='';
+      const pp=getPeriodo();const minTot=Math.min(...righe.map(o=>parseFloat(o.totMese)));
+      righe.forEach(o=>{const isBest=parseFloat(o.totMese)===minTot;const tr=tbody.insertRow();if(isBest)tr.classList.add('best');let rispHtml='<td>—</td>';if(o.risparmioMese!==null){const v=parseFloat(o.risparmioMese);const p2=parseFloat(o.risparmioPerc);const cls=v>=0?'saving-pos':'saving-neg';const absV=Math.abs(v).toFixed(2);const absP=Math.abs(p2).toFixed(1);rispHtml=`<td class="${cls}">${v>=0?'▼ -':'▲ +'}€${absV}/periodo (${v>=0?'-':'+'}${absP}%)<br><small>${v>=0?'▼ -':'▲ +'}€${(Math.abs(v)*(12/pp)).toFixed(2)}/anno</small></td>`;}tr.innerHTML=`<td>${o.nome}${isBest?' ⭐':''}</td><td>€ ${o.costoEnergia}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totMese}</td>${rispHtml}`;});
     }
-
-    function calcolaEstraNatura(consumo, pun, sa, p) {
-      const costoEnergia = consumo * ((pun * LOSS_BT) + ESTRA_NATURA_SPREAD + ESTRA_CDISPD)
-                           - (ESTRA_SCONTO_SDD * p);
-      return makeRow(
-        "Estra Natura Luce — PUN×1,10 + 0,0275 + CDISPD (sconto -2€/mese SDD)",
-        costoEnergia, ESTRA_QF_NATURA, sa, p
-      );
-    }
-
-    // ============================================================
-    // SINERGY – FUNZIONI DI CALCOLO
-    // Variabile: consumo × (PUN×1,10 + spread + DISP + sbil)
-    // Fisso:     consumo × 0,159500  — prezzo unico onnicomprensivo, già al lordo perdite
-    // ============================================================
-
-    function calcolaSinergyFamilyLuceVariabile(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (
-        (pun * LOSS_BT)
-        + SINERGY_SPREAD_VAR
-        + SINERGY_DISP_VAR
-        + SINERGY_SBIL_VAR
-      );
-      return makeRow(
-        "Sinergy Family Luce Variabile — PUN×1,10 + 0,0275 + DISP + sbil",
-        costoEnergia, SINERGY_QF_VAR, sa, p
-      );
-    }
-
-    function calcolaSinergyFamilyLuceFissa(consumo, sa, p) {
-      const costoEnergia = consumo * SINERGY_PRICE_FIXED;
-      return makeRow(
-        "Sinergy Family Luce Fisso S06 — 0,1595 €/kWh (prezzo unico, al lordo perdite)",
-        costoEnergia, SINERGY_QF_FIXED, sa, p
-      );
-    }
-
-    // ============================================================
-    // RENDER TABELLA
-    // ============================================================
-
-    function renderTabella(id, righe) {
-      const tbody = document.querySelector('#' + id + ' tbody');
-      tbody.innerHTML = '';
-      const pp = getPeriodo();
-      const minTot = Math.min(...righe.map(o => parseFloat(o.totMese)));
-      righe.forEach(o => {
-        const isBest = parseFloat(o.totMese) === minTot;
-        const tr = tbody.insertRow();
-        if (isBest) tr.classList.add('best');
-
-        let rispHtml = '<td>—</td>';
-        if (o.risparmioMese !== null) {
-          const v = parseFloat(o.risparmioMese);
-          const p2 = parseFloat(o.risparmioPerc);
-          const cls = v >= 0 ? 'saving-pos' : 'saving-neg';
-          const absV = Math.abs(v).toFixed(2);
-          const absP = Math.abs(p2).toFixed(1);
-          rispHtml = `<td class="${cls}">${v >= 0 ? '▼ -' : '▲ +'}€${absV}/periodo (${v >= 0 ? '-' : '+'}${absP}%)<br><small>${v >= 0 ? '▼ -' : '▲ +'}€${(Math.abs(v)*(12/pp)).toFixed(2)}/anno</small></td>`;
-        }
-
-        tr.innerHTML = `<td>${o.nome}${isBest ? ' ⭐' : ''}</td><td>€ ${o.costoEnergia}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totMese}</td>${rispHtml}`;
-      });
-    }
-
-    // ============================================================
-    // CALCOLO PRINCIPALE
-    // ============================================================
 
     function calcolaTutteLeOfferteLuce() {
-      const consumo = parseFloat(document.getElementById('consumo').value) || 0;
-      const pun     = parseFloat(document.getElementById('pun').value) || 0;
-      const sa      = parseFloat(document.getElementById('spesaAttuale').value) || 0;
-      const p       = getPeriodo();
-
-      if (isNaN(consumo) || consumo < 0) { alert("Inserisci un consumo valido."); return; }
-      if (isNaN(pun) || pun < 0)         { alert("Inserisci un PUN valido."); return; }
-
-      const refBox = document.getElementById('ref-attuale');
-      if (sa > 0) {
-        const periodoLabel = p === 2 ? 'bimestrale' : 'mensile';
-        refBox.style.display = 'block';
-        refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*(12/p)).toFixed(2)}`;
-      } else {
-        refBox.style.display = 'none';
-      }
-
-      renderTabella('tabella-cei', [
-        calcolaCeiGranito(consumo, pun, sa, p),
-        calcolaCeiMarmo(consumo, pun, sa, p),
-        calcolaCeiBasalto(consumo, pun, sa, p),
-        calcolaCeiArdesia(consumo, pun, sa, p),
-        calcolaCeiFamilyFriends(consumo, pun, sa, p),
-      ]);
-
-      renderTabella('tabella-estra', [
-        calcolaEstraFissa(consumo, pun, sa, p),
-        calcolaEstraNatura(consumo, pun, sa, p),
-      ]);
-
-      renderTabella('tabella-sinergy', [
-        calcolaSinergyFamilyLuceVariabile(consumo, pun, sa, p),
-        calcolaSinergyFamilyLuceFissa(consumo, sa, p),
-      ]);
+      const c=parseFloat(document.getElementById('consumo').value)||0;
+      const pun=parseFloat(document.getElementById('pun').value)||0;
+      const sa=parseFloat(document.getElementById('spesaAttuale').value)||0;
+      const p=getPeriodo();
+      if(isNaN(c)||c<0){alert("Inserisci un consumo valido.");return;}
+      if(isNaN(pun)||pun<0){alert("Inserisci un PUN valido.");return;}
+      const refBox=document.getElementById('ref-attuale');
+      if(sa>0){const l=p===2?'bimestrale':'mensile';refBox.style.display='block';refBox.innerHTML=`<strong>Spesa attuale di riferimento (${l}):</strong> ₼ ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*(12/p)).toFixed(2)}`;}else{refBox.style.display='none';}
+      renderTabella('tabella-cei',[calcolaCeiGranito(c,pun,sa,p),calcolaCeiMarmo(c,pun,sa,p),calcolaCeiBasalto(c,pun,sa,p),calcolaCeiArdesia(c,pun,sa,p),calcolaCeiFamilyFriends(c,pun,sa,p)]);
+      renderTabella('tabella-estra',[calcolaEstraFissa(c,pun,sa,p),calcolaEstraNatura(c,pun,sa,p)]);
+      renderTabella('tabella-sinergy',[calcolaSinergyFamilyLuceVariabile(c,pun,sa,p),calcolaSinergyFamilyLuceFissa(c,sa,p)]);
+      renderTabella('tabella-edi-luce',[calcolaEdiEnergiaLuce(c,pun,sa,p)]);
+      renderTabella('tabella-ge-luce',[calcolaGreenEnergyLuce(c,pun,sa,p)]);
+      renderTabella('tabella-duferco-luce',calcolaTutteDufercoLuce(c,pun,sa,p));
+      renderTabella('tabella-acea-luce',[calcolaAceaFlexCasaLuce(c,pun,sa,p),calcolaAceaFixCasaLuce(c,sa,p)]);
     }
 
-    window.onload = () => {
-      aggiornaPeriodo();
-      calcolaTutteLeOfferteLuce();
-    };
+    window.onload = () => { aggiornaPeriodo(); calcolaTutteLeOfferteLuce(); };
   </script>
 </body>
 </html>
