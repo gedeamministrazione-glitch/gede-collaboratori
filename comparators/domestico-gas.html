@@ -64,14 +64,36 @@
         <input type="number" id="spesaAttuale" value="" step="0.01" min="0" placeholder="es. 55.00">
       </div>
     </div>
+    <div class="grid2" style="margin-top:4px;">
+      <div class="input-group">
+        <label for="edi-qf">E- di Energia Gas — Quota Fissa cliente:</label>
+        <select id="edi-qf">
+          <option value="84">84 €/anno (7,00 €/mese) — gettone €14,25</option>
+          <option value="96" selected>96 €/anno (8,00 €/mese) — gettone €23,25</option>
+          <option value="108">108 €/anno (9,00 €/mese) — gettone €32,25</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="ge-gas-qf">Green Energy Gas — Quota Fissa cliente:</label>
+        <select id="ge-gas-qf">
+          <option value="120">120 €/anno (10,00 €/mese) — gettone €67,50</option>
+          <option value="144" selected>144 €/anno (12,00 €/mese) — gettone €78,75</option>
+          <option value="180">180 €/anno (15,00 €/mese) — gettone €91,50</option>
+          <option value="240">240 €/anno (20,00 €/mese) — gettone €112,50</option>
+        </select>
+      </div>
+    </div>
     <p class="note">
       Il PSV inserito è il valore medio mensile del mercato PSV.<br>
       <b>CEI</b>: Formula energia = consumo × (PSV + Spread). Granito: PSV +0,15; Marmo: PSV +0,14; Basalto: PSV +0,135; Ardesia: PSV +0,13; Family&amp;Friends: PSV +0,10. Il CCR non è indicato nelle CTE CEI → <b>non incluso</b>.<br>
       <b>Estra Fissa</b>: prezzo fisso 0,67 €/Smc. Sconto SDD −2 €/mese (primi 12 mesi) incluso.<br>
       <b>Estra Natura</b>: PSV + 0,07 €/Smc. Sconto SDD −2 €/mese incluso.<br>
       <b>Sinergy Variabile</b>: PSV + 0,120 (spread) + 0,020 (bilanciamento) €/Smc.<br>
-      <b>Sinergy Fisso S06</b>: 0,600000 €/Smc (fisso 12 mesi).<br>
-      Il CCR (0,030892 €/Smc, ARERA) è escluso per tutti: da bollette reali CEI ed Estra risulta classificato nella spesa rete, non in vendita.<br>
+      <b>Sinergy Fisso S06</b>: 0,600000 ®/Smc (fisso 12 mesi).<br>
+      <b>E- di Energia</b>: spread 0 — il cliente paga PSV puro × PCS +3%. Nessun markup venditore.<br>
+      <b>Green Energy</b>: PSV + 0,07 €/Smc (spread) × PCS +3%.<br>
+      <b>ACEA Flex Casa</b>: (PSV + 0,148000) × PCS +3% (variabile, QF 108€/anno). <b>ACEA Fix Casa</b>: 0,400000 €/Smc fisso × PCS +3% (QF 144€/anno, bloccato 12 mesi).<br>
+      Il CCR (ARERA) è escluso per tutti: da bollette reali CEI ed Estra risulta classificato nella spesa rete, non in vendita.<br>
       Valori <b>IVA e imposte escluse</b>.
     </p>
     <button onclick="calcolaTutteLeOfferteGas()">Calcola Offerte</button>
@@ -90,7 +112,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟠 Estra Energie <span class="validita">(Fissa valida fino 07/04/2026 | Natura valida fino 13/04/2026)</span></div>
+    <div class="section-title">🟡 Estra Energie <span class="validita">(Fissa valida fino 07/04/2026 | Natura valida fino 13/04/2026)</span></div>
     <table id="tabella-estra">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -108,13 +130,49 @@
       <tbody></tbody>
     </table>
 
+    <div class="section-title">⪻ E- di Energia <span class="validita">(spread 0 - PUN/PSV puro)</span></div>
+    <table id="tabella-edi">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-edi-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🌿 Green Energy <span class="validita">(spread 0,07 €/Smc su PSV)</span></div>
+    <table id="tabella-ge-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-ge-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔴 Duferco Energia <span class="validita">(Domestico Gas)</span></div>
+    <table id="tabella-duferco-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-duferco-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔵 ACEA Energia <span class="validita">(Flex Casa: variabile fino 30/09/2026 | Fix Casa: fisso 12 mesi dal 03/07/2026)</span></div>
+    <table id="tabella-acea-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-acea-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
       Il risparmio % è calcolato rispetto alla spesa attuale inserita.<br>
       Sconto SDD Estra (−2 €/mese) applicato solo ai primi 12 mesi; incluso nel calcolo.
       Sinergy: contributo 50 €/PDR per voltura/subentro non incluso nel calcolo.
-      Il CCR (0,030892 €/Smc, ARERA) è escluso per tutti i fornitori: da bollette reali CEI ed Estra è classificato nella spesa rete. Per omogeneità è rimosso anche da Sinergy.<br>
+      Il CCR (ARERA) è escluso per tutti i fornitori: da bollette reali CEI ed Estra è classificato nella spesa rete. Per omogeneità è rimosso anche da Sinergy.<br>
       <b>Correzione PCS +3%</b> applicata su tutta la componente energia (media rilevata da bollette reali Veneto: +3,0%; Lombardia/Italgas: +3,9%).
     </div>
   </div>
@@ -161,18 +219,59 @@
     const ESTRA_NATURA_QF     = 12.0; // €/mese lordo
     const ESTRA_NATURA_SDD    = 2.0;  // €/mese sconto SDD (primi 12 mesi)
 
+    // ---- DUFERCO ENERGIA — Gas Domestico ----
+    // Fonte: tabella provvigioni agenti Duferco
+    // Spread in €cent/mc → convertito in €/Smc (÷100)
+    // Formula: consumo × (PSV + spread) × PCS_CORR
+    const DUFERCO_GAS_PRODOTTI = [
+      { nome: "Family Sempre Zero XS — PSV × PCS +3% (spread 0)",         spread: 0.00, qf: 12.0 },
+      { nome: "Family Sempre Zero S  — PSV × PCS +3% (spread 0)",         spread: 0.00, qf: 15.0 },
+      { nome: "Family Sempre Zero M  — PSV × PCS +3% (spread 0)",         spread: 0.00, qf: 18.0 },
+      { nome: "Family Sempre Zero L  — PSV × PCS +3% (spread 0)",         spread: 0.00, qf: 24.0 },
+      { nome: "Family New Age — (PSV + 0,10) × PCS +3%",                  spread: 0.10, qf:  9.0 },
+      { nome: "Family Pop     — (PSV + 0,10) × PCS +3%",                  spread: 0.10, qf:  9.5 },
+      { nome: "Family Jazz    — (PSV + 0,10) × PCS +3%",                  spread: 0.10, qf: 11.0 },
+      { nome: "Family Rap     — (PSV + 0,10) × PCS +3%",                  spread: 0.10, qf: 13.0 },
+      { nome: "Family Blues   — (PSV + 0,12) × PCS +3%",                  spread: 0.12, qf: 14.5 },
+      { nome: "Family Micro   — (PSV + 0,08) × PCS +3% (QF incl. +3€/m)",spread: 0.08, qf: 13.0 },
+      { nome: "Family Pianeta Blu — (PSV + 0,02) × PCS +3%",              spread: 0.02, qf:  7.0 },
+    ];
+
+    // ---- E- DI ENERGIA — Gas (spread=0, indicizzato PSV) ----
+    // Fonte: tabella provvigioni agenti (nessuna CTE disponibile)
+    // Formula: consumo × PSV × PCS_CORR — nessun markup venditore
+    // QF selezionabile: 84/96/108 €/anno (stesso listino luce e gas)
+
+    // ---- GREEN ENERGY — Gas (spread=0,07 €/Smc su PSV) ----
+    // Fonte: tabella provvigioni agenti (nessuna CTE disponibile)
+    // Formula: consumo × (PSV + 0,07) × PCS_CORR
+    // QF selezionabile: 120/144/180/240 €/anno
+    const GE_GAS_SPREAD = 0.07; // €/Smc – spread venditore
+
     // ---- SINERGY (Olimpia S.r.l.) ----
     // Variabile (cod. 025867GSVML04XX00000426SHGDPSVDA)
     const SIN_VAR_SPREAD = 0.120;
     const SIN_VAR_SBIL   = 0.020;     // bilanciamento domestici
-    // CCR (0,030892 €/Smc) rimosso: come da bollette reali CEI ed Estra,
-    // il CCR è classificato nella spesa rete → escluso per omogeneità comparazione
-    const SIN_VAR_QF     = 10.0;      // €/mese (96+24 €/anno)
+    // CCR escluso per omogeneità (classificato spesa rete da bollette reali CEI/Estra)
+    const SIN_VAR_QF     = 10.0;      // €/mese (120 €/anno)
 
     // Fisso S06 (cod. 025867GSFML06XX000000626FIXGDS06, valido fino 30/06/2026)
     const SIN_FIX_PREZZO = 0.600000;  // prezzo fisso 12 mesi (S06, CTE 025867GSFML06XX000000626FIXGDS06)
     // CCR escluso per omogeneità (classificato spesa rete da bollette reali CEI/Estra)
     const SIN_FIX_QF     = 13.30;     // €/mese (159,60 €/anno)
+
+    // ============================================================
+    // ACEA ENERGIA — Gas Domestico
+    // Fonte: schede sintetiche (Flex Casa RT4D402790 valida 04/06/2026–30/09/2026;
+    //                           Fix Casa RT4D402802 valida 03/07/2026–20/07/2026)
+    // Flex Casa variabile: PSV + 0,148000 €/Smc
+    // Fix Casa fisso 12 mesi: 0,400000 €/Smc
+    // PCS_CORR (+3%) applicata come tutti gli altri fornitori
+    // ============================================================
+    const ACEA_FLEX_GAS_SPREAD = 0.148000; // €/Smc – spread venditore Flex Casa
+    const ACEA_FLEX_GAS_QF     = 108 / 12; // 9,00 €/mese (108 €/anno)
+    const ACEA_FIX_GAS_PREZZO  = 0.400000; // €/Smc – prezzo fisso Fix Casa
+    const ACEA_FIX_GAS_QF      = 144 / 12; // 12,00 €/mese (144 €/anno)
 
     // ============================================================
     // CORREZIONE PCS — rete Veneto/Lombardia
@@ -200,7 +299,7 @@
       document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
-      ['th-cei-periodo','th-estra-periodo','th-sinergy-periodo'].forEach(id => {
+      ['th-cei-periodo','th-estra-periodo','th-sinergy-periodo','th-edi-periodo','th-ge-gas-periodo','th-duferco-gas-periodo','th-acea-gas-periodo'].forEach(id => {
         document.getElementById(id).textContent = thLabel;
       });
     }
@@ -271,7 +370,7 @@
 
     // ============================================================
     // ESTRA – FUNZIONI DI CALCOLO
-    // Fissa:  consumo × 0,58 (prezzo fisso) – sconto SDD
+    // Fissa:  consumo × 0,67 (prezzo fisso) – sconto SDD
     // Natura: consumo × (PSV + 0,07) – sconto SDD
     // ============================================================
 
@@ -295,8 +394,8 @@
 
     // ============================================================
     // SINERGY – FUNZIONI DI CALCOLO
-    // Variabile: consumo × (PSV + spread + sbil + CCR)
-    // Fisso:     consumo × (0,5000 + CCR)
+    // Variabile: consumo × (PSV + spread + sbil) × PCS
+    // Fisso:     consumo × 0,600000 × PCS
     // ============================================================
 
     function calcolaSinergyVariabile(consumo, psv, sa, p) {
@@ -312,6 +411,66 @@
       return makeRow(
         "Sinergy Family Gas Fisso S06 — 0,600000 €/Smc fisso (bloccato 12 mesi)",
         costoEnergia, SIN_FIX_QF, sa, p
+      );
+    }
+
+    // ============================================================
+    // E- DI ENERGIA — FUNZIONE DI CALCOLO GAS
+    // Formula: consumo × PSV × PCS_CORR (spread=0, nessun markup)
+    // ============================================================
+    function calcolaEdiEnergiaGas(consumo, psv, sa, p) {
+      const qfAnno = parseFloat(document.getElementById('edi-qf').value);
+      const qfMese = qfAnno / 12;
+      const costoEnergia = consumo * psv * PCS_CORR;
+      return makeRow(
+        `E- di Energia Gas — PSV × PCS +3% (spread 0, QF ${qfAnno}€/anno)`,
+        costoEnergia, qfMese, sa, p
+      );
+    }
+
+    // ============================================================
+    // DUFERCO — FUNZIONE DI CALCOLO GAS
+    // ============================================================
+    function calcolaTutteDufercoGas(consumo, psv, sa, p) {
+      return DUFERCO_GAS_PRODOTTI.map(prod =>
+        makeRow(
+          "Duferco " + prod.nome,
+          consumo * (psv + prod.spread) * PCS_CORR,
+          prod.qf, sa, p
+        )
+      );
+    }
+
+    // ============================================================
+    // GREEN ENERGY — FUNZIONE DI CALCOLO GAS
+    // Formula: consumo × (PSV + 0,07) × PCS_CORR
+    // ============================================================
+    function calcolaGreenEnergyGas(consumo, psv, sa, p) {
+      const qfAnno = parseFloat(document.getElementById('ge-gas-qf').value);
+      const qfMese = qfAnno / 12;
+      const costoEnergia = consumo * (psv + GE_GAS_SPREAD) * PCS_CORR;
+      return makeRow(
+        `Green Energy Gas — (PSV + 0,07) × PCS +3% (QF ${qfAnno}€/anno)`,
+        costoEnergia, qfMese, sa, p
+      );
+    }
+
+    // ============================================================
+    // ACEA ENERGIA — FUNZIONI DI CALCOLO GAS
+    // ============================================================
+    function calcolaAceaFlexCasaGas(consumo, psv, sa, p) {
+      const costoEnergia = consumo * (psv + ACEA_FLEX_GAS_SPREAD) * PCS_CORR;
+      return makeRow(
+        "ACEA Flex Casa Gas — (PSV + 0,148000) × PCS +3% (variabile, QF 9€/mese)",
+        costoEnergia, ACEA_FLEX_GAS_QF, sa, p
+      );
+    }
+
+    function calcolaAceaFixCasaGas(consumo, sa, p) {
+      const costoEnergia = consumo * ACEA_FIX_GAS_PREZZO * PCS_CORR;
+      return makeRow(
+        "ACEA Fix Casa Gas — 0,400000 €/Smc fisso × PCS +3% (12 mesi, QF 12€/mese)",
+        costoEnergia, ACEA_FIX_GAS_QF, sa, p
       );
     }
 
@@ -360,7 +519,7 @@
       if (sa > 0) {
         const periodoLabel = p === 2 ? 'bimestrale' : 'mensile';
         refBox.style.display = 'block';
-        refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*(12/p)).toFixed(2)}`;
+        refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € $y(sa*(12/p)).toFixed(2)}`;
       } else {
         refBox.style.display = 'none';
       }
@@ -381,6 +540,21 @@
       renderTabella('tabella-sinergy', [
         calcolaSinergyVariabile(consumo, psv, sa, p),
         calcolaSinergyFisso(consumo, sa, p),
+      ]);
+
+      renderTabella('tabella-edi', [
+        calcolaEdiEnergiaGas(consumo, psv, sa, p),
+      ]);
+
+      renderTabella('tabella-ge-gas', [
+        calcolaGreenEnergyGas(consumo, psv, sa, p),
+      ]);
+
+      renderTabella('tabella-duferco-gas', calcolaTutteDufercoGas(consumo, psv, sa, p));
+
+      renderTabella('tabella-acea-gas', [
+        calcolaAceaFlexCasaGas(consumo, psv, sa, p),
+        calcolaAceaFixCasaGas(consumo, sa, p),
       ]);
     }
 
