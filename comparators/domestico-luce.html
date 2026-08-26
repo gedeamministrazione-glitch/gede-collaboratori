@@ -68,8 +68,7 @@
       Il PUN inserito è considerato <b>puro</b> (senza perdite).<br>
       <b>CEI</b>: perdite applicate al solo PUN (×1,10); DISP (0,011725 €/kWh) e CAPA (0,004349 €/kWh) indicati in CTE già comprensivi delle perdite → NON si moltiplica ulteriormente.<br>
       <b>Estra</b>: perdite applicate al solo PUN per Natura; prezzo fisso per Fissa. CDISPD ricavato dalla scheda sintetica CTE (0,021726 €/kWh).<br>
-      <b>Sinergy</b>: perdite applicate al solo PUN (×1,10); DISP indicato "al lordo delle perdite" in CTE.<br>
-      <b>ACEA Flex Casa</b>: PUN×1,10 + 0,030500 + CDISPD + CAPA €/kWh (variabile, QF 108€/anno). <b>ACEA Fix Casa</b>: 0,115000 + CDISPD + CAPA €/kWh fisso (QF 144€/anno, bloccato 12 mesi).<br>
+<b>ACEA Flex Casa</b>: PUN×1,10 + 0,030500 + CDISPD + CAPA €/kWh (variabile, QF 108€/anno). <b>ACEA Fix Casa</b>: 0,115000 + CDISPD + CAPA €/kWh fisso (QF 144€/anno, bloccato 12 mesi).<br>
       Valori <b>IVA e imposte escluse</b>.
     </p>
     <button onclick="calcolaTutteLeOfferteLuce()">Calcola Offerte</button>
@@ -97,16 +96,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟢 Sinergy Luce e Gas <span class="validita">(Variabile valida fino 30/06/2026 | Fisso S06 valido fino 30/06/2026)</span></div>
-    <table id="tabella-sinergy">
-      <thead><tr>
-        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
-        <th id="th-sinergy-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
-      </tr></thead>
-      <tbody></tbody>
-    </table>
-
-    <div class="section-title">🔵 ACEA Energia <span class="validita">(Flex Casa: variabile fino 30/09/2026 | Fix Casa: fisso 12 mesi dal 03/07/2026)</span></div>
+<div class="section-title">🔵 ACEA Energia <span class="validita">(Flex Casa: variabile fino 30/09/2026 | Fix Casa: fisso 12 mesi dal 03/07/2026)</span></div>
     <table id="tabella-acea-luce">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -125,37 +115,67 @@
   <div id="footer"><p>&copy; 2025 GEDE SERVIZI. Tutti i diritti riservati.</p></div>
 
   <script>
-    const LOSS_BT = 1.10;
-    const CEI_DISP = 0.011725;
-    const CEI_CAPA = 0.004349;
+    // ============================================================
+    // COSTANTI GENERALI
+    // ============================================================
+    const LOSS_BT = 1.10; // coefficiente perdite di rete BT
+
+    // ============================================================
+    // CEI – Compagnia Energetica Italiana
+    // Fonte: CTE allegate (valide fino 31/12/2026)
+    // Perdite: applicate al SOLO PUN (PUN puro × 1,10)
+    // DISP e CAPA: indicati in CTE "comprensivi delle perdite" → NON moltiplicare
+    // ============================================================
+    const CEI_DISP = 0.011725;   // €/kWh – TIDE art.24.2, comprensivo perdite (da CTE)
+    const CEI_CAPA = 0.004349;   // €/kWh – capacità mar 2026 (da CTE)
+
+    // CEI Granito – CTE 014850ENVOL01XX000CECDILA2604GRT
     const CEI_SPREAD_GRANITO = 0.030;
-    const CEI_QF_GRANITO     = 168 / 12;
+    const CEI_QF_GRANITO     = 168 / 12; // 14,00 €/mese
+
+    // CEI Marmo – CTE 014850ENVOL01XX000CECDILA2604MRM
     const CEI_SPREAD_MARMO = 0.025;
-    const CEI_QF_MARMO     = 156 / 12;
+    const CEI_QF_MARMO     = 156 / 12; // 13,00 €/mese
+
+    // CEI Basalto – CTE 014850ENVOL01XX000CECDILA2604BST
     const CEI_SPREAD_BASALTO = 0.025;
-    const CEI_QF_BASALTO     = 144 / 12;
+    const CEI_QF_BASALTO     = 144 / 12; // 12,00 €/mese
+
+    // CEI Ardesia – CTE 014850ENVOL01XX000CECDILA2604ARD
     const CEI_SPREAD_ARDESIA = 0.025;
-    const CEI_QF_ARDESIA     = 120 / 12;
+    const CEI_QF_ARDESIA     = 120 / 12; // 10,00 €/mese
+
+    // CEI Family&Friends – CTE 014850ENVOL01XX0000CECDILA2604FF
     const CEI_SPREAD_FF = 0.018;
-    const CEI_QF_FF     = 96 / 12;
-    const ESTRA_CDISPD         = 0.021726;
-    const ESTRA_FISSA_PREZZO   = 0.1991;
-    const ESTRA_NATURA_SPREAD  = 0.0275;
-    const ESTRA_QF_FISSA       = 168 / 12;
-    const ESTRA_QF_NATURA      = 144 / 12;
-    const ESTRA_SCONTO_SDD     = 2.00;
-    const SINERGY_DISP_VAR   = 0.016509;
-    const SINERGY_SBIL_VAR   = 0.005000;
-    const SINERGY_SPREAD_VAR = 0.027500;
-    const SINERGY_QF_VAR     = (96 + 24) / 12;
-    const SINERGY_PRICE_FIXED = 0.159500;
-    const SINERGY_QF_FIXED    = 159.60 / 12;
-    const ACEA_FLEX_LUCE_SPREAD = 0.030500;
-    const ACEA_FLEX_LUCE_QF     = 108 / 12;
-    const ACEA_FIX_LUCE_PREZZO  = 0.115000;
-    const ACEA_FIX_LUCE_QF      = 144 / 12;
+    const CEI_QF_FF     = 96 / 12; // 8,00 €/mese
+
+    // ============================================================
+    // ESTRA
+    // ============================================================
+    const ESTRA_CDISPD         = 0.021726; // €/kWh – da scheda sintetica
+    const ESTRA_FISSA_PREZZO   = 0.1991;   // €/kWh fisso (aggiornato 01/04/2026)
+    const ESTRA_NATURA_SPREAD  = 0.0275;   // €/kWh
+    const ESTRA_QF_FISSA       = 168 / 12; // 14,00 €/mese
+    const ESTRA_QF_NATURA      = 144 / 12; // 12,00 €/mese
+    const ESTRA_SCONTO_SDD     = 2.00;     // €/mese con domiciliazione bancaria
+
+    // ============================================================
+    // ACEA ENERGIA — Luce
+    // Flex Casa: variabile fino 30/09/2026
+    // Fix Casa:  fisso 12 mesi dal 03/07/2026
+    // ============================================================
+    const ACEA_FLEX_LUCE_SPREAD = 0.030500; // €/kWh – spread
+    const ACEA_FLEX_LUCE_QF     = 108 / 12; // 9,00 €/mese (108 €/anno)
+    const ACEA_FIX_LUCE_PREZZO  = 0.115000; // €/kWh fisso (12 mesi)
+    const ACEA_FIX_LUCE_QF      = 144 / 12; // 12,00 €/mese (144 €/anno)
+
+    // ============================================================
+    // UTILITY
+    // ============================================================
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+
     function getPeriodo() { return parseInt(document.getElementById('periodo').value); }
+
     function aggiornaPeriodo() {
       const p = getPeriodo();
       const isBim = p === 2;
@@ -165,10 +185,11 @@
       document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
-      ['th-cei-periodo','th-estra-periodo','th-sinergy-periodo','th-acea-luce-periodo'].forEach(id => {
+      ['th-cei-periodo','th-estra-periodo','th-acea-luce-periodo'].forEach(id => {
         document.getElementById(id).textContent = thLabel;
       });
     }
+
     function makeRow(nome, costoEnergia, quotaFissaMensile, sa, periodoMesi) {
       const qf = quotaFissaMensile * periodoMesi;
       const totPeriodo = costoEnergia + qf;
@@ -188,39 +209,73 @@
         risparmioPerc: risparmioPerc !== null ? risparmioPerc.toFixed(1) : null
       };
     }
+
+    // ============================================================
+    // CEI – FUNZIONI DI CALCOLO
+    // Formula: consumo × (PUN×1,10 + spread + DISP + CAPA)
+    // ============================================================
+
     function calcolaCeiGranito(consumo, pun, sa, p) {
-      return makeRow("CEI Granito — PUN×1,10 + 0,030 + DISP + CAPA", consumo * (pun * LOSS_BT + CEI_SPREAD_GRANITO + CEI_DISP + CEI_CAPA), CEI_QF_GRANITO, sa, p);
+      const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_GRANITO + CEI_DISP + CEI_CAPA);
+      return makeRow("CEI Granito — PUN×1,10 + 0,030 + DISP + CAPA", costoEnergia, CEI_QF_GRANITO, sa, p);
     }
+
     function calcolaCeiMarmo(consumo, pun, sa, p) {
-      return makeRow("CEI Marmo — PUN×1,10 + 0,025 + DISP + CAPA", consumo * (pun * LOSS_BT + CEI_SPREAD_MARMO + CEI_DISP + CEI_CAPA), CEI_QF_MARMO, sa, p);
+      const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_MARMO + CEI_DISP + CEI_CAPA);
+      return makeRow("CEI Marmo — PUN×1,10 + 0,025 + DISP + CAPA", costoEnergia, CEI_QF_MARMO, sa, p);
     }
+
     function calcolaCeiBasalto(consumo, pun, sa, p) {
-      return makeRow("CEI Basalto — PUN×1,10 + 0,025 + DISP + CAPA", consumo * (pun * LOSS_BT + CEI_SPREAD_BASALTO + CEI_DISP + CEI_CAPA), CEI_QF_BASALTO, sa, p);
+      const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_BASALTO + CEI_DISP + CEI_CAPA);
+      return makeRow("CEI Basalto — PUN×1,10 + 0,025 + DISP + CAPA", costoEnergia, CEI_QF_BASALTO, sa, p);
     }
+
     function calcolaCeiArdesia(consumo, pun, sa, p) {
-      return makeRow("CEI Ardesia — PUN×1,10 + 0,025 + DISP + CAPA", consumo * (pun * LOSS_BT + CEI_SPREAD_ARDESIA + CEI_DISP + CEI_CAPA), CEI_QF_ARDESIA, sa, p);
+      const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_ARDESIA + CEI_DISP + CEI_CAPA);
+      return makeRow("CEI Ardesia — PUN×1,10 + 0,025 + DISP + CAPA", costoEnergia, CEI_QF_ARDESIA, sa, p);
     }
+
     function calcolaCeiFamilyFriends(consumo, pun, sa, p) {
-      return makeRow("CEI Family&Friends — PUN×1,10 + 0,018 + DISP + CAPA", consumo * (pun * LOSS_BT + CEI_SPREAD_FF + CEI_DISP + CEI_CAPA), CEI_QF_FF, sa, p);
+      const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_FF + CEI_DISP + CEI_CAPA);
+      return makeRow("CEI Family&amp;Friends — PUN×1,10 + 0,018 + DISP + CAPA", costoEnergia, CEI_QF_FF, sa, p);
     }
+
+    // ============================================================
+    // ESTRA – FUNZIONI DI CALCOLO
+    // Fissa:  consumo × (0,1991 + CDISPD) – sconto SDD
+    // Natura: consumo × (PUN×1,10 + 0,0275 + CDISPD) – sconto SDD
+    // ============================================================
+
     function calcolaEstraFissa(consumo, pun, sa, p) {
-      return makeRow("Estra Fissa Luce — 0,1991 + CDISPD (sconto -2€/mese SDD)", consumo * (ESTRA_FISSA_PREZZO + ESTRA_CDISPD) - (ESTRA_SCONTO_SDD * p), ESTRA_QF_FISSA, sa, p);
+      const costoEnergia = consumo * (ESTRA_FISSA_PREZZO + ESTRA_CDISPD) - (ESTRA_SCONTO_SDD * p);
+      return makeRow("Estra Fissa Luce — 0,1991 + CDISPD (sconto -2€/mese SDD)", costoEnergia, ESTRA_QF_FISSA, sa, p);
     }
+
     function calcolaEstraNatura(consumo, pun, sa, p) {
-      return makeRow("Estra Natura Luce — PUN×1,10 + 0,0275 + CDISPD (sconto -2€/mese SDD)", consumo * ((pun * LOSS_BT) + ESTRA_NATURA_SPREAD + ESTRA_CDISPD) - (ESTRA_SCONTO_SDD * p), ESTRA_QF_NATURA, sa, p);
+      const costoEnergia = consumo * ((pun * LOSS_BT) + ESTRA_NATURA_SPREAD + ESTRA_CDISPD) - (ESTRA_SCONTO_SDD * p);
+      return makeRow("Estra Natura Luce — PUN×1,10 + 0,0275 + CDISPD (sconto -2€/mese SDD)", costoEnergia, ESTRA_QF_NATURA, sa, p);
     }
-    function calcolaSinergyFamilyLuceVariabile(consumo, pun, sa, p) {
-      return makeRow("Sinergy Family Luce Variabile — PUN×1,10 + 0,0275 + DISP + sbil", consumo * (pun * LOSS_BT + SINERGY_SPREAD_VAR + SINERGY_DISP_VAR + SINERGY_SBIL_VAR), SINERGY_QF_VAR, sa, p);
-    }
-    function calcolaSinergyFamilyLuceFissa(consumo, sa, p) {
-      return makeRow("Sinergy Family Luce Fisso S06 — 0,1595 €/kWh (prezzo unico, al lordo perdite)", consumo * SINERGY_PRICE_FIXED, SINERGY_QF_FIXED, sa, p);
-    }
+
+    // ============================================================
+    // ACEA ENERGIA – FUNZIONI DI CALCOLO
+    // Flex Casa: consumo × (PUN×1,10 + spread + DISP + CAPA)
+    // Fix Casa:  consumo × (prezzo fisso + DISP + CAPA)
+    // ============================================================
+
     function calcolaAceaFlexCasaLuce(consumo, pun, sa, p) {
-      return makeRow("ACEA Flex Casa Luce — PUN×1,10 + 0,030500 + CDISPD + CAPA (variabile, QF 9€/mese)", consumo * (pun * LOSS_BT + ACEA_FLEX_LUCE_SPREAD + CEI_DISP + CEI_CAPA), ACEA_FLEX_LUCE_QF, sa, p);
+      const costoEnergia = consumo * (pun * LOSS_BT + ACEA_FLEX_LUCE_SPREAD + CEI_DISP + CEI_CAPA);
+      return makeRow("ACEA Flex Casa Luce — PUN×1,10 + 0,030500 + CDISPD + CAPA (variabile, QF 9€/mese)", costoEnergia, ACEA_FLEX_LUCE_QF, sa, p);
     }
+
     function calcolaAceaFixCasaLuce(consumo, sa, p) {
-      return makeRow("ACEA Fix Casa Luce — 0,115000 + CDISPD + CAPA fisso (12 mesi, QF 12€/mese)", consumo * (ACEA_FIX_LUCE_PREZZO + CEI_DISP + CEI_CAPA), ACEA_FIX_LUCE_QF, sa, p);
+      const costoEnergia = consumo * (ACEA_FIX_LUCE_PREZZO + CEI_DISP + CEI_CAPA);
+      return makeRow("ACEA Fix Casa Luce — 0,115000 + CDISPD + CAPA fisso (12 mesi, QF 12€/mese)", costoEnergia, ACEA_FIX_LUCE_QF, sa, p);
     }
+
+    // ============================================================
+    // RENDER TABELLA
+    // ============================================================
+
     function renderTabella(id, righe) {
       const tbody = document.querySelector('#' + id + ' tbody');
       tbody.innerHTML = '';
@@ -230,6 +285,7 @@
         const isBest = parseFloat(o.totMese) === minTot;
         const tr = tbody.insertRow();
         if (isBest) tr.classList.add('best');
+
         let rispHtml = '<td>—</td>';
         if (o.risparmioMese !== null) {
           const v = parseFloat(o.risparmioMese);
@@ -239,16 +295,24 @@
           const absP = Math.abs(p2).toFixed(1);
           rispHtml = `<td class="${cls}">${v >= 0 ? '▼ −' : '▲ +'}€${absV}/periodo (${v >= 0 ? '−' : '+'}${absP}%)<br><small>${v >= 0 ? '▼ −' : '▲ +'}€${(Math.abs(v)*(12/pp)).toFixed(2)}/anno</small></td>`;
         }
+
         tr.innerHTML = `<td>${o.nome}${isBest ? ' ⭐' : ''}</td><td>€ ${o.costoEnergia}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totMese}</td>${rispHtml}`;
       });
     }
+
+    // ============================================================
+    // CALCOLO PRINCIPALE
+    // ============================================================
+
     function calcolaTutteLeOfferteLuce() {
       const consumo = parseFloat(document.getElementById('consumo').value) || 0;
       const pun     = parseFloat(document.getElementById('pun').value) || 0;
       const sa      = parseFloat(document.getElementById('spesaAttuale').value) || 0;
       const p       = getPeriodo();
+
       if (isNaN(consumo) || consumo < 0) { alert("Inserisci un consumo valido."); return; }
       if (isNaN(pun) || pun < 0)         { alert("Inserisci un PUN valido."); return; }
+
       const refBox = document.getElementById('ref-attuale');
       if (sa > 0) {
         const periodoLabel = p === 2 ? 'bimestrale' : 'mensile';
@@ -257,6 +321,7 @@
       } else {
         refBox.style.display = 'none';
       }
+
       renderTabella('tabella-cei', [
         calcolaCeiGranito(consumo, pun, sa, p),
         calcolaCeiMarmo(consumo, pun, sa, p),
@@ -264,20 +329,22 @@
         calcolaCeiArdesia(consumo, pun, sa, p),
         calcolaCeiFamilyFriends(consumo, pun, sa, p),
       ]);
+
       renderTabella('tabella-estra', [
         calcolaEstraFissa(consumo, pun, sa, p),
         calcolaEstraNatura(consumo, pun, sa, p),
       ]);
-      renderTabella('tabella-sinergy', [
-        calcolaSinergyFamilyLuceVariabile(consumo, pun, sa, p),
-        calcolaSinergyFamilyLuceFissa(consumo, sa, p),
-      ]);
+
       renderTabella('tabella-acea-luce', [
         calcolaAceaFlexCasaLuce(consumo, pun, sa, p),
         calcolaAceaFixCasaLuce(consumo, sa, p),
       ]);
     }
-    window.onload = () => { aggiornaPeriodo(); calcolaTutteLeOfferteLuce(); };
+
+    window.onload = () => {
+      aggiornaPeriodo();
+      calcolaTutteLeOfferteLuce();
+    };
   </script>
 </body>
 </html>
