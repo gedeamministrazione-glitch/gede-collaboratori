@@ -102,6 +102,33 @@
       <tbody></tbody>
     </table>
 
+    <div class="section-title">🟢 Luce e Gas Italia Business PMI <span class="validita">(valide fino 31/08/2026)</span></div>
+    <table id="tabella-lgi-pmi">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-lgi-pmi-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🟢 Luce e Gas Italia Business MICRO <span class="validita">(valide fino 31/08/2026)</span></div>
+    <table id="tabella-lgi-micro">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-lgi-micro-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔴 ACEA Energia Sprint <span class="validita">(valide fino 30/09/2026)</span></div>
+    <table id="tabella-acea">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-acea-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
@@ -130,7 +157,7 @@
       document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
-      ['th-sup-periodo','th-inf-periodo','th-estra-periodo'].forEach(id => {
+      ['th-sup-periodo','th-inf-periodo','th-estra-periodo','th-lgi-pmi-periodo','th-lgi-micro-periodo','th-acea-periodo'].forEach(id => {
         document.getElementById(id).textContent = thLabel;
       });
     }
@@ -249,6 +276,77 @@
     }
 
     // ============================================================
+    // LUCE E GAS ITALIA Business Gas PMI — valide fino 31/08/2026
+    // Formula: consumo × (PSV + spread) × PCS_CORR
+    // Consumi <200.000 Smc/anno — QF 156 €/PDR/anno = 13 €/mese per tutte le PMI
+    // ============================================================
+    function calcolaLGIgasPmiLeggera(consumo, psv, sa, p) {
+      const spread = 0.08, qf = 156 / 12;
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `LGI GAS PMI LEGGERA — (PSV + 0,08) × 1,03 | QF 13 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaLGIgasPmiBasic(consumo, psv, sa, p) {
+      const spread = 0.12, qf = 156 / 12;
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `LGI GAS PMI BASIC — (PSV + 0,12) × 1,03 | QF 13 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaLGIgasPmiFull(consumo, psv, sa, p) {
+      const spread = 0.15, qf = 156 / 12;
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `LGI GAS PMI FULL — (PSV + 0,15) × 1,03 | QF 13 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
+    // LUCE E GAS ITALIA Business Gas MICRO — valide fino 31/08/2026
+    // Formula: consumo × (PSV + spread) × PCS_CORR
+    // Consumi <200.000 Smc/anno
+    // ============================================================
+    function calcolaLGIgasMicroEasy(consumo, psv, sa, p) {
+      const spread = 0.136, qf = 150 / 12;
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `LGI GAS MICRO EASY — (PSV + 0,136) × 1,03 | QF 12,50 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaLGIgasMicroMedium(consumo, psv, sa, p) {
+      const spread = 0.166, qf = 180 / 12;
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `LGI GAS MICRO MEDIUM — (PSV + 0,166) × 1,03 | QF 15 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaLGIgasMicroPremium(consumo, psv, sa, p) {
+      const spread = 0.176, qf = 192 / 12;
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `LGI GAS MICRO PREMIUM — (PSV + 0,176) × 1,03 | QF 16 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
+    // ACEA Energia Sprint Gas — valida fino 30/09/2026
+    // Formula: consumo × (PSV + 0,0815) × PCS_CORR
+    // QF 156 €/PDR/anno = 13 €/mese — consumi <200.000 Smc/anno
+    // ============================================================
+    function calcolaAceaSprintGas(consumo, psv, sa, p) {
+      const spread = 0.0815, qf = 156 / 12;
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `ACEA ENERGIA SPRINT — (PSV + 0,0815) × 1,03 | QF 13 €/mese | Valida fino 30/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
     // RENDER TABELLA
     // ============================================================
     function renderTable(id, offerte) {
@@ -311,6 +409,22 @@
 
       renderTable('tabella-estra', [
         calcolaEstraTrend(consumo, psv, sa, p),
+      ]);
+
+      renderTable('tabella-lgi-pmi', [
+        calcolaLGIgasPmiLeggera(consumo, psv, sa, p),
+        calcolaLGIgasPmiBasic(consumo, psv, sa, p),
+        calcolaLGIgasPmiFull(consumo, psv, sa, p),
+      ]);
+
+      renderTable('tabella-lgi-micro', [
+        calcolaLGIgasMicroEasy(consumo, psv, sa, p),
+        calcolaLGIgasMicroMedium(consumo, psv, sa, p),
+        calcolaLGIgasMicroPremium(consumo, psv, sa, p),
+      ]);
+
+      renderTable('tabella-acea', [
+        calcolaAceaSprintGas(consumo, psv, sa, p),
       ]);
     }
 
