@@ -235,27 +235,27 @@
 
     function calcolaCeiGranito(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + CEI_GRT_SPREAD) * PCS_CORR;
-      return makeRow("CEI Granito Gas — (PSV + 0,15) × 1,03", costoEnergia, CEI_GRT_QF, sa, p);
+      return makeRow("CEI Granito Gas — (PSV + 0,15) × 1,03 | Valida fino 31/12/2026", costoEnergia, CEI_GRT_QF, sa, p);
     }
 
     function calcolaCeiMarmo(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + CEI_MRM_SPREAD) * PCS_CORR;
-      return makeRow("CEI Marmo Gas — (PSV + 0,14) × 1,03", costoEnergia, CEI_MRM_QF, sa, p);
+      return makeRow("CEI Marmo Gas — (PSV + 0,14) × 1,03 | Valida fino 31/12/2026", costoEnergia, CEI_MRM_QF, sa, p);
     }
 
     function calcolaCeiBasalto(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + CEI_BST_SPREAD) * PCS_CORR;
-      return makeRow("CEI Basalto Gas — (PSV + 0,135) × 1,03", costoEnergia, CEI_BST_QF, sa, p);
+      return makeRow("CEI Basalto Gas — (PSV + 0,135) × 1,03 | Valida fino 31/12/2026", costoEnergia, CEI_BST_QF, sa, p);
     }
 
     function calcolaCeiArdesia(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + CEI_ARD_SPREAD) * PCS_CORR;
-      return makeRow("CEI Ardesia Gas — (PSV + 0,13) × 1,03", costoEnergia, CEI_ARD_QF, sa, p);
+      return makeRow("CEI Ardesia Gas — (PSV + 0,13) × 1,03 | Valida fino 31/12/2026", costoEnergia, CEI_ARD_QF, sa, p);
     }
 
     function calcolaCeiFamilyFriends(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + CEI_FF_SPREAD) * PCS_CORR;
-      return makeRow("CEI Family&amp;Friends Gas — (PSV + 0,10) × 1,03", costoEnergia, CEI_FF_QF, sa, p);
+      return makeRow("CEI Family&Friends Gas — (PSV + 0,10) × 1,03 | Valida fino 31/12/2026", costoEnergia, CEI_FF_QF, sa, p);
     }
 
     // ============================================================
@@ -291,17 +291,17 @@
 
     function calcolaLgiSilverGas(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + LGI_SILVER_GAS_SPREAD) * PCS_CORR;
-      return makeRow("LGI Silver Gas — (PSV + 0,120) × 1,03 €/Smc (QF 12€/mese)", costoEnergia, LGI_SILVER_GAS_QF, sa, p);
+      return makeRow("LGI Silver Gas — (PSV + 0,120) × 1,03 €/Smc (QF 12€/mese) | Valida fino 31/08/2026", costoEnergia, LGI_SILVER_GAS_QF, sa, p);
     }
 
     function calcolaLgiGoldGas(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + LGI_GOLD_GAS_SPREAD) * PCS_CORR;
-      return makeRow("LGI Gold Gas — (PSV + 0,125) × 1,03 €/Smc (QF 13€/mese)", costoEnergia, LGI_GOLD_GAS_QF, sa, p);
+      return makeRow("LGI Gold Gas — (PSV + 0,125) × 1,03 €/Smc (QF 13€/mese) | Valida fino 31/08/2026", costoEnergia, LGI_GOLD_GAS_QF, sa, p);
     }
 
     function calcolaLgiPlatinumGas(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + LGI_PLATINUM_GAS_SPREAD) * PCS_CORR;
-      return makeRow("LGI Platinum Gas — (PSV + 0,130) × 1,03 €/Smc (QF 14€/mese)", costoEnergia, LGI_PLATINUM_GAS_QF, sa, p);
+      return makeRow("LGI Platinum Gas — (PSV + 0,130) × 1,03 €/Smc (QF 14€/mese) | Valida fino 31/08/2026", costoEnergia, LGI_PLATINUM_GAS_QF, sa, p);
     }
 
     // ============================================================
