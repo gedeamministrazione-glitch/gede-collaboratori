@@ -255,27 +255,27 @@
 
     function calcolaCeiGranito(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_GRANITO + CEI_DISP + CEI_CAPA);
-      return makeRow("CEI Granito — PUN×1,10 + 0,030 + DISP + CAPA", costoEnergia, CEI_QF_GRANITO, sa, p);
+      return makeRow("CEI Granito — PUN×1,10 + 0,030 + DISP + CAPA | Valida fino 31/12/2026", costoEnergia, CEI_QF_GRANITO, sa, p);
     }
 
     function calcolaCeiMarmo(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_MARMO + CEI_DISP + CEI_CAPA);
-      return makeRow("CEI Marmo — PUN×1,10 + 0,025 + DISP + CAPA", costoEnergia, CEI_QF_MARMO, sa, p);
+      return makeRow("CEI Marmo — PUN×1,10 + 0,025 + DISP + CAPA | Valida fino 31/12/2026", costoEnergia, CEI_QF_MARMO, sa, p);
     }
 
     function calcolaCeiBasalto(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_BASALTO + CEI_DISP + CEI_CAPA);
-      return makeRow("CEI Basalto — PUN×1,10 + 0,025 + DISP + CAPA", costoEnergia, CEI_QF_BASALTO, sa, p);
+      return makeRow("CEI Basalto — PUN×1,10 + 0,025 + DISP + CAPA | Valida fino 31/12/2026", costoEnergia, CEI_QF_BASALTO, sa, p);
     }
 
     function calcolaCeiArdesia(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_ARDESIA + CEI_DISP + CEI_CAPA);
-      return makeRow("CEI Ardesia — PUN×1,10 + 0,025 + DISP + CAPA", costoEnergia, CEI_QF_ARDESIA, sa, p);
+      return makeRow("CEI Ardesia — PUN×1,10 + 0,025 + DISP + CAPA | Valida fino 31/12/2026", costoEnergia, CEI_QF_ARDESIA, sa, p);
     }
 
     function calcolaCeiFamilyFriends(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_FF + CEI_DISP + CEI_CAPA);
-      return makeRow("CEI Family&amp;Friends — PUN×1,10 + 0,018 + DISP + CAPA", costoEnergia, CEI_QF_FF, sa, p);
+      return makeRow("CEI Family&amp;Friends — PUN×1,10 + 0,018 + DISP + CAPA | Valida fino 31/12/2026", costoEnergia, CEI_QF_FF, sa, p);
     }
 
     // ============================================================
@@ -286,12 +286,12 @@
 
     function calcolaEstraNatura(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + ESTRA_NATURA_SPREAD + ESTRA_CDISPD) - (ESTRA_SCONTO_SDD * p);
-      return makeRow("Estra Natura Luce — PUN×1,10 + 0,0275 + CDISPD (sconto -2€/mese SDD)", costoEnergia, ESTRA_QF_NATURA, sa, p);
+      return makeRow("Estra Natura Luce — PUN×1,10 + 0,0275 + CDISPD (sconto -2€/mese SDD) | Valida fino 14/09/2026", costoEnergia, ESTRA_QF_NATURA, sa, p);
     }
 
     function calcolaEstraPromo(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + ESTRA_PROMO_SPREAD + ESTRA_CDISPD);
-      return makeRow("Estra Promo Luce — PUN×1,10 + 0,0220 + CDISPD (QF 8,40€/mese, sconto 30% su QF)", costoEnergia, ESTRA_QF_PROMO, sa, p);
+      return makeRow("Estra Promo Luce — PUN×1,10 + 0,0220 + CDISPD (QF 8,40€/mese, sconto 30% su QF) | Valida fino 14/09/2026", costoEnergia, ESTRA_QF_PROMO, sa, p);
     }
 
     // ============================================================
@@ -303,17 +303,17 @@
 
     function calcolaAceaFlexCasaLuce(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + ACEA_FLEX_LUCE_SPREAD + CEI_DISP + CEI_CAPA);
-      return makeRow("ACEA Flex Casa Luce — PUN×1,10 + 0,030500 + DISP + CAPA (variabile, QF 9€/mese)", costoEnergia, ACEA_FLEX_LUCE_QF, sa, p);
+      return makeRow("ACEA Flex Casa Luce — PUN×1,10 + 0,030500 + DISP + CAPA (variabile, QF 9€/mese) | Valida fino 30/09/2026", costoEnergia, ACEA_FLEX_LUCE_QF, sa, p);
     }
 
     function calcolaAceaFixCasaLuce(consumo, sa, p) {
       const costoEnergia = consumo * (ACEA_FIX_LUCE_PREZZO + CEI_DISP + CEI_CAPA);
-      return makeRow("ACEA Fix Casa Luce — 0,133000 + DISP + CAPA fisso (12 mesi, QF 12€/mese)", costoEnergia, ACEA_FIX_LUCE_QF, sa, p);
+      return makeRow("ACEA Fix Casa Luce — 0,133000 + DISP + CAPA fisso (12 mesi, QF 12€/mese) | Valida fino 03/09/2026", costoEnergia, ACEA_FIX_LUCE_QF, sa, p);
     }
 
     function calcolaAceaSprintLuce(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + ACEA_SPRINT_LUCE_SPREAD + CEI_DISP + CEI_CAPA);
-      return makeRow("ACEA Sprint Luce — PUN×1,10 + 0,014200 + DISP + CAPA (variabile, QF 10€/mese)", costoEnergia, ACEA_SPRINT_LUCE_QF, sa, p);
+      return makeRow("ACEA Sprint Luce — PUN×1,10 + 0,014200 + DISP + CAPA (variabile, QF 10€/mese) | Valida fino 30/09/2026", costoEnergia, ACEA_SPRINT_LUCE_QF, sa, p);
     }
 
     // ============================================================
@@ -323,17 +323,17 @@
 
     function calcolaLgiSilverLuce(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + LGI_SILVER_SPREAD + LGI_CDISPD);
-      return makeRow("LGI Energia Domestica Silver — PUN×1,10 + 0,0242 + CDISPD (QF 12€/mese)", costoEnergia, LGI_SILVER_QF, sa, p);
+      return makeRow("LGI Energia Domestica Silver — PUN×1,10 + 0,0242 + CDISPD (QF 12€/mese) | Valida fino 31/08/2026", costoEnergia, LGI_SILVER_QF, sa, p);
     }
 
     function calcolaLgiGoldLuce(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + LGI_GOLD_SPREAD + LGI_CDISPD);
-      return makeRow("LGI Energia Domestica Gold — PUN×1,10 + 0,0275 + CDISPD (QF 13€/mese)", costoEnergia, LGI_GOLD_QF, sa, p);
+      return makeRow("LGI Energia Domestica Gold — PUN×1,10 + 0,0275 + CDISPD (QF 13€/mese) | Valida fino 31/08/2026", costoEnergia, LGI_GOLD_QF, sa, p);
     }
 
     function calcolaLgiPlatinumLuce(consumo, pun, sa, p) {
       const costoEnergia = consumo * (pun * LOSS_BT + LGI_PLATINUM_SPREAD + LGI_CDISPD);
-      return makeRow("LGI Energia Domestica Platinum — PUN×1,10 + 0,0308 + CDISPD (QF 14€/mese)", costoEnergia, LGI_PLATINUM_QF, sa, p);
+      return makeRow("LGI Energia Domestica Platinum — PUN×1,10 + 0,0308 + CDISPD (QF 14€/mese) | Valida fino 31/08/2026", costoEnergia, LGI_PLATINUM_QF, sa, p);
     }
 
     // ============================================================
