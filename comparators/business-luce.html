@@ -126,6 +126,33 @@
       <tbody></tbody>
     </table>
 
+    <div class="section-title">🟢 Luce e Gas Italia Business PMI <span class="validita">(valide fino 31/08/2026)</span></div>
+    <table id="tabella-lgi-pmi">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-lgi-pmi-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🟢 Luce e Gas Italia Business MICRO <span class="validita">(valide fino 31/08/2026)</span></div>
+    <table id="tabella-lgi-micro">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-lgi-micro-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔴 ACEA Energia Sprint <span class="validita">(valide fino 30/09/2026 — solo BT)</span></div>
+    <table id="tabella-acea">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-acea-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
@@ -155,7 +182,7 @@
       document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
-      ['th-sup-periodo','th-inf-periodo','th-estra-periodo'].forEach(id => {
+      ['th-sup-periodo','th-inf-periodo','th-estra-periodo','th-lgi-pmi-periodo','th-lgi-micro-periodo','th-acea-periodo'].forEach(id => {
         document.getElementById(id).textContent = thLabel;
       });
     }
@@ -279,6 +306,79 @@
     }
 
     // ============================================================
+    // LUCE E GAS ITALIA Business PMI — valide fino 31/08/2026
+    // Formula: consumo × ((PUN + DISP[t] + CAPA[t]) × LOSS[t] + spread)
+    // QF 156 €/POD/anno = 13 €/mese per tutte le offerte PMI
+    // ============================================================
+    function calcolaLGIpmiLeggera(consumo, pun, t, sa, p) {
+      const spread = 0.011, qf = 156 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
+      return resultRow(
+        `LGI PMI LEGGERA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,011 | QF 13 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaLGIpmiBasic(consumo, pun, t, sa, p) {
+      const spread = 0.0198, qf = 156 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
+      return resultRow(
+        `LGI PMI BASIC — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0198 | QF 13 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaLGIpmiFull(consumo, pun, t, sa, p) {
+      const spread = 0.022, qf = 156 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
+      return resultRow(
+        `LGI PMI FULL — (PUN+DISP+CAPA)×${LOSS[t]} + 0,022 | QF 13 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
+    // LUCE E GAS ITALIA Business MICRO — valide fino 31/08/2026
+    // Formula: consumo × ((PUN + DISP[t] + CAPA[t]) × LOSS[t] + spread)
+    // ============================================================
+    function calcolaLGImicroEasy(consumo, pun, t, sa, p) {
+      const spread = 0.0198, qf = 150 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
+      return resultRow(
+        `LGI MICRO EASY — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0198 | QF 12,50 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaLGImicroMedium(consumo, pun, t, sa, p) {
+      const spread = 0.0286, qf = 180 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
+      return resultRow(
+        `LGI MICRO MEDIUM — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0286 | QF 15 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaLGImicroPremium(consumo, pun, t, sa, p) {
+      const spread = 0.0308, qf = 192 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
+      return resultRow(
+        `LGI MICRO PREMIUM — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0308 | QF 16 €/mese | Valida fino 31/08/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
+    // ACEA Energia Sprint — valida fino 30/09/2026 (SOLO BT)
+    // Formula ACEA (CTE RT3D402791 — valori già al lordo perdite BT 10%):
+    //   costo = consumo × (PUN×1,10 + spread_lordo + TIDE_lordo + MercCap_lordo)
+    //   spread_lordo = 0,0164; TIDE_lordo = 0,01155; MercCap_lordo = 0,005589
+    // QF 156 €/POD/anno = 13 €/mese
+    // ============================================================
+    function calcolaAceaSprint(consumo, pun, t, sa, p) {
+      const qf = 156 / 12;
+      // Dispacciamento e spread già espressi al lordo perdite (×1,10) dalla CTE ACEA
+      const costo = consumo * (pun * LOSS['BT'] + 0.0164 + 0.01155 + 0.005589);
+      return resultRow(
+        `ACEA ENERGIA SPRINT (SOLO BT) — PUN×1,10 + spread 0,0164 + TIDE 0,01155 + MercCap 0,005589 | QF 13 €/mese | Valida fino 30/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
     // RENDER TABELLA
     // ============================================================
     function renderTable(id, offerte) {
@@ -346,6 +446,22 @@
       renderTable('tabella-estra', [
         calcolaEstraTrend(consumo, pun, t, sa, p),
         calcolaEstraTrendPiu(consumo, pun, t, sa, p),
+      ]);
+
+      renderTable('tabella-lgi-pmi', [
+        calcolaLGIpmiLeggera(consumo, pun, t, sa, p),
+        calcolaLGIpmiBasic(consumo, pun, t, sa, p),
+        calcolaLGIpmiFull(consumo, pun, t, sa, p),
+      ]);
+
+      renderTable('tabella-lgi-micro', [
+        calcolaLGImicroEasy(consumo, pun, t, sa, p),
+        calcolaLGImicroMedium(consumo, pun, t, sa, p),
+        calcolaLGImicroPremium(consumo, pun, t, sa, p),
+      ]);
+
+      renderTable('tabella-acea', [
+        calcolaAceaSprint(consumo, pun, t, sa, p),
       ]);
     }
 
