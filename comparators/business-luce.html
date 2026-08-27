@@ -48,7 +48,6 @@
 
   <div class="input-section">
     <h2>Inserisci i tuoi dati di consumo</h2>
-
     <div class="grid2">
       <div class="input-group">
         <label for="periodo">Tipo di bolletta:</label>
@@ -65,7 +64,6 @@
         </select>
       </div>
     </div>
-
     <div class="grid2">
       <div class="input-group">
         <label for="consumo" id="consumo-label">Consumo mensile (kWh):</label>
@@ -76,18 +74,15 @@
         <input type="number" id="pun" value="0.12" step="0.001" min="0">
       </div>
     </div>
-
     <div class="input-group">
       <label for="spesaAttuale" id="spesa-label">Spesa attuale vendita (€/mese) — opzionale:</label>
       <input type="number" id="spesaAttuale" value="" step="0.01" min="0" placeholder="es. 74.69">
     </div>
-
     <p class="note">
       Il PUN inserito è <b>puro</b> (senza perdite). In BT: ×1,10; in MT: ×1,038.<br>
       Valori <b>IVA e imposte escluse</b>.
     </p>
     <button onclick="calcolaTutteLeOfferte()">Calcola Offerte</button>
-
     <div class="arera-box" id="arera-box">
       <div class="arera-title">📋 Parametri ARERA applicati nel calcolo</div>
       <div class="arera-params">
@@ -122,20 +117,11 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟠 Estra Business Luce <span class="validita">(valide fino 13/04/2026)</span></div>
+    <div class="section-title">🟠 Estra Business Luce <span class="validita">(verificare data scadenza CTE aggiornata)</span></div>
     <table id="tabella-estra">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
         <th id="th-estra-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
-      </tr></thead>
-      <tbody></tbody>
-    </table>
-
-    <div class="section-title">🟢 Sinergy Business Luce <span class="validita">(valida fino 30/06/2026)</span></div>
-    <table id="tabella-sinergy">
-      <thead><tr>
-        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
-        <th id="th-sinergy-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -153,8 +139,8 @@
     const LOSS = { BT: 1.10, MT: 1.038 };
     const DISP = { BT: 0.011725, MT: 0.011725 };
     const CAPA = { BT: 0.013580, MT: 0.013580 };
-    const ESTRA_GO = 0.011; // €/kWh – GO_EE da CTE (Garanzia d'Origine rinnovabili)
-    const CEI_GO   = 0;   // GO rimosso
+    const ESTRA_GO = 0.011;
+    const CEI_GO   = 0;
     const round2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 
     function getPeriodo() { return parseInt(document.getElementById('periodo').value); }
@@ -169,7 +155,7 @@
       document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
-      ['th-sup-periodo','th-inf-periodo','th-estra-periodo','th-sinergy-periodo'].forEach(id => {
+      ['th-sup-periodo','th-inf-periodo','th-estra-periodo'].forEach(id => {
         document.getElementById(id).textContent = thLabel;
       });
     }
@@ -194,96 +180,50 @@
       };
     }
 
-    // ============================================================
-    // CEI > 30.000 kWh/anno
-    // Formula: (PUN+DISP+CAPA)×LOSS + Spread + CrA(0,00280) + CcP(0,00255) + VarComm(0,00255) + GO(0,005)
-    // ============================================================
-
     function calcolaRaffaello(consumo, pun, t, sa, p) {
       const spread = 0.013, qf = 180 / 12;
       const varKwh = 0.00280 + 0.00255 + 0.00255 + CEI_GO;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(
-        `CEI RAFFAELLO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,013 + CrA 0,00280 + CcP 0,00255 + VarComm 0,00255 | QF 15 €/mese`,
-        costo, qf, sa, p
-      );
+      return resultRow(`CEI RAFFAELLO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,013 + CrA+CcP+VarComm 0,00790 | QF 15 €/mese | Valida fino 31/12/2026`, costo, qf, sa, p);
     }
-
     function calcolaMichelangelo(consumo, pun, t, sa, p) {
       const spread = 0.011, qf = 180 / 12;
       const varKwh = 0.00280 + 0.00255 + 0.00255 + CEI_GO;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(
-        `CEI MICHELANGELO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,011 + CrA 0,00280 + CcP 0,00255 + VarComm 0,00255 | QF 15 €/mese`,
-        costo, qf, sa, p
-      );
+      return resultRow(`CEI MICHELANGELO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,011 + CrA+CcP+VarComm 0,00790 | QF 15 €/mese | Valida fino 31/12/2026`, costo, qf, sa, p);
     }
-
     function calcolaLeonardoSup(consumo, pun, t, sa, p) {
       const spread = 0.009, qf = 180 / 12;
       const varKwh = 0.00280 + 0.00255 + 0.00255 + CEI_GO;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(
-        `CEI LEONARDO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,009 + CrA 0,00280 + CcP 0,00255 + VarComm 0,00255 | QF 15 €/mese`,
-        costo, qf, sa, p
-      );
+      return resultRow(`CEI LEONARDO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,009 + CrA+CcP+VarComm 0,00790 | QF 15 €/mese | Valida fino 31/12/2026`, costo, qf, sa, p);
     }
-
     function calcolaDonatello(consumo, pun, t, sa, p) {
       const spread = 0.0055, qf = 156 / 12;
       const varKwh = 0.00280 + 0.00255 + 0.00255 + CEI_GO;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + varKwh);
-      return resultRow(
-        `CEI DONATELLO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0055 + CrA 0,00280 + CcP 0,00255 + VarComm 0,00255 | QF 13 €/mese`,
-        costo, qf, sa, p
-      );
+      return resultRow(`CEI DONATELLO — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0055 + CrA+CcP+VarComm 0,00790 | QF 13 €/mese | Valida fino 31/12/2026`, costo, qf, sa, p);
     }
-
-    // ============================================================
-    // CEI < 30.000 kWh/anno
-    // QUERCIA, SALICE, BETULLA, PARTNER&FRIENDS: (PUN+DISP+CAPA)×LOSS + Spread + GO(0,005)
-    // LEONARDO: come nel gruppo superiore (stessa CTE)
-    // ============================================================
-
     function calcolaQuercia(consumo, pun, t, sa, p) {
       const spread = 0.028, qf = 216 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + CEI_GO);
-      return resultRow(
-        `CEI QUERCIA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,028 | QF 18 €/mese`,
-        costo, qf, sa, p
-      );
+      return resultRow(`CEI QUERCIA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,028 | QF 18 €/mese | Valida fino 31/12/2026`, costo, qf, sa, p);
     }
-
     function calcolaSalice(consumo, pun, t, sa, p) {
       const spread = 0.026, qf = 180 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + CEI_GO);
-      return resultRow(
-        `CEI SALICE — (PUN+DISP+CAPA)×${LOSS[t]} + 0,026 | QF 15 €/mese`,
-        costo, qf, sa, p
-      );
+      return resultRow(`CEI SALICE — (PUN+DISP+CAPA)×${LOSS[t]} + 0,026 | QF 15 €/mese | Valida fino 31/12/2026`, costo, qf, sa, p);
     }
-
     function calcolaBetulla(consumo, pun, t, sa, p) {
       const spread = 0.025, qf = 156 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + CEI_GO);
-      return resultRow(
-        `CEI BETULLA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,025 | QF 13 €/mese`,
-        costo, qf, sa, p
-      );
+      return resultRow(`CEI BETULLA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,025 | QF 13 €/mese | Valida fino 31/12/2026`, costo, qf, sa, p);
     }
-
     function calcolaPartnerFriends(consumo, pun, t, sa, p) {
       const spread = 0.020, qf = 120 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + CEI_GO);
-      return resultRow(
-        `CEI PARTNER&FRIENDS — (PUN+DISP+CAPA)×${LOSS[t]} + 0,020 | QF 10 €/mese`,
-        costo, qf, sa, p
-      );
+      return resultRow(`CEI PARTNER&FRIENDS — (PUN+DISP+CAPA)×${LOSS[t]} + 0,020 | QF 10 €/mese | Valida fino 31/12/2026`, costo, qf, sa, p);
     }
-
-    // ============================================================
-    // ESTRA Business
-    // ============================================================
     function calcolaEstraTrend(consumo, pun, t, sa, p) {
       const spread = 0.02035, qf = 184.8 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + ESTRA_GO);
@@ -292,22 +232,8 @@
     function calcolaEstraTrendPiu(consumo, pun, t, sa, p) {
       const spread = 0.01705, qf = 184.8 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + ESTRA_GO);
-      return resultRow(`Estra TREND PIÙ — (PUN+DISP+CAPA)×${LOSS[t]} + 0,01705 + GO_EE 0,011 | QF 15,40 €/mese`, costo, qf, sa, p);
+      return resultRow(`Estra TREND PIU — (PUN+DISP+CAPA)×${LOSS[t]} + 0,01705 + GO_EE 0,011 | QF 15,40 €/mese`, costo, qf, sa, p);
     }
-
-    // ============================================================
-    // SINERGY Business
-    // ============================================================
-    function calcolaSinergyBusinessLuce(consumo, pun, t, sa, p) {
-      const spread = 0.022, qf = (120 + 24) / 12;
-      const sbilanc = 0.005, disp = 0.010142;
-      const costo = consumo * (pun * LOSS[t] + spread + disp + sbilanc);
-      return resultRow(`Sinergy Business Luce — PUN×${LOSS[t]} + 0,022 + DISP 0,010142 + sbil 0,005 | QF 12 €/mese (10+2)`, costo, qf, sa, p);
-    }
-
-    // ============================================================
-    // RENDER TABELLA
-    // ============================================================
     function renderTable(id, offerte) {
       const tbody = document.querySelector('#' + id + ' tbody');
       tbody.innerHTML = "";
@@ -330,65 +256,27 @@
         tbody.appendChild(row);
       });
     }
-
-    // ============================================================
-    // CALCOLO PRINCIPALE
-    // ============================================================
     function calcolaTutteLeOfferte() {
       const consumo = parseFloat(document.getElementById('consumo').value);
       const pun     = parseFloat(document.getElementById('pun').value);
       const t       = getTensione();
       const sa      = parseFloat(document.getElementById('spesaAttuale').value) || 0;
       const p       = getPeriodo();
-
       if (isNaN(consumo) || consumo < 0) { alert("Inserisci un consumo valido."); return; }
       if (isNaN(pun) || pun < 0)         { alert("Inserisci un PUN valido."); return; }
-
       document.getElementById('disp-val').textContent = DISP[t].toFixed(6) + ' €/kWh';
       document.getElementById('capa-val').textContent = CAPA[t].toFixed(6) + ' €/kWh';
-
       const refBox = document.getElementById('ref-attuale');
       if (sa > 0) {
         const periodoLabel = p === 2 ? 'bimestrale' : 'mensile';
         refBox.style.display = 'block';
         refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa * (12/p)).toFixed(2)}`;
-      } else {
-        refBox.style.display = 'none';
-      }
-
-      // CEI > 30.000 kWh/anno: RAFFAELLO, MICHELANGELO, LEONARDO, DONATELLO
-      renderTable('tabella-cei-superiore', [
-        calcolaRaffaello(consumo, pun, t, sa, p),
-        calcolaMichelangelo(consumo, pun, t, sa, p),
-        calcolaLeonardoSup(consumo, pun, t, sa, p),
-        calcolaDonatello(consumo, pun, t, sa, p),
-      ]);
-
-      // CEI < 30.000 kWh/anno: QUERCIA, SALICE, BETULLA, PARTNER&FRIENDS
-      renderTable('tabella-cei-inferiore', [
-        calcolaQuercia(consumo, pun, t, sa, p),
-        calcolaSalice(consumo, pun, t, sa, p),
-        calcolaBetulla(consumo, pun, t, sa, p),
-        calcolaPartnerFriends(consumo, pun, t, sa, p),
-      ]);
-
-      renderTable('tabella-estra', [
-        calcolaEstraTrend(consumo, pun, t, sa, p),
-        calcolaEstraTrendPiu(consumo, pun, t, sa, p),
-      ]);
-
-      renderTable('tabella-sinergy', [
-        calcolaSinergyBusinessLuce(consumo, pun, t, sa, p),
-      ]);
+      } else { refBox.style.display = 'none'; }
+      renderTable('tabella-cei-superiore', [calcolaRaffaello(consumo,pun,t,sa,p),calcolaMichelangelo(consumo,pun,t,sa,p),calcolaLeonardoSup(consumo,pun,t,sa,p),calcolaDonatello(consumo,pun,t,sa,p)]);
+      renderTable('tabella-cei-inferiore', [calcolaQuercia(consumo,pun,t,sa,p),calcolaSalice(consumo,pun,t,sa,p),calcolaBetulla(consumo,pun,t,sa,p),calcolaPartnerFriends(consumo,pun,t,sa,p)]);
+      renderTable('tabella-estra', [calcolaEstraTrend(consumo,pun,t,sa,p),calcolaEstraTrendPiu(consumo,pun,t,sa,p)]);
     }
-
-    window.onload = () => {
-      aggiornaPeriodo();
-      const t = getTensione();
-      document.getElementById('disp-val').textContent = DISP[t].toFixed(5) + ' €/kWh';
-      document.getElementById('capa-val').textContent = CAPA[t].toFixed(6) + ' €/kWh';
-      calcolaTutteLeOfferte();
-    };
+    window.onload = () => { aggiornaPeriodo(); const t=getTensione(); document.getElementById('disp-val').textContent=DISP[t].toFixed(6)+' €/kWh'; document.getElementById('capa-val').textContent=CAPA[t].toFixed(6)+' €/kWh'; calcolaTutteLeOfferte(); };
   </script>
 </body>
 </html>
