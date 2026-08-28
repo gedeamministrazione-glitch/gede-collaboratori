@@ -71,6 +71,7 @@
       <b>Estra Natura Gas</b>: (PSV + 0,07) × 1,03 €/Smc, sconto -2€/mese con domiciliazione bancaria.<br>
       <b>Estra Promo Gas</b>: (PSV + 0,090) × 1,03 €/Smc, QF 8,40 €/mese (sconto 30% sulla quota fissa).<br>
       <b>ACEA Flex Casa Gas</b>: (PSV + 0,148000) × 1,03 €/Smc (variabile, QF 9€/mese).<br>
+      <b>ACEA Fix Casa Gas</b>: 0,510 × 1,03 €/Smc (fisso, QF 12€/mese) — CTE RT4D402814 valida 04/08–03/09/2026.<br>
       <b>Luce e Gas Italia Gas</b>: (PSV + spread) × 1,03 €/Smc — spread variabile per prodotto.<br>
       Valori <b>IVA e imposte escluse</b>.
     </p>
@@ -99,7 +100,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🔵 ACEA Energia <span class="validita">(Flex Casa Gas: variabile)</span></div>
+    <div class="section-title">🔵 ACEA Energia <span class="validita">(Flex Casa Gas: variabile | Fix Casa Gas: fisso 0,510 €/Smc — valida fino 03/09/2026)</span></div>
     <table id="tabella-acea-gas">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -169,10 +170,14 @@
     // ============================================================
     // ACEA ENERGIA – Gas
     // Flex Casa: (PSV + spread) × PCS_CORR, QF 9€/mese
-    // Fix Casa:  RIMOSSA (nessuna CTE valida in archivio)
+    // Fix Casa:  corrispettivo fisso 0,510 €/Smc × PCS_CORR, QF 12€/mese
+    //            CTE RT4D402814 – Valida 04/08/2026 → 03/09/2026
     // ============================================================
     const ACEA_FLEX_GAS_SPREAD = 0.148000;
     const ACEA_FLEX_GAS_QF     = 108 / 12;  // 9,00 €/mese
+
+    const ACEA_FIX_GAS_CORR    = 0.510;     // corrispettivo fisso €/Smc
+    const ACEA_FIX_GAS_QF      = 12.0;      // €/mese (144€/anno)
 
     // ============================================================
     // LUCE E GAS ITALIA – Gas Domestico (agosto 2026)
@@ -184,8 +189,8 @@
     const LGI_GOLD_GAS_SPREAD     = 0.125;
     const LGI_GOLD_GAS_QF         = 13.0;   // €/mese
 
-    const LGI_PLATINUM_GAS_SPREAD = 0.130;
-    const LGI_PLATINUM_GAS_QF     = 14.0;   // €/mese
+    const LGI_PLATINUM_GAS_SPREAD  = 0.130;
+    const LGI_PLATINUM_GAS_QF      = 14.0;   // €/mese
 
     // ============================================================
     // UTILITY
@@ -235,7 +240,8 @@
 
     function calcolaCeiGranito(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + CEI_GRT_SPREAD) * PCS_CORR;
-      return makeRow("CEI Granito Gas — (PSV + 0,15) × 1,03 | Valida fino 31/12/2026", costoEnergia, CEI_GRT_QF, sa, p);
+      return makeRow("CEI Granito Gas —
+ (PSV + 0,15) × 1,03 | Valida fino 31/12/2026", costoEnergia, CEI_GRT_QF, sa, p);
     }
 
     function calcolaCeiMarmo(consumo, psv, sa, p) {
@@ -277,11 +283,17 @@
     // ============================================================
     // ACEA ENERGIA – FUNZIONI DI CALCOLO GAS
     // Flex Casa: consumo × (PSV + spread) × PCS_CORR
+    // Fix Casa:  consumo × corrispettivo_fisso × PCS_CORR
     // ============================================================
 
     function calcolaAceaFlexCasaGas(consumo, psv, sa, p) {
       const costoEnergia = consumo * (psv + ACEA_FLEX_GAS_SPREAD) * PCS_CORR;
       return makeRow("ACEA Flex Casa Gas — (PSV + 0,148000) × 1,03 €/Smc (variabile, QF 9€/mese)", costoEnergia, ACEA_FLEX_GAS_QF, sa, p);
+    }
+
+    function calcolaAceaFixCasaGas(consumo, psv, sa, p) {
+      const costoEnergia = consumo * ACEA_FIX_GAS_CORR * PCS_CORR;
+      return makeRow("ACEA Fix Casa Gas — 0,510 × 1,03 €/Smc (fisso) | QF 12€/mese | Valida fino 03/09/2026", costoEnergia, ACEA_FIX_GAS_QF, sa, p);
     }
 
     // ============================================================
@@ -369,6 +381,7 @@
 
       renderTabella('tabella-acea-gas', [
         calcolaAceaFlexCasaGas(consumo, psv, sa, p),
+        calcolaAceaFixCasaGas(consumo, psv, sa, p),
       ]);
 
       renderTabella('tabella-lgi-gas', [
