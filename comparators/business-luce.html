@@ -153,6 +153,24 @@
       <tbody></tbody>
     </table>
 
+    <div class="section-title">⚡ Edison Business Luce <span class="validita">(valide fino 09/09/2026)</span></div>
+    <table id="tabella-edison-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-edison-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🏢 Enel Corporate Luce <span class="validita">(valide fino 14/09/2026 — pot. ≥200kW)</span></div>
+    <table id="tabella-enel-corp-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-enel-corp-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
@@ -182,8 +200,10 @@
       document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
-      ['th-sup-periodo','th-inf-periodo','th-estra-periodo','th-lgi-pmi-periodo','th-lgi-micro-periodo','th-acea-periodo'].forEach(id => {
-        document.getElementById(id).textContent = thLabel;
+      ['th-sup-periodo','th-inf-periodo','th-estra-periodo','th-lgi-pmi-periodo','th-lgi-micro-periodo','th-acea-periodo',
+       'th-edison-luce-periodo','th-enel-corp-luce-periodo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = thLabel;
       });
     }
 
@@ -363,6 +383,56 @@
     }
 
     // ============================================================
+    // EDISON Business Luce — valide fino 09/09/2026
+    // Flex:     (PUN+DISP+CAPA)×LOSS + 0,018 | QF 18 €/mese | segmento 10k–30k kWh/anno
+    // Superflex:(PUN+DISP+CAPA)×LOSS + 0,0235 | QF 18 €/mese | segmento ≤25k kWh/anno | durata 36 mesi
+    // Top50Flex:(PUN+DISP+CAPA)×LOSS + 0,023(BT)/0,0217(MT) | QF 16,50 €/mese | segmento 30k–100k kWh/anno
+    // ============================================================
+    function calcolaEdisonFlexLuce(consumo, pun, t, sa, p) {
+      const spread = 0.018, qf = 216 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
+      return resultRow(
+        `Edison Flex Business Luce — (PUN+DISP+CAPA)×${LOSS[t]} + 0,018 | QF 18 €/mese | segmento 10k–30k kWh/anno | Valida fino 09/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaEdisonSuperflexLuce(consumo, pun, t, sa, p) {
+      const spread = 0.0235, qf = 216 / 12;
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
+      return resultRow(
+        `Edison Superflex Business Luce — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0235 | QF 18 €/mese | segmento ≤25k kWh/anno | durata 36 mesi | Valida fino 09/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaEdisonTop50FlexLuce(consumo, pun, t, sa, p) {
+      const spread = t === 'BT' ? 0.023 : 0.0217;
+      const qf = 198 / 12; // 16,50 €/mese
+      const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
+      return resultRow(
+        `Edison Top50 Flex Luce — (PUN+DISP+CAPA)×${LOSS[t]} + ${t === 'BT' ? '0,023' : '0,0217'} | QF 16,50 €/mese | segmento 30k–100k kWh/anno | Valida fino 09/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
+    // ENEL CORPORATE Luce — valida fino 14/09/2026 (pot. ≥200kW)
+    // Formula ibrida: 50%×(PUN×LOSS+DISP+CAPA+0,00825) + 50%×PF_mono
+    // PF BT monorario: 0,16170 €/kWh | PF MT monorario: 0,14700 €/kWh
+    // QF 0 €/POD/anno
+    // ============================================================
+    const ENEL_CORP_PF_MONO = { BT: 0.16170, MT: 0.14700 };
+
+    function calcolaEnelCorpMixLuce(consumo, pun, t, sa, p) {
+      const pfMono = ENEL_CORP_PF_MONO[t];
+      const qf = 0;
+      // 50% variabile (PUN + perdite + DISP + CAPA + spread) + 50% fisso (PF monorario all-in)
+      const varParte = (pun + DISP[t] + CAPA[t]) * LOSS[t] + 0.00825;
+      const costo = consumo * (0.5 * varParte + 0.5 * pfMono);
+      return resultRow(
+        `Enel Mix Corporate Luce (monorario) — 50%×(PUN×${LOSS[t]}+DISP+CAPA+0,00825)+50%×PF ${pfMono.toFixed(5)} | QF 0 €/mese | pot. ≥200kW | Valida fino 14/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
     // ACEA Energia Sprint — valida fino 30/09/2026 (SOLO BT)
     // Formula ACEA (CTE RT3D402791 — valori già al lordo perdite BT 10%):
     //   costo = consumo × (PUN×1,10 + spread_lordo + TIDE_lordo + MercCap_lordo)
@@ -462,6 +532,16 @@
 
       renderTable('tabella-acea', [
         calcolaAceaSprint(consumo, pun, t, sa, p),
+      ]);
+
+      renderTable('tabella-edison-luce', [
+        calcolaEdisonFlexLuce(consumo, pun, t, sa, p),
+        calcolaEdisonSuperflexLuce(consumo, pun, t, sa, p),
+        calcolaEdisonTop50FlexLuce(consumo, pun, t, sa, p),
+      ]);
+
+      renderTable('tabella-enel-corp-luce', [
+        calcolaEnelCorpMixLuce(consumo, pun, t, sa, p),
       ]);
     }
 

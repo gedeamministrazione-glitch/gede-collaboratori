@@ -51,13 +51,13 @@
       </div>
       <div class="input-group">
         <label for="pun">PUN (€/kWh) <span class="badge">puro</span>:</label>
-        <input type="number" id="pun" value="0.12" step="0.001" min="0">
+        <input type="number" id="pun" value="0.1458" step="0.0001" min="0">
       </div>
     </div>
     <div class="grid2">
       <div class="input-group">
         <label for="consumo" id="consumo-label">Consumo mensile (kWh):</label>
-        <input type="number" id="consumo" value="225" step="0.01" min="0">
+        <input type="number" id="consumo" value="200" step="0.01" min="0">
       </div>
       <div class="input-group">
         <label for="spesaAttuale" id="spesa-label">Spesa attuale vendita (€/mese) — opzionale:</label>
@@ -65,13 +65,23 @@
       </div>
     </div>
     <p class="note">
-      Il PUN inserito è considerato <b>puro</b> (senza perdite). Perdite di rete BT applicate al PUN (×1,10) per tutti i fornitori.<br>
-      <b>CEI</b>: PUN×1,10 + spread + DISP (0,011725 €/kWh) + CAPA (0,004349 €/kWh), già comprensivi delle perdite.<br>
-      <b>Estra Natura/Promo</b>: PUN×1,10 + spread + CDISPD (0,021726 €/kWh, da scheda sintetica CTE).<br>
-      <b>ACEA Flex</b>: PUN×1,10 + 0,030500 + DISP + CAPA (variabile, QF 9€/mese).<br>
-      <b>ACEA Fix</b>: 0,133000 + DISP + CAPA fisso (QF 12€/mese, valida fino al 03/09/2026).<br>
-      <b>ACEA Sprint</b>: PUN×1,10 + 0,014200 + DISP + CAPA (variabile, QF 10€/mese, valida fino al 30/09/2026).<br>
-      <b>Luce e Gas Italia</b>: PUN×1,10 + spread + CDISPD (0,018468 €/kWh, da CTE ago 2026).<br>
+      Il PUN inserito è considerato <b>puro</b> (senza perdite BT).<br>
+      <b>Perdite BT ×1,10</b>: applicate al PUN per tutti i fornitori BT domestici.<br>
+      <b>DISP+CAPA</b>: componenti ARERA regolate (0,011725 + 0,004349 €/kWh) aggiunte al costo energia.<br>
+      <b>CEI Luce</b>: PUN×1,10 + spread + DISP + CAPA — spread variabile per prodotto.<br>
+      <b>Estra Natura Luce</b>: PUN×1,10 + 0,0275 + CDISPD (0,021726) — sconto -2€/mese con SDD.<br>
+      <b>Estra Promo Luce</b>: PUN×1,10 + 0,0220 + CDISPD — QF 8,40€/mese (sconto 30%).<br>
+      <b>ACEA Flex/Fix/Sprint Luce</b>: variabile o fisso + DISP + CAPA.<br>
+      <b>LGI Luce</b>: PUN×1,10 + spread + CDISPD (0,018468).<br>
+      <b>Heracomm/EstEnergy Più Controllo Active Luce</b>: PUN×1,10 + 0,0080 + DISP+CAPA | QF 14,10€/mese (≤2700 kWh/anno) o 16,10€/mese (≥2700 kWh/anno) | valida 29/07–16/09/2026.<br>
+      <b>Bluenergy Jump Sprint Luce</b>: PUN×1,10 + 0,0205 + DISP+CAPA | QF 12,25€/mese | SDD -1€/bolletta | fino 10/09/2026.<br>
+      <b>Bluenergy Jump Casa Luce</b>: PUN×1,10 + 0,0396 + DISP+CAPA | QF 13,25€/mese.<br>
+      <b>Bluenergy Relax Casa Luce</b>: 0,171690 + DISP+CAPA (fisso 24 mesi) | QF 13,25€/mese | CTE fino 31/12/2027.<br>
+      <b>AGN Semplice BASE Luce</b>: PUN×1,10 + 0,022 + DISP+CAPA | QF 10€/mese | fino 31/08/2026.<br>
+      <b>AGN FIX 24 BASE Luce</b>: 0,159 + DISP+CAPA (fisso 24 mesi) | QF 10€/mese.<br>
+      <b>Enel Flex Control Luce</b>: PUN×1,10 + 0,02226 + CAPA | QF 15€/mese (⚠️ incl. DispBT nel CCV) | cap 0,174 €/kWh | fino 15/09/2026.<br>
+      <b>Enel Fix WOW Luce</b>: 0,15899 + CAPA (fisso 24 mesi) | QF 13€/mese.<br>
+      <b>Edison World Luce</b>: PUN×1,10 + DISP+CAPA (nessuno spread) | QF 20€/mese | valida fino 09/09/2026.<br>
       Valori <b>IVA e imposte escluse</b>.
     </p>
     <button onclick="calcolaTutteLeOfferteLuce()">Calcola Offerte</button>
@@ -81,7 +91,7 @@
     <h2 id="results-title">Risultati Comparazione <span id="badge-periodo" class="periodo-badge periodo-mensile">Mensile</span></h2>
     <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
-    <div class="section-title">🔵 CEI – Compagnia Energetica Italiana <span class="validita">(valide fino 31/12/2026)</span></div>
+    <div class="section-title">🔵 CEI — Compagnia Energetica Italiana <span class="validita">(valide fino 31/12/2026)</span></div>
     <table id="tabella-cei">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -99,7 +109,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🔵 ACEA Energia <span class="validita">(Flex: variabile fino 30/09/2026 | Fix: fisso 12 mesi, valida fino 03/09/2026 | Sprint: variabile fino 30/09/2026)</span></div>
+    <div class="section-title">🔵 ACEA Energia <span class="validita">(Flex: variabile fino 30/09/2026 | Fix: fisso fino 03/09/2026 | Sprint: variabile fino 30/09/2026)</span></div>
     <table id="tabella-acea-luce">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -113,6 +123,51 @@
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
         <th id="th-lgi-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔷 Heracomm / EstEnergy (Gruppo Hera) <span class="validita">(valide 29/07–16/09/2026)</span></div>
+    <table id="tabella-hera-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-hera-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔵 Bluenergy <span class="validita">(sottoscrivibile fino 10/09/2026 | CTE fino 31/12/2027)</span></div>
+    <table id="tabella-blu-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-blu-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🟢 AGN Energia <span class="validita">(valide fino 31/08/2026)</span></div>
+    <table id="tabella-agn-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-agn-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔴 Enel Energia <span class="validita">(valide fino 15/09/2026)</span></div>
+    <table id="tabella-enel-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-enel-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">⚡ Edison Energia <span class="validita">(valide fino 09/09/2026)</span></div>
+    <table id="tabella-edison-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-edison-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -134,78 +189,123 @@
 
     // ============================================================
     // CEI – Compagnia Energetica Italiana
-    // Fonte: CTE allegate (valide fino 31/12/2026)
-    // Perdite: applicate al SOLO PUN (PUN puro × 1,10)
-    // DISP e CAPA: indicati in CTE "comprensivi delle perdite" → NON moltiplicare
+    // Formula: consumo × (PUN×1,10 + spread + DISP + CAPA)
     // ============================================================
-    const CEI_DISP = 0.011725;   // €/kWh – TIDE art.24.2, comprensivo perdite (da CTE)
-    const CEI_CAPA = 0.004349;   // €/kWh – capacità (da CTE)
+    const CEI_DISP = 0.011725;   // €/kWh – ARERA regolato
+    const CEI_CAPA = 0.004349;   // €/kWh – ARERA regolato
 
-    // CEI Granito – spread 0,030 €/kWh, QF 168 €/anno
     const CEI_SPREAD_GRANITO = 0.030;
     const CEI_QF_GRANITO     = 168 / 12; // 14,00 €/mese
 
-    // CEI Marmo – spread 0,025 €/kWh, QF 156 €/anno
     const CEI_SPREAD_MARMO = 0.025;
     const CEI_QF_MARMO     = 156 / 12; // 13,00 €/mese
 
-    // CEI Basalto – spread 0,025 €/kWh, QF 144 €/anno
     const CEI_SPREAD_BASALTO = 0.025;
     const CEI_QF_BASALTO     = 144 / 12; // 12,00 €/mese
 
-    // CEI Ardesia – spread 0,025 €/kWh, QF 120 €/anno
     const CEI_SPREAD_ARDESIA = 0.025;
     const CEI_QF_ARDESIA     = 120 / 12; // 10,00 €/mese
 
-    // CEI Family&Friends – spread 0,018 €/kWh, QF 96 €/anno
     const CEI_SPREAD_FF = 0.018;
     const CEI_QF_FF     = 96 / 12; // 8,00 €/mese
 
     // ============================================================
     // ESTRA ENERGIE
-    // Fonte: CTE offerte residenziali (valide fino 14/09/2026)
-    // CDISPD da scheda sintetica CTE: 0,021726 €/kWh (comprensivo perdite)
-    // Natura:  variabile PUN×1,10 + 0,0275 + CDISPD, sconto SDD -2€/mese
-    // Promo:   variabile PUN×1,10 + 0,0220 + CDISPD, QF scontata 30%
+    // Natura: PUN×1,10 + 0,0275 + CDISPD – sconto SDD 2€/mese
+    // Promo:  PUN×1,10 + 0,0220 + CDISPD, QF scontata 30%
     // ============================================================
-    const ESTRA_CDISPD          = 0.021726; // €/kWh – da scheda sintetica
-    const ESTRA_NATURA_SPREAD   = 0.0275;   // €/kWh
-    const ESTRA_QF_NATURA       = 144 / 12; // 12,00 €/mese
-    const ESTRA_SCONTO_SDD      = 2.00;     // €/mese con domiciliazione bancaria (solo Natura)
+    const ESTRA_CDISPD        = 0.021726;
+    const ESTRA_NATURA_SPREAD = 0.0275;
+    const ESTRA_QF_NATURA     = 144 / 12; // 12,00 €/mese
+    const ESTRA_SCONTO_SDD    = 2.00;
 
-    const ESTRA_PROMO_SPREAD    = 0.0220;   // €/kWh – CTE Promo Luce
-    const ESTRA_QF_PROMO        = 144 * 0.70 / 12; // 8,40 €/mese (QF 144€/anno con sconto 30%)
+    const ESTRA_PROMO_SPREAD  = 0.0220;
+    const ESTRA_QF_PROMO      = 144 * 0.70 / 12; // 8,40 €/mese
 
     // ============================================================
     // ACEA ENERGIA — Luce
-    // Fonte: CTE residenziale (Listino A e Listino B Decommissioning)
-    // Flex Casa:  variabile PUN×1,10 + 0,030500 + DISP + CAPA, QF 9€/mese (valida fino 30/09/2026)
-    // Fix Casa:   fisso 0,133000 + DISP + CAPA, QF 12€/mese (valida fino 03/09/2026)
-    // Sprint:     variabile PUN×1,10 + 0,014200 + DISP + CAPA, QF 10€/mese (valida fino 30/09/2026)
+    // Flex Casa:  PUN×1,10 + 0,030500 + DISP + CAPA, QF 9€/mese
+    // Fix Casa:   0,133000 + DISP + CAPA (fisso), QF 12€/mese
+    // Sprint:     PUN×1,10 + 0,014200 + DISP + CAPA, QF 10€/mese
     // ============================================================
-    const ACEA_FLEX_LUCE_SPREAD  = 0.030500; // €/kWh – spread
-    const ACEA_FLEX_LUCE_QF      = 108 / 12; // 9,00 €/mese (108 €/anno)
-    const ACEA_FIX_LUCE_PREZZO   = 0.133000; // €/kWh fisso F0 monorario (da CTE RT4D402814)
-    const ACEA_FIX_LUCE_QF       = 144 / 12; // 12,00 €/mese (144 €/anno)
-    const ACEA_SPRINT_LUCE_SPREAD = 0.014200; // €/kWh – spread (da CTE RT4D402789)
-    const ACEA_SPRINT_LUCE_QF    = 120 / 12; // 10,00 €/mese (120 €/anno)
+    const ACEA_FLEX_LUCE_SPREAD  = 0.030500;
+    const ACEA_FLEX_LUCE_QF      = 108 / 12; // 9,00 €/mese
+    const ACEA_FIX_LUCE_PREZZO   = 0.133000;
+    const ACEA_FIX_LUCE_QF       = 144 / 12; // 12,00 €/mese
+    const ACEA_SPRINT_LUCE_SPREAD = 0.014200;
+    const ACEA_SPRINT_LUCE_QF    = 120 / 12; // 10,00 €/mese
 
     // ============================================================
     // LUCE E GAS ITALIA — Luce Domestica
-    // Fonte: CTE offerte domestiche (valide fino 31/08/2026)
-    // Formula: consumo × (PUN×1,10 + spread + CDISPD) + QF
-    // CDISPD: 0,018468 €/kWh (agosto 2026, comprensivo perdite, da CTE)
+    // Formula: consumo × (PUN×1,10 + spread + CDISPD)
     // ============================================================
-    const LGI_CDISPD             = 0.018468; // €/kWh – da CTE agosto 2026
+    const LGI_CDISPD          = 0.018468;
 
-    const LGI_SILVER_SPREAD      = 0.0242;   // €/kWh – Energia Domestica Silver
-    const LGI_SILVER_QF          = 144 / 12; // 12,00 €/mese (144 €/anno)
+    const LGI_SILVER_SPREAD   = 0.0242;
+    const LGI_SILVER_QF       = 144 / 12; // 12,00 €/mese
 
-    const LGI_GOLD_SPREAD        = 0.0275;   // €/kWh – Energia Domestica Gold
-    const LGI_GOLD_QF            = 156 / 12; // 13,00 €/mese (156 €/anno)
+    const LGI_GOLD_SPREAD     = 0.0275;
+    const LGI_GOLD_QF         = 156 / 12; // 13,00 €/mese
 
-    const LGI_PLATINUM_SPREAD    = 0.0308;   // €/kWh – Energia Domestica Platinum
-    const LGI_PLATINUM_QF        = 168 / 12; // 14,00 €/mese (168 €/anno)
+    const LGI_PLATINUM_SPREAD = 0.0308;
+    const LGI_PLATINUM_QF     = 168 / 12; // 14,00 €/mese
+
+    // ============================================================
+    // HERACOMM / ESTENERGY (Gruppo Hera) — Luce Domestica
+    // Più Controllo Active Casa Luce (Variabile)
+    // Formula: consumo × (PUN×1,10 + 0,0080 + DISP + CAPA)
+    // QF: 14,10 €/mese (≤2700 kWh/anno) | 16,10 €/mese (≥2700 kWh/anno)
+    // Validità: 29/07/2026 – 16/09/2026 (durata 12 mesi)
+    // ============================================================
+    const HERA_ACTIVE_LUCE_SPREAD  = 0.0080;
+    const HERA_ACTIVE_LUCE_QF_LOW  = 14.10; // ≤2700 kWh/anno
+    const HERA_ACTIVE_LUCE_QF_HIGH = 16.10; // ≥2700 kWh/anno
+
+    // ============================================================
+    // BLUENERGY — Luce Domestica
+    // Jump Sprint: PUN×1,10 + 0,0205 + DISP+CAPA, QF 12,25€/mese, SDD -1€/bolletta
+    // Jump Casa:   PUN×1,10 + 0,0396 + DISP+CAPA, QF 13,25€/mese
+    // Relax Casa:  0,171690 + DISP+CAPA (fisso), QF 13,25€/mese
+    // ============================================================
+    const BLU_SPRINT_LUCE_SPREAD = 0.0205;
+    const BLU_SPRINT_LUCE_QF    = 12.25;
+    const BLU_SPRINT_LUCE_SDD   = 1.0;  // €/bolletta con domiciliazione
+
+    const BLU_JUMP_LUCE_SPREAD  = 0.0396;
+    const BLU_JUMP_LUCE_QF      = 13.25;
+
+    const BLU_RELAX_LUCE_PREZZO = 0.171690; // €/kWh F0 monorario fisso
+    const BLU_RELAX_LUCE_QF     = 13.25;
+
+    // ============================================================
+    // AGN ENERGIA — Luce Domestica (valido fino 31/08/2026)
+    // Semplice BASE: PUN×1,10 + 0,022 + DISP+CAPA, QF 10€/mese
+    // FIX 24 BASE:   0,159 + DISP+CAPA (fisso 24 mesi), QF 10€/mese
+    // ============================================================
+    const AGN_SEMPL_LUCE_SPREAD = 0.022;
+    const AGN_SEMPL_LUCE_QF     = 10.0;
+
+    const AGN_FIX24_LUCE_PREZZO = 0.159;
+    const AGN_FIX24_LUCE_QF     = 10.0;
+
+    // ============================================================
+    // EDISON ENERGIA — Luce Domestica (valido fino 09/09/2026)
+    // World Luce: PUN×1,10 + DISP+CAPA (nessuno spread) | QF 20 €/mese
+    // ============================================================
+    const EDISON_WORLD_LUCE_QF = 20.0;
+
+    // ============================================================
+    // ENEL ENERGIA — Luce Domestica (valido fino 15/09/2026)
+    // ⚠️ QF Enel include DispBT nel CCV → energia usa solo CAPA (non DISP)
+    // Flex Control: PUN×1,10 + 0,02226 + CAPA | QF 15€/mese | cap 0,174€/kWh
+    // Fix WOW:      0,15899 + CAPA (fisso 24 mesi) | QF 13€/mese
+    // ============================================================
+    const ENEL_FLEX_LUCE_SPREAD  = 0.02226;
+    const ENEL_FLEX_LUCE_QF      = 15.0;  // include DispBT nel CCV
+    const ENEL_FLEX_LUCE_CAP     = 0.174; // cap protezione energia €/kWh (al lordo perdite)
+
+    const ENEL_FIXWOW_LUCE_PREZZO = 0.15899;
+    const ENEL_FIXWOW_LUCE_QF     = 13.0;
 
     // ============================================================
     // UTILITY
@@ -223,8 +323,11 @@
       document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
-      ['th-cei-periodo','th-estra-periodo','th-acea-luce-periodo','th-lgi-periodo'].forEach(id => {
-        document.getElementById(id).textContent = thLabel;
+      ['th-cei-periodo','th-estra-periodo','th-acea-luce-periodo','th-lgi-periodo',
+       'th-hera-luce-periodo','th-blu-luce-periodo','th-agn-luce-periodo','th-enel-luce-periodo',
+       'th-edison-luce-periodo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = thLabel;
       });
     }
 
@@ -250,96 +353,138 @@
 
     // ============================================================
     // CEI – FUNZIONI DI CALCOLO
-    // Formula: consumo × (PUN×1,10 + spread + DISP + CAPA)
     // ============================================================
-
     function calcolaCeiGranito(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_GRANITO + CEI_DISP + CEI_CAPA);
-      return makeRow("CEI Granito — PUN×1,10 + 0,030 + DISP + CAPA | Valida fino 31/12/2026", costoEnergia, CEI_QF_GRANITO, sa, p);
+      return makeRow("CEI Granito — PUN×1,10 + 0,030 + DISP+CAPA | QF 14€/mese | fino 31/12/2026",
+        consumo * (pun * LOSS_BT + CEI_SPREAD_GRANITO + CEI_DISP + CEI_CAPA), CEI_QF_GRANITO, sa, p);
     }
-
     function calcolaCeiMarmo(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_MARMO + CEI_DISP + CEI_CAPA);
-      return makeRow("CEI Marmo — PUN×1,10 + 0,025 + DISP + CAPA | Valida fino 31/12/2026", costoEnergia, CEI_QF_MARMO, sa, p);
+      return makeRow("CEI Marmo — PUN×1,10 + 0,025 + DISP+CAPA | QF 13€/mese | fino 31/12/2026",
+        consumo * (pun * LOSS_BT + CEI_SPREAD_MARMO + CEI_DISP + CEI_CAPA), CEI_QF_MARMO, sa, p);
     }
-
     function calcolaCeiBasalto(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_BASALTO + CEI_DISP + CEI_CAPA);
-      return makeRow("CEI Basalto — PUN×1,10 + 0,025 + DISP + CAPA | Valida fino 31/12/2026", costoEnergia, CEI_QF_BASALTO, sa, p);
+      return makeRow("CEI Basalto — PUN×1,10 + 0,025 + DISP+CAPA | QF 12€/mese | fino 31/12/2026",
+        consumo * (pun * LOSS_BT + CEI_SPREAD_BASALTO + CEI_DISP + CEI_CAPA), CEI_QF_BASALTO, sa, p);
     }
-
     function calcolaCeiArdesia(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_ARDESIA + CEI_DISP + CEI_CAPA);
-      return makeRow("CEI Ardesia — PUN×1,10 + 0,025 + DISP + CAPA | Valida fino 31/12/2026", costoEnergia, CEI_QF_ARDESIA, sa, p);
+      return makeRow("CEI Ardesia — PUN×1,10 + 0,025 + DISP+CAPA | QF 10€/mese | fino 31/12/2026",
+        consumo * (pun * LOSS_BT + CEI_SPREAD_ARDESIA + CEI_DISP + CEI_CAPA), CEI_QF_ARDESIA, sa, p);
     }
-
     function calcolaCeiFamilyFriends(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + CEI_SPREAD_FF + CEI_DISP + CEI_CAPA);
-      return makeRow("CEI Family&amp;Friends — PUN×1,10 + 0,018 + DISP + CAPA | Valida fino 31/12/2026", costoEnergia, CEI_QF_FF, sa, p);
+      return makeRow("CEI Family&Friends — PUN×1,10 + 0,018 + DISP+CAPA | QF 8€/mese | fino 31/12/2026",
+        consumo * (pun * LOSS_BT + CEI_SPREAD_FF + CEI_DISP + CEI_CAPA), CEI_QF_FF, sa, p);
     }
 
     // ============================================================
     // ESTRA – FUNZIONI DI CALCOLO
-    // Natura: consumo × (PUN×1,10 + 0,0275 + CDISPD) – sconto SDD
-    // Promo:  consumo × (PUN×1,10 + 0,0220 + CDISPD), QF 8,40€/mese
     // ============================================================
-
     function calcolaEstraNatura(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + ESTRA_NATURA_SPREAD + ESTRA_CDISPD) - (ESTRA_SCONTO_SDD * p);
-      return makeRow("Estra Natura Luce — PUN×1,10 + 0,0275 + CDISPD (sconto -2€/mese SDD) | Valida fino 14/09/2026", costoEnergia, ESTRA_QF_NATURA, sa, p);
+      return makeRow("Estra Natura Luce — PUN×1,10 + 0,0275 + CDISPD | SDD -2€/mese | QF 12€/mese | fino 14/09/2026",
+        consumo * (pun * LOSS_BT + ESTRA_NATURA_SPREAD + ESTRA_CDISPD) - (ESTRA_SCONTO_SDD * p), ESTRA_QF_NATURA, sa, p);
     }
-
     function calcolaEstraPromo(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + ESTRA_PROMO_SPREAD + ESTRA_CDISPD);
-      return makeRow("Estra Promo Luce — PUN×1,10 + 0,0220 + CDISPD (QF 8,40€/mese, sconto 30% su QF) | Valida fino 14/09/2026", costoEnergia, ESTRA_QF_PROMO, sa, p);
+      return makeRow("Estra Promo Luce — PUN×1,10 + 0,0220 + CDISPD | QF 8,40€/mese (sconto 30%) | fino 14/09/2026",
+        consumo * (pun * LOSS_BT + ESTRA_PROMO_SPREAD + ESTRA_CDISPD), ESTRA_QF_PROMO, sa, p);
     }
 
     // ============================================================
     // ACEA ENERGIA – FUNZIONI DI CALCOLO
-    // Flex:   consumo × (PUN×1,10 + spread + DISP + CAPA)
-    // Fix:    consumo × (prezzo fisso + DISP + CAPA)
-    // Sprint: consumo × (PUN×1,10 + spread + DISP + CAPA)
     // ============================================================
-
     function calcolaAceaFlexCasaLuce(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + ACEA_FLEX_LUCE_SPREAD + CEI_DISP + CEI_CAPA);
-      return makeRow("ACEA Flex Casa Luce — PUN×1,10 + 0,030500 + DISP + CAPA (variabile, QF 9€/mese) | Valida fino 30/09/2026", costoEnergia, ACEA_FLEX_LUCE_QF, sa, p);
+      return makeRow("ACEA Flex Casa Luce — PUN×1,10 + 0,030500 + DISP+CAPA | QF 9€/mese | fino 30/09/2026",
+        consumo * (pun * LOSS_BT + ACEA_FLEX_LUCE_SPREAD + CEI_DISP + CEI_CAPA), ACEA_FLEX_LUCE_QF, sa, p);
     }
-
     function calcolaAceaFixCasaLuce(consumo, sa, p) {
-      const costoEnergia = consumo * (ACEA_FIX_LUCE_PREZZO + CEI_DISP + CEI_CAPA);
-      return makeRow("ACEA Fix Casa Luce — 0,133000 + DISP + CAPA fisso (12 mesi, QF 12€/mese) | Valida fino 03/09/2026", costoEnergia, ACEA_FIX_LUCE_QF, sa, p);
+      return makeRow("ACEA Fix Casa Luce — 0,133000 + DISP+CAPA (fisso 12 mesi) | QF 12€/mese | fino 03/09/2026",
+        consumo * (ACEA_FIX_LUCE_PREZZO + CEI_DISP + CEI_CAPA), ACEA_FIX_LUCE_QF, sa, p);
     }
-
     function calcolaAceaSprintLuce(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + ACEA_SPRINT_LUCE_SPREAD + CEI_DISP + CEI_CAPA);
-      return makeRow("ACEA Sprint Luce — PUN×1,10 + 0,014200 + DISP + CAPA (variabile, QF 10€/mese) | Valida fino 30/09/2026", costoEnergia, ACEA_SPRINT_LUCE_QF, sa, p);
+      return makeRow("ACEA Sprint Luce — PUN×1,10 + 0,014200 + DISP+CAPA | QF 10€/mese | fino 30/09/2026",
+        consumo * (pun * LOSS_BT + ACEA_SPRINT_LUCE_SPREAD + CEI_DISP + CEI_CAPA), ACEA_SPRINT_LUCE_QF, sa, p);
     }
 
     // ============================================================
     // LUCE E GAS ITALIA – FUNZIONI DI CALCOLO
-    // Formula: consumo × (PUN×1,10 + spread + CDISPD)
     // ============================================================
-
     function calcolaLgiSilverLuce(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + LGI_SILVER_SPREAD + LGI_CDISPD);
-      return makeRow("LGI Energia Domestica Silver — PUN×1,10 + 0,0242 + CDISPD (QF 12€/mese) | Valida fino 31/08/2026", costoEnergia, LGI_SILVER_QF, sa, p);
+      return makeRow("LGI Silver Luce — PUN×1,10 + 0,0242 + CDISPD | QF 12€/mese | fino 31/08/2026",
+        consumo * (pun * LOSS_BT + LGI_SILVER_SPREAD + LGI_CDISPD), LGI_SILVER_QF, sa, p);
     }
-
     function calcolaLgiGoldLuce(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + LGI_GOLD_SPREAD + LGI_CDISPD);
-      return makeRow("LGI Energia Domestica Gold — PUN×1,10 + 0,0275 + CDISPD (QF 13€/mese) | Valida fino 31/08/2026", costoEnergia, LGI_GOLD_QF, sa, p);
+      return makeRow("LGI Gold Luce — PUN×1,10 + 0,0275 + CDISPD | QF 13€/mese | fino 31/08/2026",
+        consumo * (pun * LOSS_BT + LGI_GOLD_SPREAD + LGI_CDISPD), LGI_GOLD_QF, sa, p);
+    }
+    function calcolaLgiPlatinumLuce(consumo, pun, sa, p) {
+      return makeRow("LGI Platinum Luce — PUN×1,10 + 0,0308 + CDISPD | QF 14€/mese | fino 31/08/2026",
+        consumo * (pun * LOSS_BT + LGI_PLATINUM_SPREAD + LGI_CDISPD), LGI_PLATINUM_QF, sa, p);
     }
 
-    function calcolaLgiPlatinumLuce(consumo, pun, sa, p) {
-      const costoEnergia = consumo * (pun * LOSS_BT + LGI_PLATINUM_SPREAD + LGI_CDISPD);
-      return makeRow("LGI Energia Domestica Platinum — PUN×1,10 + 0,0308 + CDISPD (QF 14€/mese) | Valida fino 31/08/2026", costoEnergia, LGI_PLATINUM_QF, sa, p);
+    // ============================================================
+    // HERACOMM / ESTENERGY – FUNZIONI DI CALCOLO LUCE
+    // ============================================================
+    function calcolaHeraActiveLuceLow(consumo, pun, sa, p) {
+      return makeRow("Heracomm/EstEnergy Più Controllo Active — PUN×1,10 + 0,0080 + DISP+CAPA | QF 14,10€/mese (≤2700 kWh/anno) | fino 16/09/2026",
+        consumo * (pun * LOSS_BT + HERA_ACTIVE_LUCE_SPREAD + CEI_DISP + CEI_CAPA), HERA_ACTIVE_LUCE_QF_LOW, sa, p);
+    }
+    function calcolaHeraActiveLuceHigh(consumo, pun, sa, p) {
+      return makeRow("Heracomm/EstEnergy Più Controllo Active — PUN×1,10 + 0,0080 + DISP+CAPA | QF 16,10€/mese (≥2700 kWh/anno) | fino 16/09/2026",
+        consumo * (pun * LOSS_BT + HERA_ACTIVE_LUCE_SPREAD + CEI_DISP + CEI_CAPA), HERA_ACTIVE_LUCE_QF_HIGH, sa, p);
+    }
+
+    // ============================================================
+    // BLUENERGY – FUNZIONI DI CALCOLO LUCE
+    // ============================================================
+    function calcolaBluSprintLuce(consumo, pun, sa, p) {
+      return makeRow("Bluenergy Jump Sprint Casa — PUN×1,10 + 0,0205 + DISP+CAPA | QF 12,25€/mese | SDD -1€/bolletta | fino 10/09/2026",
+        consumo * (pun * LOSS_BT + BLU_SPRINT_LUCE_SPREAD + CEI_DISP + CEI_CAPA) - (BLU_SPRINT_LUCE_SDD * p), BLU_SPRINT_LUCE_QF, sa, p);
+    }
+    function calcolaBluJumpLuce(consumo, pun, sa, p) {
+      return makeRow("Bluenergy Jump Casa — PUN×1,10 + 0,0396 + DISP+CAPA | QF 13,25€/mese | fino 10/09/2026",
+        consumo * (pun * LOSS_BT + BLU_JUMP_LUCE_SPREAD + CEI_DISP + CEI_CAPA), BLU_JUMP_LUCE_QF, sa, p);
+    }
+    function calcolaBluRelaxLuce(consumo, sa, p) {
+      return makeRow("Bluenergy Relax Casa — 0,171690 + DISP+CAPA (fisso 24 mesi) | QF 13,25€/mese | CTE fino 31/12/2027",
+        consumo * (BLU_RELAX_LUCE_PREZZO + CEI_DISP + CEI_CAPA), BLU_RELAX_LUCE_QF, sa, p);
+    }
+
+    // ============================================================
+    // AGN ENERGIA – FUNZIONI DI CALCOLO LUCE
+    // ============================================================
+    function calcolaAgnSemplLuce(consumo, pun, sa, p) {
+      return makeRow("AGN Semplice BASE — PUN×1,10 + 0,022 + DISP+CAPA | QF 10€/mese | fino 31/08/2026",
+        consumo * (pun * LOSS_BT + AGN_SEMPL_LUCE_SPREAD + CEI_DISP + CEI_CAPA), AGN_SEMPL_LUCE_QF, sa, p);
+    }
+    function calcolaAgnFix24Luce(consumo, sa, p) {
+      return makeRow("AGN FIX 24 BASE — 0,159 + DISP+CAPA (fisso 24 mesi) | QF 10€/mese",
+        consumo * (AGN_FIX24_LUCE_PREZZO + CEI_DISP + CEI_CAPA), AGN_FIX24_LUCE_QF, sa, p);
+    }
+
+    // ============================================================
+    // EDISON ENERGIA – FUNZIONI DI CALCOLO LUCE
+    // ============================================================
+    function calcolaEdisonWorldLuce(consumo, pun, sa, p) {
+      return makeRow("Edison World Luce — PUN×1,10 + DISP+CAPA (nessuno spread) | QF 20€/mese | Cliente Domestico | fino 09/09/2026",
+        consumo * (pun * LOSS_BT + CEI_DISP + CEI_CAPA), EDISON_WORLD_LUCE_QF, sa, p);
+    }
+
+    // ============================================================
+    // ENEL ENERGIA – FUNZIONI DI CALCOLO LUCE
+    // ⚠️ DispBT è inclusa nel CCV (QF) → energia usa solo CAPA (non DISP)
+    // ============================================================
+    function calcolaEnelFlexLuce(consumo, pun, sa, p) {
+      // Cap: max 0,174 €/kWh al lordo perdite = max 0,174/1.10 = 0,1582 sul PUN puro
+      const prezzoUnitario = Math.min(pun * LOSS_BT + ENEL_FLEX_LUCE_SPREAD, ENEL_FLEX_LUCE_CAP);
+      return makeRow("Enel Flex Control — PUN×1,10 + 0,02226 + CAPA [cap 0,174] | QF 15€/mese (⚠️ incl. DispBT nel CCV) | fino 15/09/2026",
+        consumo * (prezzoUnitario + CEI_CAPA), ENEL_FLEX_LUCE_QF, sa, p);
+    }
+    function calcolaEnelFixWowLuce(consumo, sa, p) {
+      return makeRow("Enel Fix WOW — 0,15899 + CAPA (fisso 24 mesi) | QF 13€/mese | fino 15/09/2026",
+        consumo * (ENEL_FIXWOW_LUCE_PREZZO + CEI_CAPA), ENEL_FIXWOW_LUCE_QF, sa, p);
     }
 
     // ============================================================
     // RENDER TABELLA
     // ============================================================
-
     function renderTabella(id, righe) {
       const tbody = document.querySelector('#' + id + ' tbody');
       tbody.innerHTML = '';
@@ -367,7 +512,6 @@
     // ============================================================
     // CALCOLO PRINCIPALE
     // ============================================================
-
     function calcolaTutteLeOfferteLuce() {
       const consumo = parseFloat(document.getElementById('consumo').value) || 0;
       const pun     = parseFloat(document.getElementById('pun').value) || 0;
@@ -409,6 +553,31 @@
         calcolaLgiSilverLuce(consumo, pun, sa, p),
         calcolaLgiGoldLuce(consumo, pun, sa, p),
         calcolaLgiPlatinumLuce(consumo, pun, sa, p),
+      ]);
+
+      renderTabella('tabella-hera-luce', [
+        calcolaHeraActiveLuceLow(consumo, pun, sa, p),
+        calcolaHeraActiveLuceHigh(consumo, pun, sa, p),
+      ]);
+
+      renderTabella('tabella-blu-luce', [
+        calcolaBluSprintLuce(consumo, pun, sa, p),
+        calcolaBluJumpLuce(consumo, pun, sa, p),
+        calcolaBluRelaxLuce(consumo, sa, p),
+      ]);
+
+      renderTabella('tabella-agn-luce', [
+        calcolaAgnSemplLuce(consumo, pun, sa, p),
+        calcolaAgnFix24Luce(consumo, sa, p),
+      ]);
+
+      renderTabella('tabella-enel-luce', [
+        calcolaEnelFlexLuce(consumo, pun, sa, p),
+        calcolaEnelFixWowLuce(consumo, sa, p),
+      ]);
+
+      renderTabella('tabella-edison-luce', [
+        calcolaEdisonWorldLuce(consumo, pun, sa, p),
       ]);
     }
 

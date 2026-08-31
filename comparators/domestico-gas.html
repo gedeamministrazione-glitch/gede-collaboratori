@@ -50,7 +50,7 @@
         </select>
       </div>
       <div class="input-group">
-        <label for="psv">PSV (â¬/Smc) <span class="badge">puro</span>:</label>
+        <label for="psv">PSV (€/Smc) <span class="badge">puro</span>:</label>
         <input type="number" id="psv" value="0.40" step="0.001" min="0">
       </div>
     </div>
@@ -60,19 +60,28 @@
         <input type="number" id="consumo" value="60" step="0.01" min="0">
       </div>
       <div class="input-group">
-        <label for="spesaAttuale" id="spesa-label">Spesa attuale vendita (â¬/mese) â opzionale:</label>
+        <label for="spesaAttuale" id="spesa-label">Spesa attuale vendita (€/mese) — opzionale:</label>
         <input type="number" id="spesaAttuale" value="" step="0.01" min="0" placeholder="es. 35.00">
       </div>
     </div>
     <p class="note">
-      Il PSV inserito Ã¨ considerato <b>puro</b> (senza correzione PCS).<br>
-      <b>Correzione PCS</b>: applicata a tutte le componenti energia gas (Ã1,03) per tener conto del potere calorifico superiore.<br>
-      <b>CEI Gas</b>: (PSV + spread) Ã 1,03 â spread variabile per prodotto.<br>
-      <b>Estra Natura Gas</b>: (PSV + 0,07) Ã 1,03 â¬/Smc, sconto -2â¬/mese con domiciliazione bancaria.<br>
-      <b>Estra Promo Gas</b>: (PSV + 0,090) Ã 1,03 â¬/Smc, QF 8,40 â¬/mese (sconto 30% sulla quota fissa).<br>
-      <b>ACEA Flex Casa Gas</b>: (PSV + 0,148000) Ã 1,03 â¬/Smc (variabile, QF 9â¬/mese).<br>
-      <b>ACEA Fix Casa Gas</b>: 0,510 Ã 1,03 â¬/Smc (fisso, QF 12â¬/mese) â CTE RT4D402814 valida 04/08â03/09/2026.<br>
-      <b>Luce e Gas Italia Gas</b>: (PSV + spread) Ã 1,03 â¬/Smc â spread variabile per prodotto.<br>
+      Il PSV inserito è considerato <b>puro</b> (senza correzione PCS).<br>
+      <b>Correzione PCS</b>: applicata a tutte le componenti energia gas (×1,03).<br>
+      <b>CEI Gas</b>: (PSV + spread) × 1,03 — spread variabile per prodotto.<br>
+      <b>Estra Natura Gas</b>: (PSV + 0,07) × 1,03 — sconto -2€/mese con domiciliazione bancaria.<br>
+      <b>Estra Promo Gas</b>: (PSV + 0,090) × 1,03 — QF 8,40 €/mese (sconto 30% sulla quota fissa).<br>
+      <b>ACEA Flex Casa Gas</b>: (PSV + 0,148) × 1,03 (variabile, QF 9 €/mese).<br>
+      <b>ACEA Fix Casa Gas</b>: 0,510 × 1,03 (fisso, QF 12 €/mese) — valida fino 03/09/2026.<br>
+      <b>Luce e Gas Italia Gas</b>: (PSV + spread) × 1,03 — spread variabile per prodotto.<br>
+      <b>Heracomm / EstEnergy Più Controllo Active</b>: (PSV + 0,130) × 1,03 — QF 10 €/mese (≤300 Smc/anno) o 12 €/mese (≥300 Smc/anno) — valida 29/07–16/09/2026.<br>
+      <b>Bluenergy Jump Sprint</b>: (PSV + 0,120) × 1,03 — sconto -1€/bolletta con SDD — valida fino 10/09/2026.<br>
+      <b>Bluenergy Jump Casa</b>: (PSV + 0,2879) × 1,03 — QF 13 €/mese — bonus 60€ nuovi clienti non incluso.<br>
+      <b>Bluenergy Relax Casa</b>: 0,76800 × 1,03 (fisso 24 mesi) — valida fino 30/09/2027.<br>
+      <b>AGN Semplice BASE</b>: (PSV + 0,100) × 1,03 — QF 10 €/mese — valida fino 31/08/2026.<br>
+      <b>AGN FIX 24 BASE</b>: 0,590 × 1,03 (fisso 24 mesi) — QF 10 €/mese.<br>
+      <b>Enel Flex Control</b>: (PSV + 0,150) × 1,03 — QF 15 €/mese (⚠️ include DispBT nel CCV) — valida fino 15/09/2026.<br>
+      <b>Enel Fix WOW</b>: 0,560 × 1,03 (fisso 24 mesi) — QF 13 €/mese.<br>
+      <b>Edison Superflex Gas</b>: (PSV + 0,080) × 1,03 — QF 12 €/mese — valida fino 09/09/2026.<br>
       Valori <b>IVA e imposte escluse</b>.
     </p>
     <button onclick="calcolaTutteLeOfferteGas()">Calcola Offerte</button>
@@ -82,38 +91,83 @@
     <h2 id="results-title">Risultati Comparazione <span id="badge-periodo" class="periodo-badge periodo-mensile">Mensile</span></h2>
     <div id="ref-attuale" class="ref-box" style="display:none"></div>
 
-    <div class="section-title">ðµ CEI â Compagnia Energetica Italiana <span class="validita">(valide fino al 31/12/2026)</span></div>
+    <div class="section-title">🔵 CEI — Compagnia Energetica Italiana <span class="validita">(valide fino al 31/12/2026)</span></div>
     <table id="tabella-cei">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (â¬/periodo)</th><th>Quota Fissa (â¬/periodo)</th>
-        <th id="th-cei-periodo">Totale Mese (â¬)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-cei-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
 
-    <div class="section-title">ð¡ Estra Energie <span class="validita">(Natura: variabile | Promo: variabile con sconto QF 30%)</span></div>
+    <div class="section-title">🟠 Estra Energie <span class="validita">(Natura: variabile | Promo: variabile con sconto QF 30%)</span></div>
     <table id="tabella-estra">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (â¬/periodo)</th><th>Quota Fissa (â¬/periodo)</th>
-        <th id="th-estra-periodo">Totale Mese (â¬)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-estra-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
 
-    <div class="section-title">ðµ ACEA Energia <span class="validita">(Flex Casa Gas: variabile | Fix Casa Gas: fisso 0,510 â¬/Smc â valida fino 03/09/2026)</span></div>
+    <div class="section-title">🔵 ACEA Energia <span class="validita">(Flex Casa Gas: variabile | Fix Casa Gas: fisso 0,510 €/Smc — valida fino 03/09/2026)</span></div>
     <table id="tabella-acea-gas">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (â¬/periodo)</th><th>Quota Fissa (â¬/periodo)</th>
-        <th id="th-acea-gas-periodo">Totale Mese (â¬)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-acea-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
 
-    <div class="section-title">ð¢ Luce e Gas Italia <span class="validita">(valide agosto 2026)</span></div>
+    <div class="section-title">🟢 Luce e Gas Italia <span class="validita">(valide agosto 2026)</span></div>
     <table id="tabella-lgi-gas">
       <thead><tr>
-        <th>Offerta</th><th>Costo Energia (â¬/periodo)</th><th>Quota Fissa (â¬/periodo)</th>
-        <th id="th-lgi-gas-periodo">Totale Mese (â¬)</th><th>Risparmio vs attuale</th>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-lgi-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔷 Heracomm / EstEnergy (Gruppo Hera) <span class="validita">(valide 29/07–16/09/2026)</span></div>
+    <table id="tabella-hera-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-hera-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔵 Bluenergy <span class="validita">(sottoscrivibile fino 10/09/2026 | CTE fino 30/09/2027)</span></div>
+    <table id="tabella-blu-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-blu-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🟢 AGN Energia <span class="validita">(valide fino 31/08/2026)</span></div>
+    <table id="tabella-agn-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-agn-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔴 Enel Energia <span class="validita">(valide fino 15/09/2026)</span></div>
+    <table id="tabella-enel-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-enel-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">⚡ Edison Energia <span class="validita">(valide fino 09/09/2026)</span></div>
+    <table id="tabella-edison-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-edison-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
       </tr></thead>
       <tbody></tbody>
     </table>
@@ -121,7 +175,7 @@
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
-      Il risparmio % Ã¨ calcolato rispetto alla spesa attuale inserita.
+      Il risparmio % è calcolato rispetto alla spesa attuale inserita.
     </div>
   </div>
 
@@ -137,10 +191,9 @@
     // ============================================================
     // CEI  -  Compagnia Energetica Italiana (Gas Domestico)
     // Formula: consumo x (PSV + spread) x PCS_CORR
-    // Invariate
     // ============================================================
     const CEI_GRT_SPREAD = 0.15;
-    const CEI_GRT_QF     = 14.0;  // EUR/mese
+    const CEI_GRT_QF     = 14.0;
 
     const CEI_MRM_SPREAD = 0.14;
     const CEI_MRM_QF     = 13.0;
@@ -156,41 +209,97 @@
 
     // ============================================================
     // ESTRA ENERGIE (Gas Domestico)
-    // Fissa: RIMOSSA (scaduta, nessuna CTE valida)
     // Natura: (PSV + spread) x PCS_CORR  -  sconto SDD 2EUR/mese
     // Promo:  (PSV + spread) x PCS_CORR, QF scontata 30%
     // ============================================================
     const ESTRA_NATURA_SPREAD = 0.07;
-    const ESTRA_NATURA_QF     = 12.0;   // EUR/mese
-    const ESTRA_NATURA_SDD    = 2.0;    // EUR/mese con domiciliazione
+    const ESTRA_NATURA_QF     = 12.0;
+    const ESTRA_NATURA_SDD    = 2.0;
 
     const ESTRA_PROMO_SPREAD  = 0.090;
-    const ESTRA_PROMO_QF      = 144 * 0.70 / 12; // 8,40 EUR/mese (sconto 30% su QF 12EUR/mese)
+    const ESTRA_PROMO_QF      = 144 * 0.70 / 12; // 8,40 EUR/mese
 
     // ============================================================
     // ACEA ENERGIA  -  Gas
-    // Flex Casa: (PSV + spread) x PCS_CORR, QF 9EUR/mese
-    // Fix Casa:  corrispettivo fisso 0,510 EUR/Smc x PCS_CORR, QF 12EUR/mese
-    //            CTE RT4D402814  -  Valida 04/08/2026 -> 03/09/2026
+    // Flex Casa: (PSV + spread) x PCS_CORR, QF 9 EUR/mese
+    // Fix Casa:  corrispettivo fisso 0,510 EUR/Smc x PCS_CORR
     // ============================================================
     const ACEA_FLEX_GAS_SPREAD = 0.148000;
     const ACEA_FLEX_GAS_QF     = 108 / 12;  // 9,00 EUR/mese
 
-    const ACEA_FIX_GAS_CORR    = 0.510;     // corrispettivo fisso EUR/Smc
-    const ACEA_FIX_GAS_QF      = 12.0;      // EUR/mese (144EUR/anno)
+    const ACEA_FIX_GAS_CORR    = 0.510;
+    const ACEA_FIX_GAS_QF      = 12.0;
 
     // ============================================================
     // LUCE E GAS ITALIA  -  Gas Domestico (agosto 2026)
     // Formula: consumo x (PSV + spread) x PCS_CORR
     // ============================================================
     const LGI_SILVER_GAS_SPREAD   = 0.120;
-    const LGI_SILVER_GAS_QF       = 12.0;   // EUR/mese
+    const LGI_SILVER_GAS_QF       = 12.0;
 
     const LGI_GOLD_GAS_SPREAD     = 0.125;
-    const LGI_GOLD_GAS_QF         = 13.0;   // EUR/mese
+    const LGI_GOLD_GAS_QF         = 13.0;
 
     const LGI_PLATINUM_GAS_SPREAD = 0.130;
-    const LGI_PLATINUM_GAS_QF     = 14.0;   // EUR/mese
+    const LGI_PLATINUM_GAS_QF     = 14.0;
+
+    // ============================================================
+    // HERACOMM / ESTENERGY (Gruppo Hera) - Gas Domestico
+    // Più Controllo Active Casa Gas (Variabile)
+    // Formula: consumo x (PSV_DA + 0,130) x PCS_CORR
+    // QF: 10 EUR/mese (≤300 Smc/anno) | 12 EUR/mese (≥300 Smc/anno)
+    // Validità: 29/07/2026 - 16/09/2026 (durata 12 mesi)
+    // ============================================================
+    const HERA_ACTIVE_SPREAD   = 0.130;
+    const HERA_ACTIVE_QF_LOW   = 10.0;  // ≤300 Smc/anno
+    const HERA_ACTIVE_QF_HIGH  = 12.0;  // ≥300 Smc/anno
+
+    // ============================================================
+    // BLUENERGY  -  Gas Domestico
+    // Jump Sprint: (PSV + 0,120) x PCS_CORR, SDD -1 EUR/bolletta
+    // Jump Casa:   (PSV + 0,2879) x PCS_CORR
+    // Relax Casa:  0,76800 x PCS_CORR (fisso 24 mesi)
+    // ============================================================
+    const BLU_SPRINT_SPREAD = 0.120;
+    const BLU_SPRINT_QF     = 12.0;
+    const BLU_SPRINT_SDD    = 1.0;    // EUR/bolletta (mensile/bimestrale)
+
+    const BLU_JUMP_SPREAD   = 0.2879;
+    const BLU_JUMP_QF       = 13.0;
+
+    const BLU_RELAX_CORR    = 0.76800; // EUR/Smc fisso
+    const BLU_RELAX_QF      = 13.0;
+
+    // ============================================================
+    // AGN ENERGIA  -  Gas Domestico (valido fino 31/08/2026)
+    // Semplice BASE: (PSV + 0,100) x PCS_CORR, QF 10 EUR/mese
+    // FIX 24 BASE:   0,590 x PCS_CORR (fisso 24 mesi), QF 10 EUR/mese
+    // ============================================================
+    const AGN_SEMPL_SPREAD  = 0.100;
+    const AGN_SEMPL_QF      = 10.0;
+
+    const AGN_FIX24_CORR    = 0.590;  // EUR/Smc fisso 24 mesi
+    const AGN_FIX24_QF      = 10.0;
+
+    // ============================================================
+    // EDISON ENERGIA  -  Gas Domestico (valido fino 09/09/2026)
+    // Superflex Gas: (PSV + 0,080) × PCS_CORR | QF 12 EUR/mese
+    // ============================================================
+    const EDISON_SUPERFLEX_GAS_SPREAD = 0.080;
+    const EDISON_SUPERFLEX_GAS_QF     = 12.0;
+
+    // ============================================================
+    // ENEL ENERGIA  -  Gas Domestico (valido fino 15/09/2026)
+    // Flex Control: (PSV + 0,150) x PCS_CORR, QF 15 EUR/mese
+    //   ⚠️ QF Enel include DispBT nel CCV (componente ARERA)
+    //   Cap energia: max 0,84 EUR/Smc per i primi 12 mesi
+    // Fix WOW:      0,560 x PCS_CORR (fisso 24 mesi), QF 13 EUR/mese
+    // ============================================================
+    const ENEL_FLEX_GAS_SPREAD = 0.150;
+    const ENEL_FLEX_GAS_QF    = 15.0;  // include DispBT nel CCV
+
+    const ENEL_FIXWOW_GAS_CORR = 0.560;
+    const ENEL_FIXWOW_GAS_QF   = 13.0;
 
     // ============================================================
     // UTILITY
@@ -208,8 +317,11 @@
       document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (EUR)' : 'Totale Mese (EUR)';
-      ['th-cei-periodo','th-estra-periodo','th-acea-gas-periodo','th-lgi-gas-periodo'].forEach(id => {
-        document.getElementById(id).textContent = thLabel;
+      ['th-cei-periodo','th-estra-periodo','th-acea-gas-periodo','th-lgi-gas-periodo',
+       'th-hera-gas-periodo','th-blu-gas-periodo','th-agn-gas-periodo','th-enel-gas-periodo',
+       'th-edison-gas-periodo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = thLabel;
       });
     }
 
@@ -235,102 +347,133 @@
 
     // ============================================================
     // CEI  -  FUNZIONI DI CALCOLO GAS
-    // Formula: consumo x (PSV + spread) x PCS_CORR
     // ============================================================
-
     function calcolaCeiGranito(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_GRT_SPREAD) * PCS_CORR;
-      const n1="CEI Granito Gas - (PSV+0.15)x1.03 | fino 31/12/2026";
-      return makeRow(n1, costoEnergia, CEI_GRT_QF, sa, p);
+      return makeRow("CEI Granito Gas — (PSV+0,15)×1,03 | QF 14€/mese | fino 31/12/2026",
+        consumo * (psv + CEI_GRT_SPREAD) * PCS_CORR, CEI_GRT_QF, sa, p);
     }
-
     function calcolaCeiMarmo(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_MRM_SPREAD) * PCS_CORR;
-      const n2="CEI Marmo Gas - (PSV+0.14)x1.03 | fino 31/12/2026";
-      return makeRow(n2, costoEnergia, CEI_MRM_QF, sa, p);
+      return makeRow("CEI Marmo Gas — (PSV+0,14)×1,03 | QF 13€/mese | fino 31/12/2026",
+        consumo * (psv + CEI_MRM_SPREAD) * PCS_CORR, CEI_MRM_QF, sa, p);
     }
-
     function calcolaCeiBasalto(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_BST_SPREAD) * PCS_CORR;
-      const n3="CEI Basalto Gas - (PSV+0.135)x1.03 | fino 31/12/2026";
-      return makeRow(n3, costoEnergia, CEI_BST_QF, sa, p);
+      return makeRow("CEI Basalto Gas — (PSV+0,135)×1,03 | QF 12€/mese | fino 31/12/2026",
+        consumo * (psv + CEI_BST_SPREAD) * PCS_CORR, CEI_BST_QF, sa, p);
     }
-
     function calcolaCeiArdesia(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_ARD_SPREAD) * PCS_CORR;
-      const n4="CEI Ardesia Gas - (PSV+0.13)x1.03 | fino 31/12/2026";
-      return makeRow(n4, costoEnergia, CEI_ARD_QF, sa, p);
+      return makeRow("CEI Ardesia Gas — (PSV+0,13)×1,03 | QF 10€/mese | fino 31/12/2026",
+        consumo * (psv + CEI_ARD_SPREAD) * PCS_CORR, CEI_ARD_QF, sa, p);
     }
-
     function calcolaCeiFamilyFriends(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + CEI_FF_SPREAD) * PCS_CORR;
-      const n5="CEI F&F Gas - (PSV+0.10)x1.03 | fino 31/12/2026";
-      return makeRow(n5, costoEnergia, CEI_FF_QF, sa, p);
+      return makeRow("CEI F&F Gas — (PSV+0,10)×1,03 | QF 8€/mese | fino 31/12/2026",
+        consumo * (psv + CEI_FF_SPREAD) * PCS_CORR, CEI_FF_QF, sa, p);
     }
 
     // ============================================================
     // ESTRA  -  FUNZIONI DI CALCOLO GAS
-    // Natura: consumo x (PSV + spread) x PCS_CORR  -  sconto SDD (nel costo energia)
-    // Promo:  consumo x (PSV + spread) x PCS_CORR, QF scontata 30%
     // ============================================================
-
     function calcolaEstraNatura(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + ESTRA_NATURA_SPREAD) * PCS_CORR - (ESTRA_NATURA_SDD * p);
-      const n6="Estra Natura Gas - (PSV+0.07)x1.03 (SDD -2EUR/mese)";
-      return makeRow(n6, costoEnergia, ESTRA_NATURA_QF, sa, p);
+      return makeRow("Estra Natura Gas — (PSV+0,07)×1,03 | SDD -2€/mese | QF 12€/mese",
+        consumo * (psv + ESTRA_NATURA_SPREAD) * PCS_CORR - (ESTRA_NATURA_SDD * p), ESTRA_NATURA_QF, sa, p);
     }
-
     function calcolaEstraPromo(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + ESTRA_PROMO_SPREAD) * PCS_CORR;
-      const n7="Estra Promo Gas - (PSV+0.090)x1.03 (QF 8.40EUR/mese)";
-      return makeRow(n7, costoEnergia, ESTRA_PROMO_QF, sa, p);
+      return makeRow("Estra Promo Gas — (PSV+0,090)×1,03 | QF 8,40€/mese (sconto 30%)",
+        consumo * (psv + ESTRA_PROMO_SPREAD) * PCS_CORR, ESTRA_PROMO_QF, sa, p);
     }
 
     // ============================================================
     // ACEA ENERGIA  -  FUNZIONI DI CALCOLO GAS
-    // Flex Casa: consumo x (PSV + spread) x PCS_CORR
-    // Fix Casa:  consumo x corrispettivo_fisso x PCS_CORR
     // ============================================================
-
     function calcolaAceaFlexCasaGas(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + ACEA_FLEX_GAS_SPREAD) * PCS_CORR;
-      const n8="ACEA Flex Casa Gas - (PSV+0.148)x1.03 (QF 9EUR/mese)";
-      return makeRow(n8, costoEnergia, ACEA_FLEX_GAS_QF, sa, p);
+      return makeRow("ACEA Flex Casa Gas — (PSV+0,148)×1,03 | QF 9€/mese | variabile",
+        consumo * (psv + ACEA_FLEX_GAS_SPREAD) * PCS_CORR, ACEA_FLEX_GAS_QF, sa, p);
     }
-
-    function calcolaAceaFixCasaGas(consumo, psv, sa, p) {
-      const costoEnergia = consumo * ACEA_FIX_GAS_CORR * PCS_CORR;
-      const n9="ACEA Fix Casa Gas - 0.510x1.03 (fisso) | fino 03/09/2026";
-      return makeRow(n9, costoEnergia, ACEA_FIX_GAS_QF, sa, p);
+    function calcolaAceaFixCasaGas(consumo, sa, p) {
+      return makeRow("ACEA Fix Casa Gas — 0,510×1,03 (fisso) | QF 12€/mese | fino 03/09/2026",
+        consumo * ACEA_FIX_GAS_CORR * PCS_CORR, ACEA_FIX_GAS_QF, sa, p);
     }
 
     // ============================================================
     // LUCE E GAS ITALIA  -  FUNZIONI DI CALCOLO GAS
-    // Formula: consumo x (PSV + spread) x PCS_CORR
     // ============================================================
-
     function calcolaLgiSilverGas(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + LGI_SILVER_GAS_SPREAD) * PCS_CORR;
-      const na="LGI Silver Gas - (PSV+0.120)x1.03 | fino 31/08/2026";
-      return makeRow(na, costoEnergia, LGI_SILVER_GAS_QF, sa, p);
+      return makeRow("LGI Silver Gas — (PSV+0,120)×1,03 | QF 12€/mese | fino 31/08/2026",
+        consumo * (psv + LGI_SILVER_GAS_SPREAD) * PCS_CORR, LGI_SILVER_GAS_QF, sa, p);
     }
-
     function calcolaLgiGoldGas(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + LGI_GOLD_GAS_SPREAD) * PCS_CORR;
-      const nb="LGI Gold Gas - (PSV+0.125)x1.03 | fino 31/08/2026";
-      return makeRow(nb, costoEnergia, LGI_GOLD_GAS_QF, sa, p);
+      return makeRow("LGI Gold Gas — (PSV+0,125)×1,03 | QF 13€/mese | fino 31/08/2026",
+        consumo * (psv + LGI_GOLD_GAS_SPREAD) * PCS_CORR, LGI_GOLD_GAS_QF, sa, p);
+    }
+    function calcolaLgiPlatinumGas(consumo, psv, sa, p) {
+      return makeRow("LGI Platinum Gas — (PSV+0,130)×1,03 | QF 14€/mese | fino 31/08/2026",
+        consumo * (psv + LGI_PLATINUM_GAS_SPREAD) * PCS_CORR, LGI_PLATINUM_GAS_QF, sa, p);
     }
 
-    function calcolaLgiPlatinumGas(consumo, psv, sa, p) {
-      const costoEnergia = consumo * (psv + LGI_PLATINUM_GAS_SPREAD) * PCS_CORR;
-      const nc="LGI Platinum Gas - (PSV+0.130)x1.03 | fino 31/08/2026";
-      return makeRow(nc, costoEnergia, LGI_PLATINUM_GAS_QF, sa, p);
+    // ============================================================
+    // HERACOMM / ESTENERGY  -  FUNZIONI DI CALCOLO GAS
+    // ============================================================
+    function calcolaHeraActiveGasLow(consumo, psv, sa, p) {
+      return makeRow("Heracomm/EstEnergy Più Controllo Active — (PSV+0,130)×1,03 | QF 10€/mese (≤300 Smc/anno) | fino 16/09/2026",
+        consumo * (psv + HERA_ACTIVE_SPREAD) * PCS_CORR, HERA_ACTIVE_QF_LOW, sa, p);
+    }
+    function calcolaHeraActiveGasHigh(consumo, psv, sa, p) {
+      return makeRow("Heracomm/EstEnergy Più Controllo Active — (PSV+0,130)×1,03 | QF 12€/mese (≥300 Smc/anno) | fino 16/09/2026",
+        consumo * (psv + HERA_ACTIVE_SPREAD) * PCS_CORR, HERA_ACTIVE_QF_HIGH, sa, p);
+    }
+
+    // ============================================================
+    // BLUENERGY  -  FUNZIONI DI CALCOLO GAS
+    // ============================================================
+    function calcolaBluSprintGas(consumo, psv, sa, p) {
+      return makeRow("Bluenergy Jump Sprint Casa — (PSV+0,120)×1,03 | QF 12€/mese | SDD -1€/bolletta | fino 10/09/2026",
+        consumo * (psv + BLU_SPRINT_SPREAD) * PCS_CORR - (BLU_SPRINT_SDD * p), BLU_SPRINT_QF, sa, p);
+    }
+    function calcolaBluJumpGas(consumo, psv, sa, p) {
+      return makeRow("Bluenergy Jump Casa — (PSV+0,2879)×1,03 | QF 13€/mese | fino 10/09/2026",
+        consumo * (psv + BLU_JUMP_SPREAD) * PCS_CORR, BLU_JUMP_QF, sa, p);
+    }
+    function calcolaBluRelaxGas(consumo, sa, p) {
+      return makeRow("Bluenergy Relax Casa — 0,768×1,03 (fisso) | QF 13€/mese | CTE fino 30/09/2027",
+        consumo * BLU_RELAX_CORR * PCS_CORR, BLU_RELAX_QF, sa, p);
+    }
+
+    // ============================================================
+    // AGN ENERGIA  -  FUNZIONI DI CALCOLO GAS
+    // ============================================================
+    function calcolaAgnSemplGas(consumo, psv, sa, p) {
+      return makeRow("AGN Semplice BASE — (PSV+0,100)×1,03 | QF 10€/mese | fino 31/08/2026",
+        consumo * (psv + AGN_SEMPL_SPREAD) * PCS_CORR, AGN_SEMPL_QF, sa, p);
+    }
+    function calcolaAgnFix24Gas(consumo, sa, p) {
+      return makeRow("AGN FIX 24 BASE — 0,590×1,03 (fisso 24 mesi) | QF 10€/mese",
+        consumo * AGN_FIX24_CORR * PCS_CORR, AGN_FIX24_QF, sa, p);
+    }
+
+    // ============================================================
+    // EDISON ENERGIA  -  FUNZIONI DI CALCOLO GAS
+    // ============================================================
+    function calcolaEdisonSuperflexGas(consumo, psv, sa, p) {
+      return makeRow("Edison Superflex Gas — (PSV+0,080)×1,03 | QF 12€/mese | Cliente Domestico | fino 09/09/2026",
+        consumo * (psv + EDISON_SUPERFLEX_GAS_SPREAD) * PCS_CORR, EDISON_SUPERFLEX_GAS_QF, sa, p);
+    }
+
+    // ============================================================
+    // ENEL ENERGIA  -  FUNZIONI DI CALCOLO GAS
+    // ============================================================
+    function calcolaEnelFlexGas(consumo, psv, sa, p) {
+      // Cap: max 0,84 EUR/Smc per i primi 12 mesi
+      const prezzoUnitario = Math.min(psv + ENEL_FLEX_GAS_SPREAD, 0.84);
+      return makeRow("Enel Flex Control — (PSV+0,150)×1,03 [cap 0,84] | QF 15€/mese (⚠️ incl. DispBT nel CCV) | fino 15/09/2026",
+        consumo * prezzoUnitario * PCS_CORR, ENEL_FLEX_GAS_QF, sa, p);
+    }
+    function calcolaEnelFixWowGas(consumo, sa, p) {
+      return makeRow("Enel Fix WOW — 0,560×1,03 (fisso 24 mesi) | QF 13€/mese | fino 15/09/2026",
+        consumo * ENEL_FIXWOW_GAS_CORR * PCS_CORR, ENEL_FIXWOW_GAS_QF, sa, p);
     }
 
     // ============================================================
     // RENDER TABELLA
     // ============================================================
-
     function renderTabella(id, righe) {
       const tbody = document.querySelector('#' + id + ' tbody');
       tbody.innerHTML = '';
@@ -348,17 +491,16 @@
           const cls = v >= 0 ? 'saving-pos' : 'saving-neg';
           const absV = Math.abs(v).toFixed(2);
           const absP = Math.abs(p2).toFixed(1);
-          rispHtml = `<td class="${cls}">${v >= 0 ? 'v -' : '^ +'}EUR${absV}/periodo (${v >= 0 ? '-' : '+'}${absP}%)<br><small>${v >= 0 ? 'v -' : '^ +'}EUR${(Math.abs(v)*(12/pp)).toFixed(2)}/anno</small></td>`;
+          rispHtml = `<td class="${cls}">${v >= 0 ? '▼ −' : '▲ +'}€${absV}/periodo (${v >= 0 ? '−' : '+'}${absP}%)<br><small>${v >= 0 ? '▼ −' : '▲ +'}€${(Math.abs(v)*(12/pp)).toFixed(2)}/anno</small></td>`;
         }
 
-        tr.innerHTML = `<td>${o.nome}${isBest ? ' *' : ''}</td><td>EUR ${o.costoEnergia}</td><td>EUR ${o.quotaFissa}</td><td>EUR ${o.totMese}</td>${rispHtml}`;
+        tr.innerHTML = `<td>${o.nome}${isBest ? ' ⭐' : ''}</td><td>€ ${o.costoEnergia}</td><td>€ ${o.quotaFissa}</td><td>€ ${o.totMese}</td>${rispHtml}`;
       });
     }
 
     // ============================================================
     // CALCOLO PRINCIPALE
     // ============================================================
-
     function calcolaTutteLeOfferteGas() {
       const consumo = parseFloat(document.getElementById('consumo').value) || 0;
       const psv     = parseFloat(document.getElementById('psv').value) || 0;
@@ -372,7 +514,7 @@
       if (sa > 0) {
         const periodoLabel = p === 2 ? 'bimestrale' : 'mensile';
         refBox.style.display = 'block';
-        refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> EUR ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> EUR ${(sa*(12/p)).toFixed(2)}`;
+        refBox.innerHTML = `<strong>Spesa attuale di riferimento (${periodoLabel}):</strong> € ${sa.toFixed(2)} &nbsp;|&nbsp; <strong>Annuale:</strong> € ${(sa*(12/p)).toFixed(2)}`;
       } else {
         refBox.style.display = 'none';
       }
@@ -392,13 +534,38 @@
 
       renderTabella('tabella-acea-gas', [
         calcolaAceaFlexCasaGas(consumo, psv, sa, p),
-        calcolaAceaFixCasaGas(consumo, psv, sa, p),
+        calcolaAceaFixCasaGas(consumo, sa, p),
       ]);
 
       renderTabella('tabella-lgi-gas', [
         calcolaLgiSilverGas(consumo, psv, sa, p),
         calcolaLgiGoldGas(consumo, psv, sa, p),
         calcolaLgiPlatinumGas(consumo, psv, sa, p),
+      ]);
+
+      renderTabella('tabella-hera-gas', [
+        calcolaHeraActiveGasLow(consumo, psv, sa, p),
+        calcolaHeraActiveGasHigh(consumo, psv, sa, p),
+      ]);
+
+      renderTabella('tabella-blu-gas', [
+        calcolaBluSprintGas(consumo, psv, sa, p),
+        calcolaBluJumpGas(consumo, psv, sa, p),
+        calcolaBluRelaxGas(consumo, sa, p),
+      ]);
+
+      renderTabella('tabella-agn-gas', [
+        calcolaAgnSemplGas(consumo, psv, sa, p),
+        calcolaAgnFix24Gas(consumo, sa, p),
+      ]);
+
+      renderTabella('tabella-enel-gas', [
+        calcolaEnelFlexGas(consumo, psv, sa, p),
+        calcolaEnelFixWowGas(consumo, sa, p),
+      ]);
+
+      renderTabella('tabella-edison-gas', [
+        calcolaEdisonSuperflexGas(consumo, psv, sa, p),
       ]);
     }
 

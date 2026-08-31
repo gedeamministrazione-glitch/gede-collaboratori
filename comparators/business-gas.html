@@ -129,6 +129,24 @@
       <tbody></tbody>
     </table>
 
+    <div class="section-title">⚡ Edison Business Gas <span class="validita">(valide fino 09/09/2026)</span></div>
+    <table id="tabella-edison-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-edison-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🏢 Enel Corporate Gas <span class="validita">(Soluzione: fino 14/09/2026 | Trend Sicuro Dual: fino 28/09/2026)</span></div>
+    <table id="tabella-enel-corp-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-enel-corp-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
@@ -157,8 +175,10 @@
       document.getElementById('badge-periodo').textContent = isBim ? 'Bimestrale' : 'Mensile';
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
-      ['th-sup-periodo','th-inf-periodo','th-estra-periodo','th-lgi-pmi-periodo','th-lgi-micro-periodo','th-acea-periodo'].forEach(id => {
-        document.getElementById(id).textContent = thLabel;
+      ['th-sup-periodo','th-inf-periodo','th-estra-periodo','th-lgi-pmi-periodo','th-lgi-micro-periodo','th-acea-periodo',
+       'th-edison-gas-periodo','th-enel-corp-gas-periodo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = thLabel;
       });
     }
 
@@ -334,6 +354,48 @@
     }
 
     // ============================================================
+    // EDISON Business Gas — valide fino 09/09/2026
+    // Flex:     (PSV + 0,16) × PCS_CORR | QF 18 €/mese | segmento 10k–25k Smc/anno
+    // Superflex:(PSV + 0,19) × PCS_CORR | QF 18 €/mese | segmento ≤15k Smc/anno | durata 36 mesi
+    // ============================================================
+    function calcolaEdisonFlexGas(consumo, psv, sa, p) {
+      const spread = 0.16, qf = 216 / 12;
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `Edison Flex Business Gas — (PSV + 0,16) × 1,03 | QF 18 €/mese | segmento 10k–25k Smc/anno | Valida fino 09/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaEdisonSuperflexGas(consumo, psv, sa, p) {
+      const spread = 0.19, qf = 216 / 12;
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `Edison Superflex Business Gas — (PSV + 0,19) × 1,03 | QF 18 €/mese | segmento ≤15k Smc/anno | durata 36 mesi | Valida fino 09/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
+    // ENEL CORPORATE Gas — valide fino 14/09/2026 e 28/09/2026
+    // Soluzione:       0,60 × PCS_CORR (fisso) | QF 15 €/mese | segmento 30k–200k Smc/anno
+    // Trend Sicuro Dual: (PSV + 0,03) × PCS_CORR | QF 15 €/mese | solo clienti dual (luce+gas)
+    // ============================================================
+    function calcolaEnelCorpSoluzioneGas(consumo, sa, p) {
+      const prezzo = 0.60, qf = 180 / 12;
+      const costo = consumo * prezzo * PCS_CORR;
+      return resultRow(
+        `Enel Soluzione Gas Corporate — 0,60 × 1,03 (fisso) | QF 15 €/mese | segmento 30k–200k Smc/anno | Valida fino 14/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaEnelCorpTrendSicuroGas(consumo, psv, sa, p) {
+      const spread = 0.03, qf = 180 / 12;
+      const costo = consumo * (psv + spread) * PCS_CORR;
+      return resultRow(
+        `Enel Trend Sicuro Gas Corporate Dual — (PSV + 0,03) × 1,03 | QF 15 €/mese | solo clienti dual (luce+gas) | Valida fino 28/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
     // ACEA Energia Sprint Gas — valida fino 30/09/2026
     // Formula: consumo × (PSV + 0,0815) × PCS_CORR
     // QF 156 €/PDR/anno = 13 €/mese — consumi <200.000 Smc/anno
@@ -425,6 +487,16 @@
 
       renderTable('tabella-acea', [
         calcolaAceaSprintGas(consumo, psv, sa, p),
+      ]);
+
+      renderTable('tabella-edison-gas', [
+        calcolaEdisonFlexGas(consumo, psv, sa, p),
+        calcolaEdisonSuperflexGas(consumo, psv, sa, p),
+      ]);
+
+      renderTable('tabella-enel-corp-gas', [
+        calcolaEnelCorpSoluzioneGas(consumo, sa, p),
+        calcolaEnelCorpTrendSicuroGas(consumo, psv, sa, p),
       ]);
     }
 
