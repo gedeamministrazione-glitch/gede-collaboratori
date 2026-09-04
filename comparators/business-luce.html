@@ -171,6 +171,33 @@
       <tbody></tbody>
     </table>
 
+    <div class="section-title">🟢 AGN Energia Business Luce <span class="validita">(valide fino 30/09/2026 — solo BT)</span></div>
+    <table id="tabella-agn-bus-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-agn-bus-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔵 Bluenergy Business Luce <span class="validita">(valida fino 10/09/2026 — solo BT ≤55kW)</span></div>
+    <table id="tabella-blu-bus-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-blu-bus-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔷 Heracomm / EstEnergy SME (Gruppo Hera) <span class="validita">(valide fino 09/09/2026 — 50k–300k kWh/anno)</span></div>
+    <table id="tabella-hera-bus-luce">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-hera-bus-luce-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
@@ -201,7 +228,8 @@
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
       ['th-sup-periodo','th-inf-periodo','th-estra-periodo','th-lgi-pmi-periodo','th-lgi-micro-periodo','th-acea-periodo',
-       'th-edison-luce-periodo','th-enel-corp-luce-periodo'].forEach(id => {
+       'th-edison-luce-periodo','th-enel-corp-luce-periodo',
+       'th-agn-bus-luce-periodo','th-blu-bus-luce-periodo','th-hera-bus-luce-periodo'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = thLabel;
       });
@@ -449,6 +477,58 @@
     }
 
     // ============================================================
+    // AGN ENERGIA Business Luce — valide fino 30/09/2026 (solo BT)
+    // Formula CTE AGN: consumo × (PUN×1,10 + spread_lordo)
+    // BASE10: α 0,0110 + TIDE_lordo 0,011551 + RST_lordo 0,000572 = 0,023123 €/kWh
+    // PLUS:   α 0,0165 + TIDE_lordo 0,011551 + RST_lordo 0,000572 = 0,028623 €/kWh
+    // QF BASE10: 180 €/anno = 15 €/mese; PLUS: 300 €/anno = 25 €/mese
+    // ============================================================
+    function calcolaAgnBusBase10(consumo, pun, sa, p) {
+      const qf = 180 / 12;
+      const costo = consumo * (pun * LOSS['BT'] + 0.023123);
+      return resultRow(
+        `AGN BUSINESS BASE 10 (AGNEAU10PIVAPUN24) — PUN×1,10 + 0,023123 (α 0,0110+TIDE 0,011551+RST 0,000572) | QF 15 €/mese | solo BT | Valida fino 30/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    function calcolaAgnBusPlus(consumo, pun, sa, p) {
+      const qf = 300 / 12; // 25 €/mese: 180 commerciale + 120 Personal Assistant
+      const costo = consumo * (pun * LOSS['BT'] + 0.028623);
+      return resultRow(
+        `AGN BUSINESS PLUS (AGNESA15PIVAPUN24) — PUN×1,10 + 0,028623 (α 0,0165+TIDE 0,011551+RST 0,000572) | QF 25 €/mese (incl. Personal Assistant) | solo BT | Valida fino 30/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
+    // BLUENERGY Business Luce (Jump Business) — valida fino 10/09/2026 (solo BT)
+    // Formula: consumo × (PUN×1,10 + spread_fornitore + DISP_lordo + MercCap_lordo)
+    //   = consumo × (PUN×1,10 + 0,018 + 0,011551 + 0,026913) = consumo × (PUN×1,10 + 0,056464)
+    // Segmento BT ≤55kW — QF 180 €/anno = 15 €/mese
+    // ============================================================
+    function calcolaBluBusLuce(consumo, pun, sa, p) {
+      const qf = 180 / 12;
+      const costo = consumo * (pun * LOSS['BT'] + 0.056464);
+      return resultRow(
+        `Bluenergy Jump Business (EVBBO0726L) — PUN×1,10 + 0,056464 (spread 0,018 + DISP_lordo 0,011551 + MercCap_lordo 0,026913) | QF 15 €/mese | solo BT ≤55kW | Valida fino 10/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
+    // HERACOMM / ESTENERGY Business SME Luce — valide fino 09/09/2026
+    // Hera Hybrid SME Luce V30 (HC_HERA_HYBRID_SME_LUCE_V30)
+    // Componente variabile (oltre quota): PUN×LOSS + 0,0299 + integraz. MercCap 0,0030
+    // QF 168 €/anno = 14 €/mese — segmento 50k–300k kWh/anno — durata 12 mesi
+    // (Offerta ibrida: il simulatore usa la componente variabile come stima conservativa)
+    // ============================================================
+    function calcolaHeraSmeLuceVar(consumo, pun, t, sa, p) {
+      const qf = 168 / 12;
+      const costo = consumo * (pun * LOSS[t] + 0.0299 + 0.0030);
+      return resultRow(
+        `Heracomm/EstEnergy Hybrid SME Luce V30 — PUN×${LOSS[t]} + 0,0299 + MercCap 0,0030 | QF 14 €/mese | 50k–300k kWh/anno | Valida fino 09/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // ============================================================
     // RENDER TABELLA
     // ============================================================
     function renderTable(id, offerte) {
@@ -542,6 +622,19 @@
 
       renderTable('tabella-enel-corp-luce', [
         calcolaEnelCorpMixLuce(consumo, pun, t, sa, p),
+      ]);
+
+      renderTable('tabella-agn-bus-luce', [
+        calcolaAgnBusBase10(consumo, pun, sa, p),
+        calcolaAgnBusPlus(consumo, pun, sa, p),
+      ]);
+
+      renderTable('tabella-blu-bus-luce', [
+        calcolaBluBusLuce(consumo, pun, sa, p),
+      ]);
+
+      renderTable('tabella-hera-bus-luce', [
+        calcolaHeraSmeLuceVar(consumo, pun, t, sa, p),
       ]);
     }
 

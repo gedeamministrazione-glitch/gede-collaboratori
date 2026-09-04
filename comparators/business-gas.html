@@ -147,6 +147,33 @@
       <tbody></tbody>
     </table>
 
+    <div class="section-title">🟢 AGN Energia Business Gas <span class="validita">(valide fino 30/09/2026 — uso non domestico &lt;200.000 Smc/anno)</span></div>
+    <table id="tabella-agn-bus-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-agn-bus-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔵 Bluenergy Business Gas <span class="validita">(valida fino 10/09/2026)</span></div>
+    <table id="tabella-blu-bus-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-blu-bus-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="section-title">🔷 Heracomm / EstEnergy SME Gas (Gruppo Hera) <span class="validita">(valide fino 09/09/2026 — 10k–200k Smc/anno)</span></div>
+    <table id="tabella-hera-bus-gas">
+      <thead><tr>
+        <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
+        <th id="th-hera-bus-gas-periodo">Totale Mese (€)</th><th>Risparmio vs attuale</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
     <button onclick="window.print()" class="print-button">Stampa Risultati</button>
     <div class="note" style="margin-top:14px;">
       Sono esclusi IVA, imposte, costi di Rete e Oneri di Sistema ARERA.
@@ -176,7 +203,8 @@
       document.getElementById('badge-periodo').className = 'periodo-badge ' + (isBim ? 'periodo-bimestrale' : 'periodo-mensile');
       const thLabel = isBim ? 'Totale Bimestre (€)' : 'Totale Mese (€)';
       ['th-sup-periodo','th-inf-periodo','th-estra-periodo','th-lgi-pmi-periodo','th-lgi-micro-periodo','th-acea-periodo',
-       'th-edison-gas-periodo','th-enel-corp-gas-periodo'].forEach(id => {
+       'th-edison-gas-periodo','th-enel-corp-gas-periodo',
+       'th-agn-bus-gas-periodo','th-blu-bus-gas-periodo','th-hera-bus-gas-periodo'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = thLabel;
       });
@@ -434,6 +462,40 @@
       });
     }
 
+    // AGN ENERGIA Business Gas — valide fino 30/09/2026 (<200.000 Smc/anno)
+    function calcolaAgnBusGasBase(consumo, psv, sa, p) {
+      const qf = 180 / 12;
+      const costo = consumo * (psv + 0.10) * PCS_CORR;
+      return resultRow(
+        `AGN GAS BUSINESS BASE (AGNGASPIVA10PSV24) — (PSV + 0,10) × 1,03 | QF 15 €/mese | <200.000 Smc/anno | Valida fino 30/09/2026`,
+        costo, qf, sa, p);
+    }
+    function calcolaAgnBusGasPlus(consumo, psv, sa, p) {
+      const qf = 300 / 12;
+      const costo = consumo * (psv + 0.15) * PCS_CORR;
+      return resultRow(
+        `AGN BUSINESS PLUS GAS (AGNGASPIVA15PSV24) — (PSV + 0,15) × 1,03 | QF 25 €/mese (incl. Personal Assistant) | <200.000 Smc/anno | Valida fino 30/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // BLUENERGY Business Gas (Jump Business) — valida fino 10/09/2026
+    function calcolaBluBusGas(consumo, psv, sa, p) {
+      const qf = 180 / 12;
+      const costo = consumo * (psv + 0.2567) * PCS_CORR;
+      return resultRow(
+        `Bluenergy Jump Business Gas (GVBBO0726L) — (PSV + 0,2567) × 1,03 (spread 0,16 + comm. 0,05 + QTinfr 0,021405 + CCR 0,03151) | QF 15 €/mese | Valida fino 10/09/2026`,
+        costo, qf, sa, p);
+    }
+
+    // HERACOMM / ESTENERGY Business SME Gas — valide fino 09/09/2026 (10k–200k Smc/anno)
+    function calcolaHeraSmeGasVar(consumo, psv, sa, p) {
+      const qf = 168 / 12;
+      const costo = consumo * (psv + 0.1390) * PCS_CORR;
+      return resultRow(
+        `Heracomm/EstEnergy Hybrid SME Gas V30 — (PSV + 0,1390) × 1,03 | QF 14 €/mese | 10k–200k Smc/anno | Valida fino 09/09/2026`,
+        costo, qf, sa, p);
+    }
+
     // ============================================================
     // CALCOLO PRINCIPALE
     // ============================================================
@@ -497,6 +559,19 @@
       renderTable('tabella-enel-corp-gas', [
         calcolaEnelCorpSoluzioneGas(consumo, sa, p),
         calcolaEnelCorpTrendSicuroGas(consumo, psv, sa, p),
+      ]);
+
+      renderTable('tabella-agn-bus-gas', [
+        calcolaAgnBusGasBase(consumo, psv, sa, p),
+        calcolaAgnBusGasPlus(consumo, psv, sa, p),
+      ]);
+
+      renderTable('tabella-blu-bus-gas', [
+        calcolaBluBusGas(consumo, psv, sa, p),
+      ]);
+
+      renderTable('tabella-hera-bus-gas', [
+        calcolaHeraSmeGasVar(consumo, psv, sa, p),
       ]);
     }
 
