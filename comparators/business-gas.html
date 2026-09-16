@@ -93,7 +93,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟠 Estra Business Gas <span class="validita">(valide fino 14/09/2026)</span></div>
+    <div class="section-title">🟠 Estra Business Gas ⚠️ SCADUTE 14/09/2026 <span class="validita">(valide ⚠️ SCADUTA 14/09/2026)</span></div>
     <table id="tabella-estra">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -102,7 +102,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟢 Luce e Gas Italia Business PMI <span class="validita">(valide fino 31/08/2026)</span></div>
+    <div class="section-title">🟢 Luce e Gas Italia Business PMI ⚠️ SCADUTE 31/08/2026 <span class="validita">(⚠️ SCADUTE 31/08/2026)</span></div>
     <table id="tabella-lgi-pmi">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -111,7 +111,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟢 Luce e Gas Italia Business MICRO <span class="validita">(valide fino 31/08/2026)</span></div>
+    <div class="section-title">🟢 Luce e Gas Italia Business MICRO ⚠️ SCADUTE 31/08/2026 <span class="validita">(⚠️ SCADUTE 31/08/2026)</span></div>
     <table id="tabella-lgi-micro">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -129,7 +129,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">⚡ Edison Business Gas <span class="validita">(valide fino 09/09/2026)</span></div>
+    <div class="section-title">⚡ Edison Business Gas ⚠️ SCADUTE 09/09/2026 <span class="validita">(valide ⚠️ SCADUTA 09/09/2026)</span></div>
     <table id="tabella-edison-gas">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -138,7 +138,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🏢 Enel Corporate Gas <span class="validita">(Soluzione: fino 14/09/2026 | Trend Sicuro Dual: fino 28/09/2026)</span></div>
+    <div class="section-title">🏢 Enel Corporate Gas ⚠️ Soluzione SCADUTA 14/09/2026 <span class="validita">(Trend Sicuro Dual: valida fino 28/09/2026)</span></div>
     <table id="tabella-enel-corp-gas">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -156,7 +156,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🔵 Bluenergy Business Gas <span class="validita">(valida fino 10/09/2026)</span></div>
+    <div class="section-title">🔵 Bluenergy Business Gas <span class="validita">(valida fino 13/10/2026)</span></div>
     <table id="tabella-blu-bus-gas">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -165,7 +165,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🔷 Heracomm / EstEnergy SME Gas (Gruppo Hera) <span class="validita">(valide fino 09/09/2026 — 10k–200k Smc/anno)</span></div>
+    <div class="section-title">🔷 Heracomm / EstEnergy SME Gas (Gruppo Hera) <span class="validita">(valide ⚠️ SCADUTA 09/09/2026 — 10k–200k Smc/anno)</span></div>
     <table id="tabella-hera-bus-gas">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -319,12 +319,12 @@
       const spread = 0.075, qf = 184.8 / 12;
       const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `Estra TREND Gas — (PSV + 0,075) × 1,03 | QF 15,40 €/mese | Valida fino 14/09/2026`,
+        `Estra TREND Gas — (PSV + 0,075) × 1,03 | QF 15,40 €/mese | Valida ⚠️ SCADUTA 14/09/2026`,
         costo, qf, sa, p);
     }
 
     // ============================================================
-    // LUCE E GAS ITALIA Business Gas PMI — valide fino 31/08/2026
+    // LUCE E GAS ITALIA Business Gas PMI — ⚠️ SCADUTE 31/08/2026
     // Formula: consumo × (PSV + spread) × PCS_CORR
     // Consumi <200.000 Smc/anno — QF 156 €/PDR/anno = 13 €/mese per tutte le PMI
     // ============================================================
@@ -332,7 +332,7 @@
       const spread = 0.08, qf = 156 / 12;
       const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `LGI GAS PMI LEGGERA — (PSV + 0,08) × 1,03 | QF 13 €/mese | Valida fino 31/08/2026`,
+        `LGI GAS PMI LEGGERA — (PSV + 0,08) × 1,03 | QF 13 €/mese | Valida ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
@@ -340,7 +340,7 @@
       const spread = 0.12, qf = 156 / 12;
       const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `LGI GAS PMI BASIC — (PSV + 0,12) × 1,03 | QF 13 €/mese | Valida fino 31/08/2026`,
+        `LGI GAS PMI BASIC — (PSV + 0,12) × 1,03 | QF 13 €/mese | Valida ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
@@ -348,12 +348,12 @@
       const spread = 0.15, qf = 156 / 12;
       const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `LGI GAS PMI FULL — (PSV + 0,15) × 1,03 | QF 13 €/mese | Valida fino 31/08/2026`,
+        `LGI GAS PMI FULL — (PSV + 0,15) × 1,03 | QF 13 €/mese | Valida ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
     // ============================================================
-    // LUCE E GAS ITALIA Business Gas MICRO — valide fino 31/08/2026
+    // LUCE E GAS ITALIA Business Gas MICRO — ⚠️ SCADUTE 31/08/2026
     // Formula: consumo × (PSV + spread) × PCS_CORR
     // Consumi <200.000 Smc/anno
     // ============================================================
@@ -361,7 +361,7 @@
       const spread = 0.136, qf = 150 / 12;
       const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `LGI GAS MICRO EASY — (PSV + 0,136) × 1,03 | QF 12,50 €/mese | Valida fino 31/08/2026`,
+        `LGI GAS MICRO EASY — (PSV + 0,136) × 1,03 | QF 12,50 €/mese | Valida ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
@@ -369,7 +369,7 @@
       const spread = 0.166, qf = 180 / 12;
       const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `LGI GAS MICRO MEDIUM — (PSV + 0,166) × 1,03 | QF 15 €/mese | Valida fino 31/08/2026`,
+        `LGI GAS MICRO MEDIUM — (PSV + 0,166) × 1,03 | QF 15 €/mese | Valida ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
@@ -377,12 +377,12 @@
       const spread = 0.176, qf = 192 / 12;
       const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `LGI GAS MICRO PREMIUM — (PSV + 0,176) × 1,03 | QF 16 €/mese | Valida fino 31/08/2026`,
+        `LGI GAS MICRO PREMIUM — (PSV + 0,176) × 1,03 | QF 16 €/mese | Valida ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
     // ============================================================
-    // EDISON Business Gas — valide fino 09/09/2026
+    // EDISON Business Gas — valide ⚠️ SCADUTA 09/09/2026
     // Flex:     (PSV + 0,16) × PCS_CORR | QF 18 €/mese | segmento 10k–25k Smc/anno
     // Superflex:(PSV + 0,19) × PCS_CORR | QF 18 €/mese | segmento ≤15k Smc/anno | durata 36 mesi
     // ============================================================
@@ -390,7 +390,7 @@
       const spread = 0.16, qf = 216 / 12;
       const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `Edison Flex Business Gas — (PSV + 0,16) × 1,03 | QF 18 €/mese | segmento 10k–25k Smc/anno | Valida fino 09/09/2026`,
+        `Edison Flex Business Gas — (PSV + 0,16) × 1,03 | QF 18 €/mese | segmento 10k–25k Smc/anno | Valida ⚠️ SCADUTA 09/09/2026`,
         costo, qf, sa, p);
     }
 
@@ -398,12 +398,12 @@
       const spread = 0.19, qf = 216 / 12;
       const costo = consumo * (psv + spread) * PCS_CORR;
       return resultRow(
-        `Edison Superflex Business Gas — (PSV + 0,19) × 1,03 | QF 18 €/mese | segmento ≤15k Smc/anno | durata 36 mesi | Valida fino 09/09/2026`,
+        `Edison Superflex Business Gas — (PSV + 0,19) × 1,03 | QF 18 €/mese | segmento ≤15k Smc/anno | durata 36 mesi | Valida ⚠️ SCADUTA 09/09/2026`,
         costo, qf, sa, p);
     }
 
     // ============================================================
-    // ENEL CORPORATE Gas — valide fino 14/09/2026 e 28/09/2026
+    // ENEL CORPORATE Gas — valide ⚠️ SCADUTA 14/09/2026 e 28/09/2026
     // Soluzione:       0,60 × PCS_CORR (fisso) | QF 15 €/mese | segmento 30k–200k Smc/anno
     // Trend Sicuro Dual: (PSV + 0,03) × PCS_CORR | QF 15 €/mese | solo clienti dual (luce+gas)
     // ============================================================
@@ -411,7 +411,7 @@
       const prezzo = 0.60, qf = 180 / 12;
       const costo = consumo * prezzo * PCS_CORR;
       return resultRow(
-        `Enel Soluzione Gas Corporate — 0,60 × 1,03 (fisso) | QF 15 €/mese | segmento 30k–200k Smc/anno | Valida fino 14/09/2026`,
+        `Enel Soluzione Gas Corporate — 0,60 × 1,03 (fisso) | QF 15 €/mese | segmento 30k–200k Smc/anno | ⚠️ SCADUTA 14/09/2026`,
         costo, qf, sa, p);
     }
 
@@ -478,21 +478,21 @@
         costo, qf, sa, p);
     }
 
-    // BLUENERGY Business Gas (Jump Business) — valida fino 10/09/2026
+    // BLUENERGY Business Gas (Jump Business) — valida fino 13/10/2026
     function calcolaBluBusGas(consumo, psv, sa, p) {
       const qf = 180 / 12;
-      const costo = consumo * (psv + 0.2567) * PCS_CORR;
+      const costo = consumo * (psv + 0.263015) * PCS_CORR;
       return resultRow(
-        `Bluenergy Jump Business Gas (GVBBO0726L) — (PSV + 0,2567) × 1,03 (spread 0,16 + comm. 0,05 + QTinfr 0,021405 + CCR 0,03151) | QF 15 €/mese | Valida fino 10/09/2026`,
+        `Bluenergy Jump Business Gas (GVBBO0726L) — (PSV + 0,263015) × 1,03 (spread 0,16 + comm. 0,05 + QTinfr 0,021405 + CCR 0,03151) | QF 15 €/mese | Valida fino 13/10/2026`,
         costo, qf, sa, p);
     }
 
-    // HERACOMM / ESTENERGY Business SME Gas — valide fino 09/09/2026 (10k–200k Smc/anno)
+    // HERACOMM / ESTENERGY Business SME Gas — valide ⚠️ SCADUTA 09/09/2026 (10k–200k Smc/anno)
     function calcolaHeraSmeGasVar(consumo, psv, sa, p) {
       const qf = 168 / 12;
       const costo = consumo * (psv + 0.1390) * PCS_CORR;
       return resultRow(
-        `Heracomm/EstEnergy Hybrid SME Gas V30 — (PSV + 0,1390) × 1,03 | QF 14 €/mese | 10k–200k Smc/anno | Valida fino 09/09/2026`,
+        `Heracomm/EstEnergy Hybrid SME Gas V30 — (PSV + 0,1390) × 1,03 | QF 14 €/mese | 10k–200k Smc/anno | Valida ⚠️ SCADUTA 09/09/2026`,
         costo, qf, sa, p);
     }
 
