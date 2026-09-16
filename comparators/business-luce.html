@@ -117,7 +117,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟠 Estra Business Luce <span class="validita">(valide fino 14/09/2026)</span></div>
+    <div class="section-title">🟠 Estra Business Luce ⚠️ SCADUTE 14/09/2026 <span class="validita">(valide ⚠️ SCADUTA 14/09/2026)</span></div>
     <table id="tabella-estra">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -126,7 +126,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟢 Luce e Gas Italia Business PMI <span class="validita">(valide fino 31/08/2026)</span></div>
+    <div class="section-title">🟢 Luce e Gas Italia Business PMI ⚠️ SCADUTE 31/08/2026 <span class="validita">(⚠️ SCADUTE 31/08/2026)</span></div>
     <table id="tabella-lgi-pmi">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -135,7 +135,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🟢 Luce e Gas Italia Business MICRO <span class="validita">(valide fino 31/08/2026)</span></div>
+    <div class="section-title">🟢 Luce e Gas Italia Business MICRO ⚠️ SCADUTE 31/08/2026 <span class="validita">(⚠️ SCADUTE 31/08/2026)</span></div>
     <table id="tabella-lgi-micro">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -153,7 +153,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">⚡ Edison Business Luce <span class="validita">(valide fino 09/09/2026)</span></div>
+    <div class="section-title">⚡ Edison Business Luce ⚠️ SCADUTE 09/09/2026 <span class="validita">(valide ⚠️ SCADUTA 09/09/2026)</span></div>
     <table id="tabella-edison-luce">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -162,7 +162,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🏢 Enel Corporate Luce <span class="validita">(valide fino 14/09/2026 — pot. ≥200kW)</span></div>
+    <div class="section-title">🏢 Enel Corporate Luce <span class="validita">(valide ⚠️ SCADUTA 14/09/2026 — pot. ≥200kW)</span></div>
     <table id="tabella-enel-corp-luce">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -180,7 +180,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🔵 Bluenergy Business Luce <span class="validita">(valida fino 10/09/2026 — solo BT ≤55kW)</span></div>
+    <div class="section-title">🔵 Bluenergy Business Luce <span class="validita">(valida fino 13/10/2026 — solo BT ≤55kW)</span></div>
     <table id="tabella-blu-bus-luce">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -189,7 +189,7 @@
       <tbody></tbody>
     </table>
 
-    <div class="section-title">🔷 Heracomm / EstEnergy SME (Gruppo Hera) <span class="validita">(valide fino 09/09/2026 — 50k–300k kWh/anno)</span></div>
+    <div class="section-title">🔷 Heracomm / EstEnergy SME (Gruppo Hera) <span class="validita">(valide ⚠️ SCADUTA 09/09/2026 — 50k–300k kWh/anno)</span></div>
     <table id="tabella-hera-bus-luce">
       <thead><tr>
         <th>Offerta</th><th>Costo Energia (€/periodo)</th><th>Quota Fissa (€/periodo)</th>
@@ -341,7 +341,7 @@
       const spread = 0.02035, qf = 184.8 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + ESTRA_GO);
       return resultRow(
-        `Estra TREND UNICA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,02035 + GO_EE 0,011 | QF 15,40 €/mese | Valida fino 14/09/2026`,
+        `Estra TREND UNICA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,02035 + GO_EE 0,011 | QF 15,40 €/mese | ⚠️ SCADUTA 14/09/2026`,
         costo, qf, sa, p);
     }
 
@@ -349,12 +349,12 @@
       const spread = 0.01705, qf = 184.8 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread + ESTRA_GO);
       return resultRow(
-        `Estra TREND PIU — (PUN+DISP+CAPA)×${LOSS[t]} + 0,01705 + GO_EE 0,011 | QF 15,40 €/mese | Valida fino 14/09/2026`,
+        `Estra TREND PIU — (PUN+DISP+CAPA)×${LOSS[t]} + 0,01705 + GO_EE 0,011 | QF 15,40 €/mese | ⚠️ SCADUTA 14/09/2026`,
         costo, qf, sa, p);
     }
 
     // ============================================================
-    // LUCE E GAS ITALIA Business PMI — valide fino 31/08/2026
+    // LUCE E GAS ITALIA Business PMI — ⚠️ SCADUTE 31/08/2026
     // Formula: consumo × ((PUN + DISP[t] + CAPA[t]) × LOSS[t] + spread)
     // QF 156 €/POD/anno = 13 €/mese per tutte le offerte PMI
     // ============================================================
@@ -362,7 +362,7 @@
       const spread = 0.011, qf = 156 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
       return resultRow(
-        `LGI PMI LEGGERA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,011 | QF 13 €/mese | Valida fino 31/08/2026`,
+        `LGI PMI LEGGERA — (PUN+DISP+CAPA)×${LOSS[t]} + 0,011 | QF 13 €/mese | ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
@@ -370,7 +370,7 @@
       const spread = 0.0198, qf = 156 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
       return resultRow(
-        `LGI PMI BASIC — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0198 | QF 13 €/mese | Valida fino 31/08/2026`,
+        `LGI PMI BASIC — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0198 | QF 13 €/mese | ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
@@ -378,19 +378,19 @@
       const spread = 0.022, qf = 156 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
       return resultRow(
-        `LGI PMI FULL — (PUN+DISP+CAPA)×${LOSS[t]} + 0,022 | QF 13 €/mese | Valida fino 31/08/2026`,
+        `LGI PMI FULL — (PUN+DISP+CAPA)×${LOSS[t]} + 0,022 | QF 13 €/mese | ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
     // ============================================================
-    // LUCE E GAS ITALIA Business MICRO — valide fino 31/08/2026
+    // LUCE E GAS ITALIA Business MICRO — ⚠️ SCADUTE 31/08/2026
     // Formula: consumo × ((PUN + DISP[t] + CAPA[t]) × LOSS[t] + spread)
     // ============================================================
     function calcolaLGImicroEasy(consumo, pun, t, sa, p) {
       const spread = 0.0198, qf = 150 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
       return resultRow(
-        `LGI MICRO EASY — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0198 | QF 12,50 €/mese | Valida fino 31/08/2026`,
+        `LGI MICRO EASY — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0198 | QF 12,50 €/mese | ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
@@ -398,7 +398,7 @@
       const spread = 0.0286, qf = 180 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
       return resultRow(
-        `LGI MICRO MEDIUM — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0286 | QF 15 €/mese | Valida fino 31/08/2026`,
+        `LGI MICRO MEDIUM — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0286 | QF 15 €/mese | ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
@@ -406,12 +406,12 @@
       const spread = 0.0308, qf = 192 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
       return resultRow(
-        `LGI MICRO PREMIUM — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0308 | QF 16 €/mese | Valida fino 31/08/2026`,
+        `LGI MICRO PREMIUM — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0308 | QF 16 €/mese | ⚠️ SCADUTA 31/08/2026`,
         costo, qf, sa, p);
     }
 
     // ============================================================
-    // EDISON Business Luce — valide fino 09/09/2026
+    // EDISON Business Luce — valide ⚠️ SCADUTA 09/09/2026
     // Flex:     (PUN+DISP+CAPA)×LOSS + 0,018 | QF 18 €/mese | segmento 10k–30k kWh/anno
     // Superflex:(PUN+DISP+CAPA)×LOSS + 0,0235 | QF 18 €/mese | segmento ≤25k kWh/anno | durata 36 mesi
     // Top50Flex:(PUN+DISP+CAPA)×LOSS + 0,023(BT)/0,0217(MT) | QF 16,50 €/mese | segmento 30k–100k kWh/anno
@@ -420,7 +420,7 @@
       const spread = 0.018, qf = 216 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
       return resultRow(
-        `Edison Flex Business Luce — (PUN+DISP+CAPA)×${LOSS[t]} + 0,018 | QF 18 €/mese | segmento 10k–30k kWh/anno | Valida fino 09/09/2026`,
+        `Edison Flex Business Luce — (PUN+DISP+CAPA)×${LOSS[t]} + 0,018 | QF 18 €/mese | segmento 10k–30k kWh/anno | Valida ⚠️ SCADUTA 09/09/2026`,
         costo, qf, sa, p);
     }
 
@@ -428,7 +428,7 @@
       const spread = 0.0235, qf = 216 / 12;
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
       return resultRow(
-        `Edison Superflex Business Luce — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0235 | QF 18 €/mese | segmento ≤25k kWh/anno | durata 36 mesi | Valida fino 09/09/2026`,
+        `Edison Superflex Business Luce — (PUN+DISP+CAPA)×${LOSS[t]} + 0,0235 | QF 18 €/mese | segmento ≤25k kWh/anno | durata 36 mesi | Valida ⚠️ SCADUTA 09/09/2026`,
         costo, qf, sa, p);
     }
 
@@ -437,12 +437,12 @@
       const qf = 198 / 12; // 16,50 €/mese
       const costo = consumo * ((pun + DISP[t] + CAPA[t]) * LOSS[t] + spread);
       return resultRow(
-        `Edison Top50 Flex Luce — (PUN+DISP+CAPA)×${LOSS[t]} + ${t === 'BT' ? '0,023' : '0,0217'} | QF 16,50 €/mese | segmento 30k–100k kWh/anno | Valida fino 09/09/2026`,
+        `Edison Top50 Flex Luce — (PUN+DISP+CAPA)×${LOSS[t]} + ${t === 'BT' ? '0,023' : '0,0217'} | QF 16,50 €/mese | segmento 30k–100k kWh/anno | Valida ⚠️ SCADUTA 09/09/2026`,
         costo, qf, sa, p);
     }
 
     // ============================================================
-    // ENEL CORPORATE Luce — valida fino 14/09/2026 (pot. ≥200kW)
+    // ENEL CORPORATE Luce — valida ⚠️ SCADUTA 14/09/2026 (pot. ≥200kW)
     // Formula ibrida: 50%×(PUN×LOSS+DISP+CAPA+0,00825) + 50%×PF_mono
     // PF BT monorario: 0,16170 €/kWh | PF MT monorario: 0,14700 €/kWh
     // QF 0 €/POD/anno
@@ -456,7 +456,7 @@
       const varParte = (pun + DISP[t] + CAPA[t]) * LOSS[t] + 0.00825;
       const costo = consumo * (0.5 * varParte + 0.5 * pfMono);
       return resultRow(
-        `Enel Mix Corporate Luce (monorario) — 50%×(PUN×${LOSS[t]}+DISP+CAPA+0,00825)+50%×PF ${pfMono.toFixed(5)} | QF 0 €/mese | pot. ≥200kW | Valida fino 14/09/2026`,
+        `Enel Mix Corporate Luce (monorario) — 50%×(PUN×${LOSS[t]}+DISP+CAPA+0,00825)+50%×PF ${pfMono.toFixed(5)} | QF 0 €/mese | pot. ≥200kW | ⚠️ SCADUTA 14/09/2026`,
         costo, qf, sa, p);
     }
 
@@ -500,21 +500,21 @@
     }
 
     // ============================================================
-    // BLUENERGY Business Luce (Jump Business) — valida fino 10/09/2026 (solo BT)
+    // BLUENERGY Business Luce (Jump Business) — valida fino 13/10/2026 (solo BT)
     // Formula: consumo × (PUN×1,10 + spread_fornitore + DISP_lordo + MercCap_lordo)
-    //   = consumo × (PUN×1,10 + 0,018 + 0,011551 + 0,026913) = consumo × (PUN×1,10 + 0,056464)
+    //   = consumo × (PUN×1,10 + 0,018 + 0,011551 + 0,003517) = consumo × (PUN×1,10 + 0,033068)
     // Segmento BT ≤55kW — QF 180 €/anno = 15 €/mese
     // ============================================================
     function calcolaBluBusLuce(consumo, pun, sa, p) {
       const qf = 180 / 12;
-      const costo = consumo * (pun * LOSS['BT'] + 0.056464);
+      const costo = consumo * (pun * LOSS['BT'] + 0.033068);
       return resultRow(
-        `Bluenergy Jump Business (EVBBO0726L) — PUN×1,10 + 0,056464 (spread 0,018 + DISP_lordo 0,011551 + MercCap_lordo 0,026913) | QF 15 €/mese | solo BT ≤55kW | Valida fino 10/09/2026`,
+        `Bluenergy Jump Business (EVBBO0726L) — PUN×1,10 + 0,033068 (spread 0,018 + DISP_lordo 0,011551 + MercCap_lordo 0,003517) | QF 15 €/mese | solo BT ≤55kW | Valida fino 13/10/2026`,
         costo, qf, sa, p);
     }
 
     // ============================================================
-    // HERACOMM / ESTENERGY Business SME Luce — valide fino 09/09/2026
+    // HERACOMM / ESTENERGY Business SME Luce — valide ⚠️ SCADUTA 09/09/2026
     // Hera Hybrid SME Luce V30 (HC_HERA_HYBRID_SME_LUCE_V30)
     // Componente variabile (oltre quota): PUN×LOSS + 0,0299 + integraz. MercCap 0,0030
     // QF 168 €/anno = 14 €/mese — segmento 50k–300k kWh/anno — durata 12 mesi
@@ -524,7 +524,7 @@
       const qf = 168 / 12;
       const costo = consumo * (pun * LOSS[t] + 0.0299 + 0.0030);
       return resultRow(
-        `Heracomm/EstEnergy Hybrid SME Luce V30 — PUN×${LOSS[t]} + 0,0299 + MercCap 0,0030 | QF 14 €/mese | 50k–300k kWh/anno | Valida fino 09/09/2026`,
+        `Heracomm/EstEnergy Hybrid SME Luce V30 — PUN×${LOSS[t]} + 0,0299 + MercCap 0,0030 | QF 14 €/mese | 50k–300k kWh/anno | Valida ⚠️ SCADUTA 09/09/2026`,
         costo, qf, sa, p);
     }
 
