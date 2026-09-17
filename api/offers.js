@@ -1,78 +1,150 @@
 export default async function handler(req, res) {
-  try {
-    const url = process.env.SHEET_OFFERS_CSV_URL;
-    if (!url) return res.status(500).json({ error: "Missing SHEET_OFFERS_CSV_URL" });
-
-    const csv = await (await fetch(url)).text();
-    const rows = csvToJson(csv);
-
-    const offers = rows
-      .filter(r => r.id)
-      .map(r => ({
-        id: r.id,
-        fornitore: r.fornitore,
-        nome_offerta: r.nome_offerta,
-        canale: r.canale,
-        fascia: r.fascia,
-        tipo_prezzo: r.tipo_prezzo,
-        indice: r.indice,
-
-        spread_unit: toNum(r.spread_unit),
-        prezzo_fisso_unit: toNum(r.prezzo_fisso_unit),
-        quota_fissa_mese: toNum(r.quota_fissa_mese),
-        variabili_unit: toNum(r.variabili_unit),
-        sconto_mese: toNum(r.sconto_mese),
-
-        // energia verde: la leggiamo ma NON la useremo nei calcoli
-        verde_fee_mese: toNum(r.verde_fee_mese),
-        verde_fee_unit: toNum(r.verde_fee_unit),
-
-        perdite_applica: String(r.perdite_applica || "").toUpperCase() === "TRUE",
-        ordine_visualizzazione: toNum(r.ordine_visualizzazione),
-        note: r.note || ""
-      }));
-
-    res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
-    res.status(200).json({ offers });
-  } catch (e) {
-    res.status(500).json({ error: String(e) });
-  }
+  res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=7200");
+  res.status(200).json({ offers: OFFERTE });
 }
 
-function toNum(v) {
-  if (v === null || v === undefined) return 0;
-  const s = String(v).trim().replace(",", ".");
-  const n = Number(s);
-  return Number.isFinite(n) ? n : 0;
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// OFFERTE – aggiornate settembre 2026
+// Campi:
+//   canale            "Domestico Luce" | "Domestico Gas" | "Business Luce" | "Business Gas"
+//   tipo_prezzo       "VAR" | "FISSO"
+//   indice            "PUN" (luce) | "PSV" (gas)
+//   perdite_applica   true → indice moltiplicato per LOSS[tensione] (solo luce)
+//   pcs_mult          1.03 per gas (corr. PCS applicata all'indice)
+//   spread_unit       €/kWh o €/Smc sopra l'indice (già ×PCS per gas)
+//   prezzo_fisso_unit €/kWh o €/Smc (solo FISSO; già ×PCS per gas)
+//   variabili_unit    oneri di distribuzione/trasporto per unità (già ×PCS dove serve)
+//   quota_fissa_mese  €/mese
+//   sconto_mese       €/mese di sconto (es. SDD)
+//   fascia            "" = tutte | "PMI" | "MICRO" (solo business)
+//   scaduta           true = offerta non più attiva (mostrare in grigio)
+//   note              testo libero
+// ─────────────────────────────────────────────────────────────────────────────
 
-function csvToJson(csv) {
-  const lines = csv.trim().split(/\r?\n/);
-  const headers = parseCsvLine(lines[0]).map(h => h.trim());
-  return lines.slice(1).map(line => {
-    const cols = parseCsvLine(line);
-    const obj = {};
-    headers.forEach((h, i) => (obj[h] = (cols[i] ?? "").trim()));
-    return obj;
-  });
-}
+const OFFERTE = [
 
-function parseCsvLine(line) {
-  const out = [];
-  let cur = "";
-  let inQuotes = false;
+  // ══════════════════════════════════════════════════════════════════
+  // DOMESTICO LUCE
+  // variabili_unit = CEI_DISP(0.011725) + CEI_CAPA(0.004349) = 0.016074
+  //                  oppure ESTRA_CDISPD(0.021726) o LGI_CDISPD(0.018468)
+  //                  oppure solo CAPA(0.004349) per Enel
+  // ══════════════════════════════════════════════════════════════════
+  { id:"dl_cei_grt",  fornitore:"CEI",       nome_offerta:"Granito",           canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.030,     prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:14,    sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:1 },
+  { id:"dl_cei_mrm",  fornitore:"CEI",       nome_offerta:"Marmo",             canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.025,     prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:13,    sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:2 },
+  { id:"dl_cei_bst",  fornitore:"CEI",       nome_offerta:"Basalto",           canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.025,     prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:12,    sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:3 },
+  { id:"dl_cei_ard",  fornitore:"CEI",       nome_offerta:"Ardesia",           canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.025,     prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:10,    sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:4 },
+  { id:"dl_cei_ff",   fornitore:"CEI",       nome_offerta:"Family&Friends",    canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.018,     prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:8,     sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:5 },
+  { id:"dl_agn_smp",  fornitore:"AGN",       nome_offerta:"Semplice BASE",     canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.022,     prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:10,    sconto_mese:0, scaduta:false, note:"fino 30/09/2026", ordine:6 },
+  { id:"dl_agn_fix",  fornitore:"AGN",       nome_offerta:"FIX 24 BASE",       canale:"Domestico Luce", fascia:"", tipo_prezzo:"FISSO", indice:"PUN", perdite_applica:false,pcs_mult:1,    spread_unit:0,         prezzo_fisso_unit:0.175, variabili_unit:0.016074, quota_fissa_mese:10,  sconto_mese:0, scaduta:false, note:"fisso 24 mesi", ordine:7 },
+  { id:"dl_blu_spr",  fornitore:"Bluenergy", nome_offerta:"Jump Sprint Casa",  canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0205,    prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:12.25, sconto_mese:1, scaduta:false, note:"fino 13/10/2026 | SDD -1€", ordine:8 },
+  { id:"dl_blu_jmp",  fornitore:"Bluenergy", nome_offerta:"Jump Casa",         canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0396,    prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:13.25, sconto_mese:0, scaduta:false, note:"fino 13/10/2026", ordine:9 },
+  { id:"dl_blu_rlx",  fornitore:"Bluenergy", nome_offerta:"Relax Casa",        canale:"Domestico Luce", fascia:"", tipo_prezzo:"FISSO", indice:"PUN", perdite_applica:false,pcs_mult:1,    spread_unit:0,         prezzo_fisso_unit:0.17169, variabili_unit:0.016074, quota_fissa_mese:13.25,sconto_mese:0, scaduta:false, note:"fisso 24 mesi | CTE 31/12/2027", ordine:10 },
+  { id:"dl_acea_flx", fornitore:"ACEA",      nome_offerta:"Flex Casa Luce",    canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0305,    prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:9,     sconto_mese:0, scaduta:false, note:"fino 30/09/2026", ordine:11 },
+  { id:"dl_acea_spr", fornitore:"ACEA",      nome_offerta:"Sprint Luce",       canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0142,    prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:10,    sconto_mese:0, scaduta:false, note:"fino 30/09/2026", ordine:12 },
+  { id:"dl_hera_lo",  fornitore:"Heracomm",  nome_offerta:"Più Controllo Active (≤2700 kWh/a)", canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR", indice:"PUN", perdite_applica:true, pcs_mult:1, spread_unit:0.008, prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:14.10, sconto_mese:0, scaduta:false, note:"fino 16/09/2026", ordine:13 },
+  { id:"dl_hera_hi",  fornitore:"Heracomm",  nome_offerta:"Più Controllo Active (≥2700 kWh/a)", canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR", indice:"PUN", perdite_applica:true, pcs_mult:1, spread_unit:0.008, prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:16.10, sconto_mese:0, scaduta:false, note:"fino 16/09/2026", ordine:14 },
+  { id:"dl_edi_wld",  fornitore:"Edison",    nome_offerta:"World Luce",        canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0,         prezzo_fisso_unit:0, variabili_unit:0.016074, quota_fissa_mese:20,    sconto_mese:0, scaduta:false, note:"fino 16/09/2026", ordine:15 },
+  { id:"dl_est_nat",  fornitore:"Estra",     nome_offerta:"Natura Luce",       canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0275,    prezzo_fisso_unit:0, variabili_unit:0.021726, quota_fissa_mese:12,    sconto_mese:2, scaduta:true,  note:"⚠️ SCADUTA 14/09/2026 | SDD -2€", ordine:16 },
+  { id:"dl_est_prm",  fornitore:"Estra",     nome_offerta:"Promo Luce",        canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0220,    prezzo_fisso_unit:0, variabili_unit:0.021726, quota_fissa_mese:8.40,  sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 14/09/2026 | QF già scontato 30%", ordine:17 },
+  { id:"dl_lgi_slv",  fornitore:"LGI",       nome_offerta:"Silver Luce",       canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0242,    prezzo_fisso_unit:0, variabili_unit:0.018468, quota_fissa_mese:12,    sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:18 },
+  { id:"dl_lgi_gld",  fornitore:"LGI",       nome_offerta:"Gold Luce",         canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0275,    prezzo_fisso_unit:0, variabili_unit:0.018468, quota_fissa_mese:13,    sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:19 },
+  { id:"dl_lgi_plt",  fornitore:"LGI",       nome_offerta:"Platinum Luce",     canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0308,    prezzo_fisso_unit:0, variabili_unit:0.018468, quota_fissa_mese:14,    sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:20 },
+  { id:"dl_acea_fix", fornitore:"ACEA",      nome_offerta:"Fix Casa Luce",     canale:"Domestico Luce", fascia:"", tipo_prezzo:"FISSO", indice:"PUN", perdite_applica:false,pcs_mult:1,    spread_unit:0,         prezzo_fisso_unit:0.133, variabili_unit:0.016074, quota_fissa_mese:12,  sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 03/09/2026", ordine:21 },
+  { id:"dl_ene_flx",  fornitore:"Enel",      nome_offerta:"Flex Control Luce", canale:"Domestico Luce", fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.02226,   prezzo_fisso_unit:0, variabili_unit:0.004349, quota_fissa_mese:15,    sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 15/09/2026 | DISP nel CCV | cap 0,174", ordine:22 },
+  { id:"dl_ene_fix",  fornitore:"Enel",      nome_offerta:"Fix WOW Luce",      canale:"Domestico Luce", fascia:"", tipo_prezzo:"FISSO", indice:"PUN", perdite_applica:false,pcs_mult:1,    spread_unit:0,         prezzo_fisso_unit:0.15899, variabili_unit:0.004349, quota_fissa_mese:13,  sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 15/09/2026 | DISP nel CCV", ordine:23 },
 
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if (ch === "," && !inQuotes) {
-      out.push(cur); cur = "";
-    } else {
-      cur += ch;
-    }
-  }
-  out.push(cur);
-  return out;
-}
+  // ══════════════════════════════════════════════════════════════════
+  // DOMESTICO GAS
+  // pcs_mult:1.03 → l'indice PSV viene moltiplicato per 1.03
+  // spread_unit = spread_nominale × 1.03
+  // prezzo_fisso_unit = fisso_nominale × 1.03 (già include PCS)
+  // ══════════════════════════════════════════════════════════════════
+  { id:"dg_cei_grt",  fornitore:"CEI",       nome_offerta:"Granito Gas",       canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1545,    prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:14,    sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:1 },
+  { id:"dg_cei_mrm",  fornitore:"CEI",       nome_offerta:"Marmo Gas",         canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1442,    prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:13,    sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:2 },
+  { id:"dg_cei_bst",  fornitore:"CEI",       nome_offerta:"Basalto Gas",       canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.13905,   prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:12,    sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:3 },
+  { id:"dg_cei_ard",  fornitore:"CEI",       nome_offerta:"Ardesia Gas",       canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1339,    prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:10,    sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:4 },
+  { id:"dg_cei_ff",   fornitore:"CEI",       nome_offerta:"F&F Gas",           canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.103,     prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:8,     sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:5 },
+  { id:"dg_agn_smp",  fornitore:"AGN",       nome_offerta:"Semplice BASE Gas", canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.103,     prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:10,    sconto_mese:0, scaduta:false, note:"fino 30/09/2026", ordine:6 },
+  { id:"dg_agn_fix",  fornitore:"AGN",       nome_offerta:"FIX 24 BASE Gas",   canale:"Domestico Gas",  fascia:"", tipo_prezzo:"FISSO", indice:"PSV", perdite_applica:false,pcs_mult:1,    spread_unit:0,         prezzo_fisso_unit:0.82297, variabili_unit:0, quota_fissa_mese:10,  sconto_mese:0, scaduta:false, note:"fisso 24 mesi (0,799×1,03)", ordine:7 },
+  { id:"dg_blu_spr",  fornitore:"Bluenergy", nome_offerta:"Jump Sprint Casa G",canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1236,    prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:12,    sconto_mese:1, scaduta:false, note:"fino 13/10/2026 | SDD -1€", ordine:8 },
+  { id:"dg_blu_jmp",  fornitore:"Bluenergy", nome_offerta:"Jump Casa Gas",     canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.296537,  prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:13,    sconto_mese:0, scaduta:false, note:"fino 13/10/2026", ordine:9 },
+  { id:"dg_blu_rlx",  fornitore:"Bluenergy", nome_offerta:"Relax Casa Gas",    canale:"Domestico Gas",  fascia:"", tipo_prezzo:"FISSO", indice:"PSV", perdite_applica:false,pcs_mult:1,    spread_unit:0,         prezzo_fisso_unit:0.79104, variabili_unit:0, quota_fissa_mese:13,  sconto_mese:0, scaduta:false, note:"fisso | CTE 30/09/2027", ordine:10 },
+  { id:"dg_acea_flx", fornitore:"ACEA",      nome_offerta:"Flex Casa Gas",     canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.15244,   prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:9,     sconto_mese:0, scaduta:false, note:"variabile", ordine:11 },
+  { id:"dg_edi_sfx",  fornitore:"Edison",    nome_offerta:"Superflex Gas",     canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.0824,    prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:12,    sconto_mese:0, scaduta:false, note:"fino 16/09/2026", ordine:12 },
+  { id:"dg_est_nat",  fornitore:"Estra",     nome_offerta:"Natura Gas",        canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.0721,    prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:12,    sconto_mese:2, scaduta:true,  note:"⚠️ SCADUTA ~14/09/2026 | SDD -2€", ordine:13 },
+  { id:"dg_est_prm",  fornitore:"Estra",     nome_offerta:"Promo Gas",         canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.0927,    prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:8.40,  sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA ~14/09/2026 | QF già scontato 30%", ordine:14 },
+  { id:"dg_lgi_slv",  fornitore:"LGI",       nome_offerta:"Silver Gas",        canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1236,    prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:12,    sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:15 },
+  { id:"dg_lgi_gld",  fornitore:"LGI",       nome_offerta:"Gold Gas",          canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.12875,   prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:13,    sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:16 },
+  { id:"dg_lgi_plt",  fornitore:"LGI",       nome_offerta:"Platinum Gas",      canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1339,    prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:14,    sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:17 },
+  { id:"dg_hera_lo",  fornitore:"Heracomm",  nome_offerta:"Più Controllo Active (≤300 Smc/a)", canale:"Domestico Gas", fascia:"", tipo_prezzo:"VAR", indice:"PSV", perdite_applica:false, pcs_mult:1.03, spread_unit:0.1339, prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:10, sconto_mese:0, scaduta:false, note:"fino 16/09/2026", ordine:18 },
+  { id:"dg_hera_hi",  fornitore:"Heracomm",  nome_offerta:"Più Controllo Active (≥300 Smc/a)", canale:"Domestico Gas", fascia:"", tipo_prezzo:"VAR", indice:"PSV", perdite_applica:false, pcs_mult:1.03, spread_unit:0.1339, prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:12, sconto_mese:0, scaduta:false, note:"fino 16/09/2026", ordine:19 },
+  { id:"dg_acea_fix", fornitore:"ACEA",      nome_offerta:"Fix Casa Gas",      canale:"Domestico Gas",  fascia:"", tipo_prezzo:"FISSO", indice:"PSV", perdite_applica:false,pcs_mult:1,    spread_unit:0,         prezzo_fisso_unit:0.5253, variabili_unit:0, quota_fissa_mese:12,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 03/09/2026", ordine:20 },
+  { id:"dg_ene_flx",  fornitore:"Enel",      nome_offerta:"Flex Control Gas",  canale:"Domestico Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1545,    prezzo_fisso_unit:0, variabili_unit:0, quota_fissa_mese:15,    sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 15/09/2026 | cap 0,84", ordine:21 },
+  { id:"dg_ene_fix",  fornitore:"Enel",      nome_offerta:"Fix WOW Gas",       canale:"Domestico Gas",  fascia:"", tipo_prezzo:"FISSO", indice:"PSV", perdite_applica:false,pcs_mult:1,    spread_unit:0,         prezzo_fisso_unit:0.5768, variabili_unit:0, quota_fissa_mese:13,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 15/09/2026", ordine:22 },
+
+  // ══════════════════════════════════════════════════════════════════
+  // BUSINESS LUCE
+  // Formula CEI-type: (PUN+DISP+CAPA)×LOSS + spread [+ varKwh]
+  //   BT: (DISP_BT 0.011725 + CAPA_BT 0.013580) × 1.10 = 0.027836
+  //   varKwh CEI arte: CrA(0.0028)+CcP(0.00255)+VarComm(0.00255) = 0.0079
+  //   varKwh Estra: GO_EE = 0.011
+  // Formula semplice: PUN×LOSS + spread_tot (ACEA, AGN, Blu, Hera)
+  // ══════════════════════════════════════════════════════════════════
+  { id:"bl_cei_raf",  fornitore:"CEI",       nome_offerta:"RAFFAELLO",         canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.013,     prezzo_fisso_unit:0, variabili_unit:0.035736, quota_fissa_mese:15,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026 | CrA+CcP+VarComm", ordine:1 },
+  { id:"bl_cei_mic",  fornitore:"CEI",       nome_offerta:"MICHELANGELO",      canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.011,     prezzo_fisso_unit:0, variabili_unit:0.035736, quota_fissa_mese:15,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:2 },
+  { id:"bl_cei_leo",  fornitore:"CEI",       nome_offerta:"LEONARDO",          canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.009,     prezzo_fisso_unit:0, variabili_unit:0.035736, quota_fissa_mese:15,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:3 },
+  { id:"bl_cei_don",  fornitore:"CEI",       nome_offerta:"DONATELLO",         canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0055,    prezzo_fisso_unit:0, variabili_unit:0.035736, quota_fissa_mese:13,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:4 },
+  { id:"bl_cei_que",  fornitore:"CEI",       nome_offerta:"QUERCIA",           canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.028,     prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:18,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:5 },
+  { id:"bl_cei_sal",  fornitore:"CEI",       nome_offerta:"SALICE",            canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.026,     prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:15,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:6 },
+  { id:"bl_cei_bet",  fornitore:"CEI",       nome_offerta:"BETULLA",           canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.025,     prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:13,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:7 },
+  { id:"bl_cei_paf",  fornitore:"CEI",       nome_offerta:"PARTNER&FRIENDS",   canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.020,     prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:10,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:8 },
+  { id:"bl_agn_b10",  fornitore:"AGN",       nome_offerta:"Business BASE 10",  canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.023123,  prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:15,   sconto_mese:0, scaduta:false, note:"fino 30/09/2026 | solo BT", ordine:9 },
+  { id:"bl_agn_b15",  fornitore:"AGN",       nome_offerta:"Business PLUS",     canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.028623,  prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:25,   sconto_mese:0, scaduta:false, note:"fino 30/09/2026 | solo BT | incl. Personal Assistant", ordine:10 },
+  { id:"bl_blu_jmp",  fornitore:"Bluenergy", nome_offerta:"Jump Business",     canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.033068,  prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:15,   sconto_mese:0, scaduta:false, note:"fino 13/10/2026 | solo BT ≤55kW", ordine:11 },
+  { id:"bl_acea_spr", fornitore:"ACEA",      nome_offerta:"Sprint Business",   canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.033439,  prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:13,   sconto_mese:0, scaduta:false, note:"fino 30/09/2026 | solo BT", ordine:12 },
+  { id:"bl_est_uni",  fornitore:"Estra",     nome_offerta:"TREND UNICA",       canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.02035,   prezzo_fisso_unit:0, variabili_unit:0.038836, quota_fissa_mese:15.40,sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 14/09/2026 | GO_EE 0,011", ordine:13 },
+  { id:"bl_est_piu",  fornitore:"Estra",     nome_offerta:"TREND PIU",         canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.01705,   prezzo_fisso_unit:0, variabili_unit:0.038836, quota_fissa_mese:15.40,sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 14/09/2026 | GO_EE 0,011", ordine:14 },
+  { id:"bl_lgi_p_ea", fornitore:"LGI PMI",   nome_offerta:"LEGGERA",           canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.011,     prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:13,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:15 },
+  { id:"bl_lgi_p_ba", fornitore:"LGI PMI",   nome_offerta:"BASIC",             canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0198,    prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:13,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:16 },
+  { id:"bl_lgi_p_fu", fornitore:"LGI PMI",   nome_offerta:"FULL",              canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.022,     prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:13,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:17 },
+  { id:"bl_lgi_m_ea", fornitore:"LGI MICRO", nome_offerta:"EASY",              canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0198,    prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:12.50,sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:18 },
+  { id:"bl_lgi_m_me", fornitore:"LGI MICRO", nome_offerta:"MEDIUM",            canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0286,    prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:15,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:19 },
+  { id:"bl_lgi_m_pr", fornitore:"LGI MICRO", nome_offerta:"PREMIUM",           canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0308,    prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:16,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:20 },
+  { id:"bl_edi_flx",  fornitore:"Edison",    nome_offerta:"Flex Business",     canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.018,     prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:18,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 09/09/2026 | 10k–30k kWh/a", ordine:21 },
+  { id:"bl_edi_sfx",  fornitore:"Edison",    nome_offerta:"Superflex Business",canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0235,    prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:18,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 09/09/2026 | ≤25k kWh/a | 36 mesi", ordine:22 },
+  { id:"bl_edi_t50",  fornitore:"Edison",    nome_offerta:"Top50 Flex",        canale:"Business Luce",  fascia:"", tipo_prezzo:"VAR",   indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.023,     prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:16.50,sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 09/09/2026 | 30k–100k kWh/a", ordine:23 },
+  { id:"bl_ene_mix",  fornitore:"Enel",      nome_offerta:"Mix Corporate (monorario)",canale:"Business Luce",fascia:"",tipo_prezzo:"VAR",indice:"PUN",perdite_applica:true,pcs_mult:1,     spread_unit:0.00825,   prezzo_fisso_unit:0, variabili_unit:0.027836, quota_fissa_mese:0,    sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 14/09/2026 | pot. ≥200kW | 50% var + 50% fisso (formula mista)", ordine:24 },
+  { id:"bl_hera_hyb", fornitore:"Heracomm",  nome_offerta:"Hybrid SME Luce V30",canale:"Business Luce", fascia:"", tipo_prezzo:"VAR",  indice:"PUN", perdite_applica:true, pcs_mult:1,    spread_unit:0.0329,    prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:14,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 09/09/2026 | 50k–300k kWh/a", ordine:25 },
+
+  // ══════════════════════════════════════════════════════════════════
+  // BUSINESS GAS
+  // pcs_mult:1.03 → l'indice PSV viene moltiplicato per 1.03
+  // spread_unit = spread_nominale × 1.03
+  // CEI-type con CrA+CcP+CV: variabili_unit = (0.0028+0.0255+0.02)×1.03 = 0.049749
+  // CEI Donatello: variabli = (CrA+CcP)³1.03 = 0.0283³1.03 = 0.029149
+  // ══════════════════════════════════════════════════════════════════
+  { id:"bg_cei_raf",  fornitore:"CEI",       nome_offerta:"RAFFAELLO Gas",     canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1236,    prezzo_fisso_unit:0, variabili_unit:0.049749, quota_fissa_mese:10,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026 | CrA+CcP+CV", ordine:1 },
+  { id:"bg_cei_mic",  fornitore:"CEI",       nome_offerta:"MICHELANGELO Gas",  canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.103,     prezzo_fisso_unit:0, variabili_unit:0.049749, quota_fissa_mese:10,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:2 },
+  { id:"bg_cei_leo",  fornitore:"CEI",       nome_offerta:"LEONARDO Gas",      canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.0824,    prezzo_fisso_unit:0, variabili_unit:0.049749, quota_fissa_mese:10,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:3 },
+  { id:"bg_cei_don",  fornitore:"CEI",       nome_offerta:"DONATELLO Gas",     canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.0721,    prezzo_fisso_unit:0, variabili_unit:0.029149, quota_fissa_mese:10,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026 | no CV", ordine:4 },
+  { id:"bg_cei_que",  fornitore:"CEI",       nome_offerta:"QUERCIA Gas",       canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1854,    prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:18,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:5 },
+  { id:"bg_cei_sal",  fornitore:"CEI",       nome_offerta:"SALICE Gas",        canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1648,    prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:15,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:6 },
+  { id:"bg_cei_bet",  fornitore:"CEI",       nome_offerta:"BETULLA Gas",       canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1545,    prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:13,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:7 },
+  { id:"bg_cei_paf",  fornitore:"CEI",       nome_offerta:"PARTNER&FRIENDS Gas",canale:"Business Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.103,     prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:10,   sconto_mese:0, scaduta:false, note:"fino 31/12/2026", ordine:8 },
+  { id:"bg_agn_b10",  fornitore:"AGN",       nome_offerta:"Business BASE Gas", canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.103,     prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:15,   sconto_mese:0, scaduta:false, note:"fino 30/09/2026 | <200k Smc/a", ordine:9 },
+  { id:"bg_agn_b15",  fornitore:"AGN",       nome_offerta:"Business PLUS Gas", canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1545,    prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:25,   sconto_mese:0, scaduta:false, note:"fino 30/09/2026 | <200k Smc/a | incl. Personal Assistant", ordine:10 },
+  { id:"bg_blu_jmp",  fornitore:"Bluenergy", nome_offerta:"Jump Business Gas", canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.270905,  prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:15,   sconto_mese:0, scaduta:false, note:"fino 13/10/2026", ordine:11 },
+  { id:"bg_acea_spr", fornitore:"ACEA",      nome_offerta:"Sprint Business Gas",canale:"Business Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.083945,  prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:13,   sconto_mese:0, scaduta:false, note:"fino 30/09/2026", ordine:12 },
+  { id:"bg_ene_trd",  fornitore:"Enel",      nome_offerta:"Trend Sicuro Corporate Dual",canale:"Business Gas",fascia:"",tipo_prezzo:"VAR",indice:"PSV",perdite_applica:false,pcs_mult:1.03,spread_unit:0.0309,  prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:15,   sconto_mese:0, scaduta:false, note:"fino 28/09/2026 | solo dual luce+gas", ordine:13 },
+  { id:"bg_est_trd",  fornitore:"Estra",     nome_offerta:"TREND Gas",         canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.07725,   prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:15.40,sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 14/09/2026", ordine:14 },
+  { id:"bg_lgi_p_ea", fornitore:"LGI PMI",   nome_offerta:"LEGGERA Gas",       canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.0824,    prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:13,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:15 },
+  { id:"bg_lgi_p_ba", fornitore:"LGI PMI",   nome_offerta:"BASIC Gas",         canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1236,    prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:13,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:16 },
+  { id:"bg_lgi_p_fu", fornitore:"LGI PMI",   nome_offerta:"FULL Gas",          canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1545,    prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:13,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:17 },
+  { id:"bg_lgi_m_ea", fornitore:"LGI MICRO", nome_offerta:"EASY Gas",          canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.14008,   prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:12.50,sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:18 },
+  { id:"bg_lgi_m_me", fornitore:"LGI MICRO", nome_offerta:"MEDIUM Gas",        canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.17098,   prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:15,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:19 },
+  { id:"bg_lgi_m_pr", fornitore:"LGI MICRO", nome_offerta:"PREMIUM Gas",       canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.18128,   prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:16,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 31/08/2026", ordine:20 },
+  { id:"bg_edi_flx",  fornitore:"Edison",    nome_offerta:"Flex Business Gas",  canale:"Business Gas",  fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1648,    prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:18,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 09/09/2026 | 10k–25k Smc/a", ordine:21 },
+  { id:"bg_edi_sfx",  fornitore:"Edison",    nome_offerta:"Superflex Business Gas",canale:"Business Gas",fascia:"",tipo_prezzo:"VAR",  indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.1957,    prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:18,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 09/09/2026 | ≤15k Smc/a | 36 mesi", ordine:22 },
+  { id:"bg_ene_sol",  fornitore:"Enel",      nome_offerta:"Soluzione Corporate Gas",canale:"Business Gas",fascia:"",tipo_prezzo:"FISSO",indice:"PSV",perdite_applica:false,pcs_mult:1,   spread_unit:0,         prezzo_fisso_unit:0.618, variabili_unit:0,        quota_fissa_mese:15,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 14/09/2026 | 30k–200k Smc/a", ordine:23 },
+  { id:"bg_hera_hyb", fornitore:"Heracomm",  nome_offerta:"Hybrid SME Gas V30",canale:"Business Gas",   fascia:"", tipo_prezzo:"VAR",   indice:"PSV", perdite_applica:false,pcs_mult:1.03, spread_unit:0.14317,   prezzo_fisso_unit:0, variabili_unit:0,        quota_fissa_mese:14,   sconto_mese:0, scaduta:true,  note:"⚠️ SCADUTA 09/09/2026 | 10k–200k Smc/a", ordine:24 },
+];
