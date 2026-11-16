@@ -115,6 +115,7 @@
     <!-- MENU A SINISTRA -->
     <div class="sidebar">
         <h2>GEDE Servizi</h2>
+        <a href="#" onclick="loadPage('simulatore.html')">📄 Simulatore bolletta</a>
         <a href="#" onclick="loadPage('comparators/business-gas.html')">Business Gas</a>
         <a href="#" onclick="loadPage('comparators/business-luce.html')">Business Luce</a>
         <a href="#" onclick="loadPage('comparators/domestico-gas.html')">Domestico Gas</a>
@@ -137,6 +138,7 @@
             const inserita = document.getElementById('passwordInput').value;
             if (inserita === PASSWORD_CORRETTA) {
                 document.getElementById('loginScreen').style.display = 'none';
+                try { sessionStorage.setItem('gedeKey', inserita); } catch (e) {}
             } else {
                 document.getElementById('loginError').style.display = 'block';
                 document.getElementById('passwordInput').value = '';
