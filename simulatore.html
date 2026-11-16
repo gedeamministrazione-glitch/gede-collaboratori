@@ -844,7 +844,6 @@ async function leggi(f) {
 // Versione online (sito GEDE): la bolletta viene letta dal server con la chiave Anthropic di GEDE.
 function chiaveGede(nuova) {
   let v = null; try { v = sessionStorage.getItem("gedeKey"); } catch (e) {}
-  if (!v || nuova) { v = prompt("Password collaboratori:"); if (v) { try { sessionStorage.setItem("gedeKey", v); } catch (e) {} } }
   return v || "";
 }
 async function b64(blob) { const u = await new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(blob); }); return String(u).split(",")[1]; }
@@ -858,14 +857,15 @@ async function leggiServer(f) {
     for (let tent = 0; tent < 2; tent++) {
       r = await fetch("/api/estrai", { method: "POST", headers: { "content-type": "application/json", "x-gede-key": key }, body: JSON.stringify({ tipo: "bolletta3", files }) });
       j = await r.json().catch(() => ({}));
-      if (r.status === 401 && tent === 0) { key = chiaveGede(true); continue; }
+      if (r.status === 401 && tent === 0) { const v = prompt("Password collaboratori:"); if (v) { try { sessionStorage.setItem("gedeKey", v); } catch (e) {} key = v; continue; } }
       break;
     }
+    if (r.status === 503) { sblocca(); stato("La lettura automatica della bolletta non è attiva sul sito: inserisci i dati qui sotto copiandoli dalla bolletta.", ""); $("c2").scrollIntoView({ behavior: "smooth" }); return; }
     if (!r.ok || !j.ok) throw new Error(j.error || `Lettura non riuscita (HTTP ${r.status})`);
     invalida(); ["cF1","cF2","cF3","cTot","annuo","vCons","vFissa","rCons","rFissa","rPot","accise","ivaPct","ivaNew","altre","totale","pF1","pF2","pF3","psv","disp","cap","potenza","cf","pod","offerta","fornitore","indirizzo","cliente"].forEach((id) => { $(id).value = ""; });
     compila(j.dati || {}); sblocca(); controllaQuadra();
     stato("✓ Bolletta letta. Controlla i dati (soprattutto i riquadri in giallo) e premi Confronta.", "ok");
-  } catch (e) { stato("⚠ " + e.message + " — puoi anche inserire i dati a mano.", "err"); }
+  } catch (e) { sblocca(); stato("⚠ " + e.message + " — inserisci i dati a mano qui sotto.", "err"); }
 }
 
 function compila(d) {
